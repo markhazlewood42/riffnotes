@@ -1,0 +1,187 @@
+/* Annotation toolbar (BubbleMenu content) */
+.annotation-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 4px 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Toolbar buttons */
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #e0e0e0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.toolbar-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.toolbar-btn.is-active {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.btn-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.btn-label {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 2px;
+}
+
+/* Input popovers inside the toolbar */
+.toolbar-input-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolbar-input {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-family: var(--font-annotations);
+  font-size: 13px;
+  outline: none;
+  min-width: 60px;
+}
+
+.toolbar-input:focus {
+  border-color: var(--color-accent);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.toolbar-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.toolbar-input-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 4px;
+}
+
+.toolbar-submit-btn {
+  background: var(--color-accent);
+  color: #ffffff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  transition: background 0.15s;
+}
+
+.toolbar-submit-btn:hover {
+  background: var(--color-accent-hover);
+}
+
+.toolbar-cancel-btn {
+  background: none;
+  color: rgba(255, 255, 255, 0.5);
+  border: none;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.toolbar-cancel-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Section selector */
+.section-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 340px;
+}
+
+.section-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e0e0e0;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.section-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.section-btn.repeat-btn {
+  border-color: rgba(150, 100, 255, 0.4);
+  color: #c4a0ff;
+}
+
+.section-btn.repeat-btn:hover {
+  background: rgba(150, 100, 255, 0.2);
+  color: #d9c0ff;
+}
+
+/* Style selector for right notes */
+.style-selector {
+  display: flex;
+  gap: 2px;
+}
+
+.style-option {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e0e0e0;
+  padding: 3px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: var(--font-ui);
+  transition: background 0.15s;
+}
+
+.style-option:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.style-option.selected {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #ffffff;
+}

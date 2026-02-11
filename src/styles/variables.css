@@ -1,0 +1,43 @@
+:root {
+  /* Annotation colors */
+  --color-chord: #333333;
+  --color-section-marker: #1a1a1a;
+  --color-right-annotation: #9b30ff;
+  --color-right-annotation-rest: #cc3333;
+  --color-right-annotation-special: #ff4081;
+  --color-leader-dots: #cccccc;
+  --color-sticking: #555555;
+  --color-counting: #888888;
+  --color-repeat-ref: #666666;
+
+  /* UI colors */
+  --color-accent: #06c;
+  --color-accent-hover: #0052a3;
+  --color-bg-page: #f9fbfd;
+  --color-bg-document: #ffffff;
+  --color-bg-toolbar: #fafafa;
+  --color-border: #e0e0e0;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #666666;
+  --color-text-placeholder: #aaaaaa;
+
+  /* Fonts */
+  --font-lyrics: 'Georgia', 'Times New Roman', serif;
+  --font-annotations: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+
+  /* Sizes */
+  --font-size-title: 28px;
+  --font-size-lyrics: 16px;
+  --font-size-chord: 13px;
+  --font-size-right-note: 13px;
+  --font-size-section-marker: 16px;
+  --font-size-sticking: 12px;
+  --font-size-counting: 12px;
+
+  /* Spacing */
+  --line-height-lyrics: 2.4;
+  --document-max-width: 950px;
+  --document-padding: 40px 60px;
+  --annotation-right-min-width: 200px;
+}

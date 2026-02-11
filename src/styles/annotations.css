@@ -1,0 +1,144 @@
+/* Chord annotations (above lyrics) */
+.chord-annotation-widget {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  overflow: visible;
+  vertical-align: baseline;
+}
+
+.chord-label {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 0;
+  white-space: nowrap;
+  font-family: var(--font-annotations);
+  font-size: var(--font-size-chord);
+  font-weight: 700;
+  color: var(--color-chord);
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  line-height: 1;
+}
+
+.chord-label:hover {
+  color: var(--color-accent);
+}
+
+/* Right-side annotations */
+.annotated-line {
+  display: flex;
+  align-items: baseline;
+  position: relative;
+}
+
+.lyric-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.right-annotation-area {
+  flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  max-width: var(--annotation-right-min-width);
+  margin-left: 8px;
+}
+
+.leader-dots {
+  flex: 1;
+  border-bottom: 1.5px dotted var(--color-leader-dots);
+  margin: 0 8px 3px;
+  min-width: 20px;
+}
+
+.right-annotation-text {
+  white-space: nowrap;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-right-note);
+  color: var(--color-right-annotation);
+  cursor: pointer;
+}
+
+.right-annotation-text:hover {
+  text-decoration: underline;
+}
+
+.right-annotation-text.style-rest {
+  color: var(--color-right-annotation-rest);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.right-annotation-text.style-special {
+  color: var(--color-right-annotation-special);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Sticking patterns */
+.sticking-annotation-widget {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  overflow: visible;
+  vertical-align: baseline;
+}
+
+.sticking-label {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 0;
+  white-space: nowrap;
+  font-family: var(--font-annotations);
+  font-size: var(--font-size-sticking);
+  color: var(--color-sticking);
+  letter-spacing: 2px;
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  line-height: 1;
+}
+
+/* Counting markers */
+.counting-annotation-widget {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  overflow: visible;
+  vertical-align: baseline;
+}
+
+.counting-label {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 0;
+  white-space: nowrap;
+  font-family: var(--font-annotations);
+  font-size: var(--font-size-counting);
+  color: var(--color-counting);
+  letter-spacing: 1px;
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  line-height: 1;
+}
+
+/* Section markers */
+.section-marker {
+  font-weight: 700;
+  font-size: var(--font-size-section-marker);
+  color: var(--color-section-marker);
+  padding: 8px 0 4px;
+  user-select: text;
+}
+
+/* Section repeat references */
+.section-repeat-ref {
+  font-weight: 700;
+  font-size: var(--font-size-section-marker);
+  color: var(--color-repeat-ref);
+  padding: 8px 0 4px;
+  user-select: text;
+}

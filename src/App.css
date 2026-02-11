@@ -1,0 +1,60 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg-page);
+}
+
+.app-container {
+  min-height: 100vh;
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.document-container {
+  width: 100%;
+  max-width: var(--document-max-width);
+  background: var(--color-bg-document);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Title header area */
+.document-header {
+  padding: 40px var(--document-padding, 48px) 24px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.document-title {
+  font-family: var(--font-lyrics);
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  min-height: 36px;
+}
+
+/* Body wraps the editor and carries the annotation divider */
+.document-body {
+  flex: 1;
+  position: relative;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .app-container {
+    padding: 20px 10px;
+  }
+
+  .document-container {
+    max-width: 100%;
+  }
+}

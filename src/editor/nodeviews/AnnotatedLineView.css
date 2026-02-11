@@ -1,0 +1,84 @@
+/* Annotated line layout */
+.annotated-line {
+  display: flex;
+  align-items: baseline;
+  position: relative;
+}
+
+.lyric-content-wrapper {
+  flex-shrink: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.lyric-content {
+  position: relative;
+  display: inline;
+}
+
+/* Chord overlay — positioned above lyrics */
+.chord-overlay {
+  position: relative;
+  height: 0;
+  overflow: visible;
+  user-select: none;
+  pointer-events: none;
+}
+
+.chord-positioned {
+  position: absolute;
+  bottom: 2px;
+  white-space: nowrap;
+  font-family: var(--font-annotations);
+  font-size: var(--font-size-chord);
+  font-weight: 700;
+  color: var(--color-chord);
+  pointer-events: auto;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.chord-positioned:hover {
+  color: var(--color-accent);
+}
+
+/*
+ * Leader line: the bridge span extends from the selected text
+ * (via negative margin-left pulling it back over the lyrics)
+ * through the gap to the annotation text. One continuous line.
+ */
+.leader-bridge {
+  flex: 1 1 60px;
+  min-width: 24px;
+  border-bottom: 1.5px dotted var(--color-leader-dots);
+  position: relative;
+  top: 3px;
+}
+
+.right-annotation-text {
+  white-space: nowrap;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-right-note);
+  color: var(--color-right-annotation);
+  cursor: pointer;
+  font-weight: 500;
+  padding-left: 6px;
+  position: relative;
+  top: 3px;
+}
+
+.right-annotation-text:hover {
+  text-decoration: underline;
+}
+
+.right-annotation-text.style-rest {
+  color: var(--color-right-annotation-rest);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.right-annotation-text.style-special {
+  color: var(--color-right-annotation-special);
+  font-weight: 700;
+  text-transform: uppercase;
+}
