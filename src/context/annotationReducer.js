@@ -6,6 +6,7 @@ function generateId() {
 
 const initialState = {
   annotations: {},
+  songId: null,
 };
 
 function annotationReducer(state, action) {

@@ -3,6 +3,13 @@ import { annotationReducer, initialState } from './annotationReducer';
 
 const STORAGE_KEY = 'gignotes-data';
 
+function generateSongId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'song-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+}
+
 const LyricSheetContext = createContext(null);
 
 function loadFromStorage() {
@@ -11,6 +18,9 @@ function loadFromStorage() {
     if (stored) {
       const parsed = JSON.parse(stored);
       if (parsed && parsed.annotations) {
+        if (!parsed.songId) {
+          return { ...parsed, songId: generateSongId() };
+        }
         return parsed;
       }
     }
@@ -32,7 +42,7 @@ function LyricSheetProvider({ children }) {
   const savedState = loadFromStorage();
   const [state, dispatch] = useReducer(
     annotationReducer,
-    savedState || initialState
+    savedState || { ...initialState, songId: generateSongId() }
   );
 
   const editorRef = useRef(null);
