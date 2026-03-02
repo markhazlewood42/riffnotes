@@ -39,10 +39,10 @@ function saveToStorage(state) {
 }
 
 function LyricSheetProvider({ children }) {
-  const savedState = loadFromStorage();
   const [state, dispatch] = useReducer(
     annotationReducer,
-    savedState || { ...initialState, songId: generateSongId() }
+    undefined,
+    () => loadFromStorage() || { ...initialState, songId: generateSongId() }
   );
 
   const editorRef = useRef(null);
