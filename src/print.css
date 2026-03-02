@@ -35,6 +35,11 @@
     display: none;
   }
 
+  /* Hide the app toolbar (Print button container) */
+  .app-toolbar {
+    display: none;
+  }
+
   /* Hide the BubbleMenu toolbar (TipTap renders this via Tippy.js) */
   .tippy-box {
     display: none !important;
