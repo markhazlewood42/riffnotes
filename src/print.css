@@ -23,11 +23,12 @@
     display: block;
   }
 
-  /* Document fills the print area; remove decorative shadow */
+  /* Document fills the print area; remove decorative shadow and screen zoom */
   .document-container {
     max-width: 100%;
     width: 100%;
     box-shadow: none;
+    zoom: 1;
   }
 
   /* Hide the print button itself */

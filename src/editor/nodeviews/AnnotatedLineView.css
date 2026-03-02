@@ -11,6 +11,11 @@
   position: relative;
 }
 
+/* Empty lines collapse to zero width — expand so the full line is clickable */
+.react-renderer.is-empty .lyric-content-wrapper {
+  flex: 1;
+}
+
 .lyric-content {
   position: relative;
   display: inline;

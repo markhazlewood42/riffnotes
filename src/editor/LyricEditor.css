@@ -4,26 +4,28 @@
 }
 
 .lyric-editor .tiptap {
-  font-family: var(--font-lyrics);
-  font-size: var(--font-size-lyrics);
-  line-height: var(--line-height-lyrics);
-  color: var(--color-text-primary);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 200%;
+  color: #000;
+  font-feature-settings: 'liga' off, 'clig' off;
   padding: var(--document-padding);
   min-height: 500px;
   outline: none;
 }
 
-/* Subtle vertical divider between lyrics and annotation area.
-   Placed on .document-body so it starts below the title header. */
+/* Vertical divider between lyrics and annotation area.
+   Inset top clears the title; inset bottom matches the document padding. */
 .document-body::after {
   content: '';
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: 70px;
+  bottom: 25px;
   right: 25%;
   width: 1px;
-  background: var(--color-leader-dots, #ccc);
-  opacity: 0.4;
+  background: #d0d0d4;
   pointer-events: none;
 }
 
@@ -32,10 +34,14 @@
 }
 
 .lyric-editor .tiptap h1 {
-  font-size: var(--font-size-title);
-  font-weight: 900;
+  font-family: 'Blinker', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  font-style: normal;
+  line-height: 120%;
+  color: #3F3F46;
+  font-feature-settings: 'liga' off, 'clig' off;
   margin: 0 0 16px;
-  line-height: 1.3;
 }
 
 .lyric-editor .tiptap h2 {
@@ -53,13 +59,27 @@
 }
 
 /* Placeholder styling */
-.lyric-editor .tiptap p.is-editor-empty:first-child::before {
+.lyric-editor .tiptap h1.song-title.is-empty::before {
   content: attr(data-placeholder);
   float: left;
   color: var(--color-text-placeholder);
   pointer-events: none;
   height: 0;
-  font-style: normal;
+}
+
+/* Lyrics placeholder — only on the first lyric line */
+.lyric-editor .tiptap h1 + .react-renderer.is-empty .annotated-line::before,
+.lyric-editor .tiptap .react-renderer.is-empty:first-child .annotated-line::before {
+  content: 'Start typing lyrics...';
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--color-text-placeholder);
+  pointer-events: none;
+  font-family: var(--font-lyrics);
+  font-size: var(--font-size-lyrics);
+  line-height: var(--line-height-lyrics);
+  white-space: nowrap;
 }
 
 /* Selection styling */

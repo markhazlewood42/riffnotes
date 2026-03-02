@@ -27,10 +27,21 @@ function LyricEditor() {
       SectionMarker,
       SectionRepeatRef,
       Placeholder.configure({
-        placeholder: 'Paste or type your lyrics here...',
+        placeholder: ({ node }) => {
+          if (node.type.name === 'songTitle') return 'Song title...';
+          return 'Start typing lyrics...';
+        },
+        showOnlyCurrent: false,
       }),
     ],
-    content: '',
+    content: {
+      type: 'doc',
+      content: [
+        { type: 'songTitle' },
+        { type: 'paragraph' },
+      ],
+    },
+    autofocus: 'start',
   });
 
   useEffect(() => {

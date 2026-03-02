@@ -55,6 +55,19 @@ const LyricLine = Paragraph.extend({
           lineId: generateLineId(),
         }).run();
       },
+      'Shift-Tab': ({ editor }) => {
+        const doc = editor.state.doc;
+        let titleEndPos = null;
+        doc.forEach((node, pos) => {
+          if (node.type.name === 'songTitle') {
+            titleEndPos = pos + node.nodeSize - 1;
+          }
+        });
+        if (titleEndPos !== null) {
+          return editor.chain().setTextSelection(titleEndPos).run();
+        }
+        return false;
+      },
     };
   },
 

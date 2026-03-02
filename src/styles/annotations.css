@@ -130,7 +130,7 @@
   font-weight: 700;
   font-size: var(--font-size-section-marker);
   color: var(--color-section-marker);
-  padding: 8px 0 4px;
+  padding: 0;
   user-select: text;
 }
 
@@ -139,6 +139,6 @@
   font-weight: 700;
   font-size: var(--font-size-section-marker);
   color: var(--color-repeat-ref);
-  padding: 8px 0 4px;
+  padding: 0;
   user-select: text;
 }

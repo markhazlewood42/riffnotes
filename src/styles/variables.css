@@ -1,8 +1,8 @@
 :root {
   /* Annotation colors */
-  --color-chord: #333333;
+  --color-chord: #8217e7;
   --color-section-marker: #1a1a1a;
-  --color-right-annotation: #9b30ff;
+  --color-right-annotation: #8217e7;
   --color-right-annotation-rest: #cc3333;
   --color-right-annotation-special: #ff4081;
   --color-leader-dots: #cccccc;
@@ -22,22 +22,22 @@
   --color-text-placeholder: #aaaaaa;
 
   /* Fonts */
-  --font-lyrics: 'Georgia', 'Times New Roman', serif;
-  --font-annotations: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  --font-lyrics: 'Montserrat', sans-serif;
+  --font-annotations: 'Montserrat', sans-serif;
   --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 
   /* Sizes */
-  --font-size-title: 28px;
-  --font-size-lyrics: 16px;
-  --font-size-chord: 13px;
-  --font-size-right-note: 13px;
-  --font-size-section-marker: 16px;
-  --font-size-sticking: 12px;
-  --font-size-counting: 12px;
+  --font-size-title: 22px;
+  --font-size-lyrics: 11px;
+  --font-size-chord: 10px;
+  --font-size-right-note: 10px;
+  --font-size-section-marker: 11px;
+  --font-size-sticking: 10px;
+  --font-size-counting: 10px;
 
   /* Spacing */
-  --line-height-lyrics: 2.4;
+  --line-height-lyrics: 200%;
   --document-max-width: 816px;
-  --document-padding: 40px 60px;
+  --document-padding: 25px;
   --annotation-right-min-width: 200px;
 }

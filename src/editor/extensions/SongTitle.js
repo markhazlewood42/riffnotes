@@ -1,4 +1,5 @@
 import { Node, mergeAttributes } from '@tiptap/core';
+import { generateLineId } from './LyricLine';
 
 const SongTitle = Node.create({
   name: 'songTitle',
@@ -43,6 +44,23 @@ const SongTitle = Node.create({
   addKeyboardShortcuts() {
     return {
       'Mod-Shift-t': () => this.editor.commands.toggleSongTitle(),
+      Enter: () => this.editor.chain()
+        .splitBlock()
+        .setNode('paragraph', { lineId: generateLineId() })
+        .run(),
+      Tab: () => {
+        const doc = this.editor.state.doc;
+        let firstParaPos = null;
+        doc.forEach((node, pos) => {
+          if (node.type.name === 'paragraph' && firstParaPos === null) {
+            firstParaPos = pos + 1;
+          }
+        });
+        if (firstParaPos !== null) {
+          return this.editor.chain().setTextSelection(firstParaPos).run();
+        }
+        return false;
+      },
     };
   },
 });

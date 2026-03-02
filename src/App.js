@@ -15,9 +15,6 @@ function App() {
           </button>
         </div>
         <div className="document-container">
-          <div className="document-header">
-            <h1 className="document-title" />
-          </div>
           <div className="document-body">
             <LyricEditor />
           </div>
