@@ -1,0 +1,52 @@
+@media print {
+  /* Page setup */
+  @page {
+    size: letter portrait;
+    margin: 0.75in;
+  }
+
+  /* Preserve annotation colors — without this, browsers strip colored text to black */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Reset page background — no gray surround when printing */
+  body {
+    background: white;
+  }
+
+  /* Remove screen chrome from app shell */
+  .app-container {
+    padding: 0;
+    min-height: auto;
+    display: block;
+  }
+
+  /* Document fills the print area; remove decorative shadow */
+  .document-container {
+    max-width: 100%;
+    width: 100%;
+    box-shadow: none;
+  }
+
+  /* Hide the print button itself */
+  .print-btn {
+    display: none;
+  }
+
+  /* Hide the BubbleMenu toolbar (TipTap renders this via Tippy.js) */
+  .tippy-box {
+    display: none !important;
+  }
+
+  /* Avoid splitting a lyric line with its chord overlay or right annotation across pages */
+  .annotated-line {
+    break-inside: avoid;
+  }
+
+  /* Avoid a section marker sitting alone at the bottom of a page */
+  h2 {
+    break-after: avoid;
+  }
+}
