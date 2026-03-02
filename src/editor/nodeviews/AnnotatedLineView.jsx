@@ -63,11 +63,9 @@ function AnnotatedLineView(props) {
 
   const measurePullback = useCallback(() => {
     if (!hasAnnotation || rightNote.charOffset == null || !wrapperRef.current) return;
-    // Find the text node inside the lyric-content div
     const contentEl = wrapperRef.current.querySelector('.lyric-content');
     if (!contentEl) return;
 
-    // Walk to find the first text node
     const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT);
     let textNode = null;
     let accumulated = 0;
@@ -88,8 +86,11 @@ function AnnotatedLineView(props) {
 
     const rangeRect = range.getBoundingClientRect();
     const wrapperRect = wrapperRef.current.getBoundingClientRect();
-    // Distance from the charOffset to the right edge of the wrapper
-    const px = wrapperRect.right - rangeRect.left;
+    // getBoundingClientRect returns zoomed (screen) pixels; marginLeft is CSS pixels.
+    // Divide by zoom so the margin value matches the visual offset correctly.
+    const zoomEl = wrapperRef.current.closest('.document-container');
+    const zoom = zoomEl ? (parseFloat(getComputedStyle(zoomEl).zoom) || 1) : 1;
+    const px = (wrapperRect.right - rangeRect.left) / zoom;
     setPullbackPx(px);
   }, [hasAnnotation, rightNote]);
 
@@ -113,14 +114,15 @@ function AnnotatedLineView(props) {
             contentEditable={false}
             style={pullbackPx > 0 ? { marginLeft: `-${pullbackPx}px` } : undefined}
           />
-          <span
-            className={`right-annotation-text ${styleClass}`}
-            contentEditable={false}
-            title="Click to delete"
-            onClick={handleDeleteRightNote}
-          >
-            {rightNote.value}
-          </span>
+          <div className="right-annotation-column" contentEditable={false}>
+            <span
+              className={`right-annotation-text ${styleClass}`}
+              title="Click to delete"
+              onClick={handleDeleteRightNote}
+            >
+              {rightNote.value}
+            </span>
+          </div>
         </>
       )}
     </NodeViewWrapper>

@@ -48,9 +48,8 @@
 }
 
 /*
- * Leader line: the bridge span extends from the selected text
- * (via negative margin-left pulling it back over the lyrics)
- * through the gap to the annotation text. One continuous line.
+ * Leader line: pulls back via negative margin-left to start at the
+ * charOffset position, then extends through the gap to the annotation column.
  */
 .leader-bridge {
   flex: 1 1 60px;
@@ -60,16 +59,32 @@
   top: 3px;
 }
 
+/*
+ * Right annotation column — zero height so it never expands the lyric row.
+ * The annotation text overflows visually below, independent of lyric spacing.
+ */
+.right-annotation-column {
+  /* Matches the right 25% column: 25% of annotated-line width minus half the
+     document padding to account for the asymmetry between body 25% and editor interior. */
+  flex: 0 0 calc(25% - calc(var(--document-padding) / 2));
+  align-self: flex-start;
+  position: relative;
+  height: 0;
+  overflow: visible;
+}
+
 .right-annotation-text {
-  white-space: nowrap;
+  position: absolute;
+  top: 0;
+  left: 6px;
+  width: calc(100% - 6px);
+  white-space: normal;
+  overflow-wrap: break-word;
   font-family: var(--font-ui);
   font-size: var(--font-size-right-note);
   color: var(--color-right-annotation);
   cursor: pointer;
   font-weight: 500;
-  padding-left: 6px;
-  position: relative;
-  top: 3px;
 }
 
 .right-annotation-text:hover {
@@ -86,4 +101,11 @@
   color: var(--color-right-annotation-special);
   font-weight: 700;
   text-transform: uppercase;
+}
+
+/* Word hover highlight — applied via ProseMirror Decoration */
+.word-hover-highlight {
+  background-color: #f2e5ff;
+  border-radius: 2px;
+  cursor: pointer;
 }

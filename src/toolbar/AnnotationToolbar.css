@@ -7,6 +7,8 @@
   border-radius: 8px;
   padding: 4px 6px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.1);
+  /* Counter the document-container zoom: 1.5 so the toolbar renders at its designed size */
+  zoom: 0.6667;
 }
 
 /* Toolbar buttons */

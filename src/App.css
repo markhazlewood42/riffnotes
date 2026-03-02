@@ -20,8 +20,8 @@ body {
 }
 
 .document-container {
-  width: 100%;
-  max-width: var(--document-max-width);
+  width: var(--document-max-width);
+  flex-shrink: 0;
   background: var(--color-bg-document);
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
   min-height: 1056px;
@@ -36,16 +36,6 @@ body {
   position: relative;
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-  .app-container {
-    padding: 20px 10px;
-  }
-
-  .document-container {
-    max-width: 100%;
-  }
-}
 
 .app-toolbar {
   display: flex;

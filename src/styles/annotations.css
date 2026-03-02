@@ -54,7 +54,6 @@
 }
 
 .right-annotation-text {
-  white-space: nowrap;
   font-family: var(--font-ui);
   font-size: var(--font-size-right-note);
   color: var(--color-right-annotation);

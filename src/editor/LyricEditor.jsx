@@ -7,6 +7,7 @@ import LyricLine from './extensions/LyricLine';
 import SongTitle from './extensions/SongTitle';
 import SectionMarker from './extensions/SectionMarker';
 import SectionRepeatRef from './extensions/SectionRepeatRef';
+import WordHover from './extensions/WordHover';
 import AnnotationToolbar from '../toolbar/AnnotationToolbar';
 import { useLyricSheet } from '../context/LyricSheetContext';
 import './LyricEditor.css';
@@ -26,6 +27,7 @@ function LyricEditor() {
       SongTitle,
       SectionMarker,
       SectionRepeatRef,
+      WordHover,
       Placeholder.configure({
         placeholder: ({ node }) => {
           if (node.type.name === 'songTitle') return 'Song title...';
@@ -42,6 +44,49 @@ function LyricEditor() {
       ],
     },
     autofocus: 'start',
+    editorProps: {
+      transformPastedHTML: (html) => {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+
+        // Google Docs wraps entire clipboard in <b id="docs-internal-guid-..." style="font-weight:normal"> — unwrap it.
+        doc.querySelectorAll('b').forEach(b => {
+          if (b.style.fontWeight === 'normal' || b.id.startsWith('docs-internal-guid')) {
+            b.replaceWith(...Array.from(b.childNodes));
+          }
+        });
+
+        // Google Docs spans use font-weight:500 for regular text (Montserrat Medium).
+        // TipTap's Bold regex /[5-9]\d{2,}/ matches 500 and treats it as bold — strip it.
+        // Only promote font-weight:700+ to <strong>.
+        doc.querySelectorAll('span').forEach(span => {
+          const fw = span.style.fontWeight;
+          if (fw === 'bold' || fw === 'bolder' || parseInt(fw) >= 700) {
+            const strong = doc.createElement('strong');
+            strong.innerHTML = span.innerHTML;
+            span.replaceWith(strong);
+          } else {
+            span.style.removeProperty('font-weight');
+          }
+        });
+
+        // Remove empty paragraphs (&nbsp; is \u00a0, not caught by plain trim())
+        doc.querySelectorAll('p').forEach(p => {
+          if (!p.textContent.replace(/\u00a0/g, '').trim()) p.remove();
+        });
+
+        // Convert bare <br> separators to empty <p> elements (one blank line each).
+        // Do this after empty-<p> removal so they aren't immediately pruned.
+        Array.from(doc.body.childNodes).forEach(node => {
+          if (node.nodeName === 'BR') node.replaceWith(doc.createElement('p'));
+        });
+
+        return doc.body.innerHTML;
+      },
+      transformPastedText: (text) => {
+        // Collapse multiple consecutive newlines into one
+        return text.replace(/\n{2,}/g, '\n').trim();
+      },
+    },
   });
 
   useEffect(() => {
