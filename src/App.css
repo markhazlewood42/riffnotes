@@ -58,3 +58,29 @@ body {
     max-width: 100%;
   }
 }
+
+.app-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: var(--document-max-width);
+  padding: 0 0 8px;
+}
+
+.print-btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.print-btn:hover {
+  background: var(--color-bg-document);
+  color: var(--color-text-primary);
+  border-color: var(--color-text-secondary);
+}

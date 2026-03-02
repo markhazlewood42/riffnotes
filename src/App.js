@@ -9,6 +9,11 @@ function App() {
   return (
     <LyricSheetProvider>
       <div className="app-container">
+        <div className="app-toolbar">
+          <button className="print-btn" onClick={() => window.print()}>
+            Print
+          </button>
+        </div>
         <div className="document-container">
           <div className="document-header">
             <h1 className="document-title" />
