@@ -5,8 +5,6 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import LyricLine from './extensions/LyricLine';
 import SongTitle from './extensions/SongTitle';
-import SectionMarker from './extensions/SectionMarker';
-import SectionRepeatRef from './extensions/SectionRepeatRef';
 import WordHover from './extensions/WordHover';
 import AnnotationToolbar from '../toolbar/AnnotationToolbar';
 import { useLyricSheet } from '../context/LyricSheetContext';
@@ -25,8 +23,6 @@ function LyricEditor() {
       }),
       LyricLine,
       SongTitle,
-      SectionMarker,
-      SectionRepeatRef,
       WordHover,
       Placeholder.configure({
         placeholder: ({ node }) => {
@@ -107,6 +103,11 @@ function LyricEditor() {
           // Don't show for empty selections
           const text = state.doc.textBetween(from, to, ' ');
           if (!text.trim()) return false;
+          // Don't show in the song title — it has no annotation capability
+          const { $from } = state.selection;
+          for (let d = $from.depth; d >= 0; d--) {
+            if ($from.node(d).type.name === 'songTitle') return false;
+          }
           return true;
         }}
         options={{

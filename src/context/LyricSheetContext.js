@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useState, useEffect, useRef, useCallback } from 'react';
 import { annotationReducer, initialState } from './annotationReducer';
 
 const STORAGE_KEY = 'gignotes-data';
@@ -45,6 +45,9 @@ function LyricSheetProvider({ children }) {
     () => loadFromStorage() || { ...initialState, songId: generateSongId() }
   );
 
+  // Ephemeral UI state — which line is currently accepting a new right-side note
+  const [editingNote, setEditingNote] = useState(null); // { lineId, charOffset }
+
   const editorRef = useRef(null);
 
   // Auto-save on state changes
@@ -56,11 +59,22 @@ function LyricSheetProvider({ children }) {
     editorRef.current = editor;
   }, []);
 
+  const startEditingNote = useCallback((lineId, charOffset) => {
+    setEditingNote({ lineId, charOffset });
+  }, []);
+
+  const stopEditingNote = useCallback(() => {
+    setEditingNote(null);
+  }, []);
+
   const value = {
     state,
     dispatch,
     editorRef,
     setEditor,
+    editingNote,
+    startEditingNote,
+    stopEditingNote,
   };
 
   return (

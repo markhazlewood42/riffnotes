@@ -4,13 +4,15 @@
 }
 
 .lyric-editor .tiptap {
-  font-family: 'Montserrat', sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 11px;
   font-weight: 500;
   font-style: normal;
-  line-height: 200%;
+  line-height: 225%;
   color: #000;
-  font-feature-settings: 'liga' off, 'clig' off;
+  font-feature-settings:
+    "liga" off,
+    "clig" off;
   padding: var(--document-padding);
   min-height: 500px;
   outline: none;
@@ -19,7 +21,7 @@
 /* Vertical divider between lyrics and annotation area.
    Inset top clears the title; inset bottom matches the document padding. */
 .document-body::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 70px;
   bottom: 25px;
@@ -34,13 +36,15 @@
 }
 
 .lyric-editor .tiptap h1 {
-  font-family: 'Blinker', sans-serif;
+  font-family: "Blinker", sans-serif;
   font-size: 22px;
   font-weight: 700;
   font-style: normal;
   line-height: 120%;
-  color: #3F3F46;
-  font-feature-settings: 'liga' off, 'clig' off;
+  color: #3f3f46;
+  font-feature-settings:
+    "liga" off,
+    "clig" off;
   margin: 0 0 16px;
 }
 
@@ -69,8 +73,11 @@
 
 /* Lyrics placeholder — only on the first lyric line */
 .lyric-editor .tiptap h1 + .react-renderer.is-empty .annotated-line::before,
-.lyric-editor .tiptap .react-renderer.is-empty:first-child .annotated-line::before {
-  content: 'Start typing lyrics...';
+.lyric-editor
+  .tiptap
+  .react-renderer.is-empty:first-child
+  .annotated-line::before {
+  content: "Start typing lyrics...";
   position: absolute;
   top: 0;
   left: 0;

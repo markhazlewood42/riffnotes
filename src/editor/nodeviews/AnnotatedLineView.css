@@ -32,11 +32,11 @@
 
 .chord-positioned {
   position: absolute;
-  bottom: 2px;
+  bottom: -6px;
   white-space: nowrap;
   font-family: var(--font-annotations);
   font-size: var(--font-size-chord);
-  font-weight: 700;
+  font-weight: 500;
   color: var(--color-chord);
   pointer-events: auto;
   cursor: pointer;
@@ -54,7 +54,7 @@
 .leader-bridge {
   flex: 1 1 60px;
   min-width: 24px;
-  border-bottom: 1.5px dotted var(--color-leader-dots);
+  border-bottom: 1px dashed var(--color-leader-dots);
   position: relative;
   top: 3px;
 }
@@ -75,7 +75,7 @@
 
 .right-annotation-text {
   position: absolute;
-  top: 0;
+  top: 4px;
   left: 6px;
   width: calc(100% - 6px);
   white-space: normal;
@@ -84,7 +84,7 @@
   font-size: var(--font-size-right-note);
   color: var(--color-right-annotation);
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .right-annotation-text:hover {
@@ -101,6 +101,24 @@
   color: var(--color-right-annotation-special);
   font-weight: 700;
   text-transform: uppercase;
+}
+
+/* Inline note input — appears in the right annotation column when creating a new note */
+.note-inline-input {
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-right-annotation);
+  color: var(--color-right-annotation);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-right-note);
+  font-weight: 500;
+  padding: 0;
+  outline: none;
+  width: 100%;
+}
+
+.note-inline-input::placeholder {
+  color: color-mix(in srgb, var(--color-right-annotation) 40%, transparent);
 }
 
 /* Word hover highlight — applied via ProseMirror Decoration */

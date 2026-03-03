@@ -31,26 +31,6 @@ function annotationReducer(state, action) {
         },
       };
     }
-    case 'ADD_STICKING': {
-      const id = generateId();
-      return {
-        ...state,
-        annotations: {
-          ...state.annotations,
-          [id]: { id, type: 'sticking', ...action.payload },
-        },
-      };
-    }
-    case 'ADD_COUNTING': {
-      const id = generateId();
-      return {
-        ...state,
-        annotations: {
-          ...state.annotations,
-          [id]: { id, type: 'counting', ...action.payload },
-        },
-      };
-    }
     case 'UPDATE_ANNOTATION': {
       const { id, changes } = action.payload;
       if (!state.annotations[id]) return state;
@@ -115,24 +95,10 @@ function getRightNoteForLine(state, lineId) {
   );
 }
 
-function getStickingsForLine(state, lineId) {
-  return Object.values(state.annotations).filter(
-    (a) => a.type === 'sticking' && a.lineId === lineId
-  );
-}
-
-function getCountingsForLine(state, lineId) {
-  return Object.values(state.annotations).filter(
-    (a) => a.type === 'counting' && a.lineId === lineId
-  );
-}
-
 export {
   annotationReducer,
   initialState,
   getAnnotationsForLine,
   getChordsForLine,
   getRightNoteForLine,
-  getStickingsForLine,
-  getCountingsForLine,
 };

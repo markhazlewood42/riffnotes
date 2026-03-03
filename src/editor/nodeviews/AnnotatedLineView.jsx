@@ -6,7 +6,7 @@ import { getRightNoteForLine, getChordsForLine } from '../../context/annotationR
 function AnnotatedLineView(props) {
   const { node } = props;
   const lineId = node.attrs.lineId;
-  const { state, dispatch } = useLyricSheet();
+  const { state, dispatch, editingNote, stopEditingNote, editorRef } = useLyricSheet();
 
   const rightNote = useMemo(
     () => getRightNoteForLine(state, lineId),
@@ -18,6 +18,12 @@ function AnnotatedLineView(props) {
     [state, lineId]
   );
 
+  // Sort chords by charOffset for rendering
+  const sortedChords = useMemo(
+    () => [...chords].sort((a, b) => a.charOffset - b.charOffset),
+    [chords]
+  );
+
   const handleDeleteRightNote = (e) => {
     e.stopPropagation();
     if (rightNote) {
@@ -25,44 +31,38 @@ function AnnotatedLineView(props) {
     }
   };
 
-  // Sort chords by charOffset for rendering
-  const sortedChords = useMemo(
-    () => [...chords].sort((a, b) => a.charOffset - b.charOffset),
-    [chords]
-  );
-
   const handleDeleteChord = (chordId, e) => {
     e.stopPropagation();
     dispatch({ type: 'DELETE_ANNOTATION', payload: { id: chordId } });
   };
 
-  // Build chord overlay — we render chord labels positioned above the text
-  const chordOverlay = sortedChords.length > 0 ? (
-    <div className="chord-overlay" contentEditable={false}>
-      {sortedChords.map((chord) => (
-        <span
-          key={chord.id}
-          className="chord-positioned"
-          style={{ left: `${chord.charOffset}ch` }}
-          title={`Chord: ${chord.value} (click to delete)`}
-          onClick={(e) => handleDeleteChord(chord.id, e)}
-        >
-          {chord.value}
-        </span>
-      ))}
-    </div>
-  ) : null;
-
   const styleClass = rightNote
     ? `style-${rightNote.style || 'default'}`
     : '';
 
+  const isEditingNote = editingNote?.lineId === lineId;
   const hasAnnotation = !!rightNote;
+  const showRightColumn = hasAnnotation || isEditingNote;
+
+  // charOffset for leader line: use editing position when creating, existing note's position otherwise
+  const charOffsetForLeader = isEditingNote
+    ? editingNote.charOffset
+    : (rightNote?.charOffset ?? null);
+
   const wrapperRef = useRef(null);
+  const noteInputRef = useRef(null);
   const [pullbackPx, setPullbackPx] = useState(0);
+  const [chordLeftPositions, setChordLeftPositions] = useState({});
+
+  // Auto-focus the inline input when editing starts
+  useEffect(() => {
+    if (isEditingNote && noteInputRef.current) {
+      noteInputRef.current.focus();
+    }
+  }, [isEditingNote]);
 
   const measurePullback = useCallback(() => {
-    if (!hasAnnotation || rightNote.charOffset == null || !wrapperRef.current) return;
+    if (!showRightColumn || charOffsetForLeader == null || !wrapperRef.current) return;
     const contentEl = wrapperRef.current.querySelector('.lyric-content');
     if (!contentEl) return;
 
@@ -71,7 +71,7 @@ function AnnotatedLineView(props) {
     let accumulated = 0;
     while (walker.nextNode()) {
       const n = walker.currentNode;
-      if (accumulated + n.length >= rightNote.charOffset) {
+      if (accumulated + n.length >= charOffsetForLeader) {
         textNode = n;
         break;
       }
@@ -79,7 +79,7 @@ function AnnotatedLineView(props) {
     }
     if (!textNode) return;
 
-    const localOffset = rightNote.charOffset - accumulated;
+    const localOffset = charOffsetForLeader - accumulated;
     const range = document.createRange();
     range.setStart(textNode, localOffset);
     range.setEnd(textNode, textNode.length);
@@ -92,22 +92,121 @@ function AnnotatedLineView(props) {
     const zoom = zoomEl ? (parseFloat(getComputedStyle(zoomEl).zoom) || 1) : 1;
     const px = (wrapperRect.right - rangeRect.left) / zoom;
     setPullbackPx(px);
-  }, [hasAnnotation, rightNote]);
+  }, [showRightColumn, charOffsetForLeader]);
+
+  // Measure actual pixel left positions for chord labels using collapsed DOM Ranges.
+  // Chords are centered over their selection: measure start and end pixel positions,
+  // find the visual center, then subtract half the rendered label width.
+  const measureChordPositions = useCallback(() => {
+    if (!wrapperRef.current || sortedChords.length === 0) {
+      setChordLeftPositions({});
+      return;
+    }
+    const contentEl = wrapperRef.current.querySelector('.lyric-content');
+    if (!contentEl) return;
+
+    const wrapperRect = wrapperRef.current.getBoundingClientRect();
+    const zoomEl = wrapperRef.current.closest('.document-container');
+    const zoom = zoomEl ? (parseFloat(getComputedStyle(zoomEl).zoom) || 1) : 1;
+
+    // Returns the pixel offset (from wrapper left) of a collapsed range at charOffset.
+    const measurePixelOffset = (offset) => {
+      const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT);
+      let textNode = null;
+      let accumulated = 0;
+      while (walker.nextNode()) {
+        const n = walker.currentNode;
+        if (accumulated + n.length >= offset) {
+          textNode = n;
+          break;
+        }
+        accumulated += n.length;
+      }
+      if (!textNode) return null;
+      const localOffset = offset - accumulated;
+      const range = document.createRange();
+      range.setStart(textNode, localOffset);
+      range.setEnd(textNode, localOffset);
+      return (range.getBoundingClientRect().left - wrapperRect.left) / zoom;
+    };
+
+    const positions = {};
+    for (const chord of sortedChords) {
+      const startPx = measurePixelOffset(chord.charOffset);
+      if (startPx == null) continue;
+
+      const endOffset = chord.charOffsetEnd ?? chord.charOffset;
+      const endPx = endOffset !== chord.charOffset
+        ? (measurePixelOffset(endOffset) ?? startPx)
+        : startPx;
+
+      const selectionCenterPx = (startPx + endPx) / 2;
+
+      // Subtract half the rendered label width so the chord text is visually centered.
+      const chordEl = wrapperRef.current.querySelector(`[data-chord-id="${chord.id}"]`);
+      const labelWidth = chordEl ? chordEl.offsetWidth / zoom : 0;
+
+      positions[chord.id] = selectionCenterPx - labelWidth / 2;
+    }
+    setChordLeftPositions(positions);
+  }, [sortedChords]);
+
+  const handleNoteSubmit = useCallback((value) => {
+    if (value.trim()) {
+      dispatch({
+        type: 'ADD_RIGHT_NOTE',
+        payload: { lineId, charOffset: editingNote.charOffset, value: value.trim(), style: 'default' },
+      });
+    }
+    stopEditingNote();
+    editorRef.current?.commands.focus();
+  }, [dispatch, lineId, editingNote, stopEditingNote, editorRef]);
+
+  const handleNoteCancel = useCallback(() => {
+    stopEditingNote();
+    editorRef.current?.commands.focus();
+  }, [stopEditingNote, editorRef]);
 
   useEffect(() => {
     measurePullback();
   }, [measurePullback]);
 
+  useEffect(() => {
+    measureChordPositions();
+  }, [measureChordPositions, node.textContent]);
+
+  // Build chord overlay — pixel positions from DOM measurement, ch fallback on first render
+  const chordOverlay = sortedChords.length > 0 ? (
+    <div className="chord-overlay" contentEditable={false}>
+      {sortedChords.map((chord) => (
+        <span
+          key={chord.id}
+          data-chord-id={chord.id}
+          className="chord-positioned"
+          style={{
+            left: chordLeftPositions[chord.id] != null
+              ? `${chordLeftPositions[chord.id]}px`
+              : `${chord.charOffset}ch`,
+          }}
+          title={`Chord: ${chord.value} (click to delete)`}
+          onClick={(e) => handleDeleteChord(chord.id, e)}
+        >
+          {chord.value}
+        </span>
+      ))}
+    </div>
+  ) : null;
+
   return (
     <NodeViewWrapper
-      className={`annotated-line ${hasAnnotation ? 'has-right-annotation' : ''}`}
+      className={`annotated-line ${showRightColumn ? 'has-right-annotation' : ''}`}
       data-line-id={lineId}
     >
       <div className="lyric-content-wrapper" ref={wrapperRef}>
         {chordOverlay}
         <NodeViewContent className="lyric-content" />
       </div>
-      {hasAnnotation && (
+      {showRightColumn && (
         <>
           <span
             className="leader-bridge"
@@ -115,13 +214,30 @@ function AnnotatedLineView(props) {
             style={pullbackPx > 0 ? { marginLeft: `-${pullbackPx}px` } : undefined}
           />
           <div className="right-annotation-column" contentEditable={false}>
-            <span
-              className={`right-annotation-text ${styleClass}`}
-              title="Click to delete"
-              onClick={handleDeleteRightNote}
-            >
-              {rightNote.value}
-            </span>
+            {isEditingNote ? (
+              <input
+                ref={noteInputRef}
+                className="note-inline-input"
+                type="text"
+                placeholder="type note…"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); handleNoteSubmit(e.target.value); }
+                  else if (e.key === 'Escape') { handleNoteCancel(); }
+                }}
+                onBlur={(e) => {
+                  // Dismiss without saving if focus leaves without Enter
+                  handleNoteCancel();
+                }}
+              />
+            ) : (
+              <span
+                className={`right-annotation-text ${styleClass}`}
+                title="Click to delete"
+                onClick={handleDeleteRightNote}
+              >
+                {rightNote.value}
+              </span>
+            )}
           </div>
         </>
       )}

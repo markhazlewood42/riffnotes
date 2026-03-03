@@ -5,7 +5,7 @@
   --color-right-annotation: #8217e7;
   --color-right-annotation-rest: #cc3333;
   --color-right-annotation-special: #ff4081;
-  --color-leader-dots: #cccccc;
+  --color-leader-dots: #bca8d1;
   --color-sticking: #555555;
   --color-counting: #888888;
   --color-repeat-ref: #666666;
@@ -22,9 +22,10 @@
   --color-text-placeholder: #aaaaaa;
 
   /* Fonts */
-  --font-lyrics: 'Montserrat', sans-serif;
-  --font-annotations: 'Montserrat', sans-serif;
-  --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --font-lyrics: "Montserrat", sans-serif;
+  --font-annotations: "Montserrat", sans-serif;
+  --font-ui:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
 
   /* Sizes */
   --font-size-title: 22px;
