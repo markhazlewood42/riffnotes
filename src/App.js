@@ -1,12 +1,11 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import ProtectedRoute from './components/ProtectedRoute';
-import LoginPage from './pages/LoginPage';
-import SongBrowser from './pages/SongBrowser';
-import SongEditor from './pages/SongEditor';
-import './styles/variables.css';
-import './styles/annotations.css';
-import './App.css';
+import { Route, Routes } from "react-router-dom";
+import "./App.css";
+import ProtectedRoute from "./components/ProtectedRoute";
+import LoginPage from "./pages/LoginPage";
+import SongBrowser from "./pages/SongBrowser";
+import SongEditor from "./pages/SongEditor";
+import "./styles/annotations.css";
+import "./styles/variables.css";
 
 function App() {
   return (
