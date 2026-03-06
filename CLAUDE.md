@@ -5,13 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm start        # Dev server at http://localhost:3000
-npm run build    # Production build
-npm test         # Run tests (Jest via react-scripts)
-npm test -- --testPathPattern=<file>  # Run a single test file
+npm run dev      # Dev server at http://localhost:3000 (Vite)
+npm run build    # Production build (outputs to dist/)
+npm run preview  # Preview production build locally
 ```
-
-No linter is explicitly configured beyond the default `react-app` ESLint config in `package.json`.
 
 ## Architecture
 
@@ -56,6 +53,7 @@ Single `songs` table with RLS — migration in `supabase/migration.sql`:
 |------|-------------|
 | `Node`, `Extension`, `mergeAttributes` | `@tiptap/core` |
 | `ReactNodeViewRenderer`, `NodeViewWrapper`, `NodeViewContent`, `useEditor`, `EditorContent` | `@tiptap/react` |
+| Note: Vite requires `.jsx` extension for files containing JSX syntax | |
 | `BubbleMenu` | `@tiptap/react/menus` (NOT `@tiptap/extension-bubble-menu`) |
 | `Plugin`, `PluginKey` | `@tiptap/pm/state` |
 | `Decoration`, `DecorationSet` | `@tiptap/pm/view` |
@@ -99,6 +97,6 @@ Title is styled directly in `LyricEditor.css`: Blinker Bold 22px, color `#3F3F46
 
 ### Environment
 
-- `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_ANON_KEY` in `.env` (CRA convention)
+- `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env` (Vite convention — `import.meta.env.VITE_*`)
 - Deployed to Vercel as static SPA with `vercel.json` rewrite for client-side routing
-- React Router v7 has ESM issues with CRA's Jest — pinned to v6
+- Build tool: Vite (migrated from CRA)
