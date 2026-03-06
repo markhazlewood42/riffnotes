@@ -10,6 +10,7 @@
     "@tiptap/react": "^3.19.0",
     "@tiptap/starter-kit": "^3.19.0",
     "@vercel/analytics": "^1.6.1",
+    "@vercel/speed-insights": "^1.3.1",
     "nanoid": "^5.1.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
