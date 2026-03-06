@@ -11,9 +11,14 @@
     print-color-adjust: exact;
   }
 
-  /* Reset page background — no gray surround when printing */
+  /* Force light mode and white background for print */
+  :root {
+    color-scheme: light;
+  }
+
   body {
     background: white;
+    color: #1a1a1a;
   }
 
   /* Remove screen chrome from app shell */

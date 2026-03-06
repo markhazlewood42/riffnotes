@@ -23,28 +23,9 @@
   color: var(--color-text-primary);
 }
 
-.new-song-btn {
-  padding: 8px 20px;
-  background: var(--color-chord);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-family: var(--font-ui);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-
-.new-song-btn:hover {
-  opacity: 0.9;
-}
-
 .song-browser-status {
-  font-family: var(--font-ui);
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  text-align: center;
+  display: flex;
+  justify-content: center;
   padding: 40px;
 }
 
@@ -56,10 +37,6 @@
   font-size: 14px;
 }
 
-.song-browser-empty .new-song-btn {
-  margin-top: 16px;
-}
-
 .song-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -68,17 +45,10 @@
 
 .song-card {
   position: relative;
-  background: white;
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  padding: 20px;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.song-card:hover {
-  border-color: var(--color-chord);
-  box-shadow: 0 2px 8px rgba(130, 23, 231, 0.1);
+.song-card-body {
+  padding: 20px;
 }
 
 .song-card-title {
@@ -119,6 +89,6 @@
 }
 
 .song-card-delete:hover {
-  color: #dc2626;
-  background: #fef2f2;
+  color: var(--danger);
+  background: oklch(from var(--danger) l c h / 0.1);
 }

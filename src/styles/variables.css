@@ -1,4 +1,5 @@
-:root {
+:root,
+[data-theme="light"] {
   /* Annotation colors */
   --color-chord: #8217e7;
   --color-section-marker: #1a1a1a;
@@ -10,16 +11,21 @@
   --color-counting: #888888;
   --color-repeat-ref: #666666;
 
-  /* UI colors */
-  --color-accent: #06c;
-  --color-accent-hover: #0052a3;
-  --color-bg-page: #f9fbfd;
-  --color-bg-document: #ffffff;
-  --color-bg-toolbar: #fafafa;
-  --color-border: #e0e0e0;
-  --color-text-primary: #1a1a1a;
-  --color-text-secondary: #666666;
-  --color-text-placeholder: #aaaaaa;
+  /* UI colors — mapped to HeroUI theme where possible */
+  --color-bg-page: var(--background);
+  --color-bg-document: var(--surface);
+  --color-bg-toolbar: var(--surface);
+  --color-border: var(--border);
+  --color-text-primary: var(--foreground);
+  --color-text-secondary: var(--muted);
+  --color-text-placeholder: var(--muted);
+
+  /* Editor-specific */
+  --color-editor-text: #000;
+  --color-editor-title: #3f3f46;
+  --color-editor-divider: #d0d0d4;
+  --color-editor-selection: rgba(130, 23, 231, 0.15);
+  --color-word-hover: #f2e5ff;
 
   /* Fonts */
   --font-lyrics: "Montserrat", sans-serif;
@@ -41,4 +47,25 @@
   --document-max-width: 816px;
   --document-padding: 25px;
   --annotation-right-min-width: 200px;
+}
+
+.dark,
+[data-theme="dark"] {
+  /* Annotation colors — brighter for dark backgrounds */
+  --color-chord: #b06cff;
+  --color-section-marker: #e0e0e0;
+  --color-right-annotation: #b06cff;
+  --color-right-annotation-rest: #ff6b6b;
+  --color-right-annotation-special: #ff6faa;
+  --color-leader-dots: #7a5fa0;
+  --color-sticking: #aaaaaa;
+  --color-counting: #999999;
+  --color-repeat-ref: #999999;
+
+  /* Editor-specific */
+  --color-editor-text: var(--foreground);
+  --color-editor-title: var(--foreground);
+  --color-editor-divider: oklch(28% 0.006 286.033);
+  --color-editor-selection: rgba(176, 108, 255, 0.25);
+  --color-word-hover: rgba(130, 23, 231, 0.2);
 }

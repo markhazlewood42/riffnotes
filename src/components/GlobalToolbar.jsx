@@ -1,10 +1,12 @@
-import { Chip } from "@heroui/chip";
+import { Button, Chip } from "@heroui/react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import "./GlobalToolbar.css";
 
 function GlobalToolbar({ children }) {
   const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const isEditing = location.pathname.startsWith("/songs/");
 
@@ -18,16 +20,22 @@ function GlobalToolbar({ children }) {
         ) : (
           <span className="toolbar-app-name">GigNotes</span>
         )}
-        <Chip
-          size="sm"
-          color="danger"
-          classNames={{ content: "font-semibold" }}
-        >
-          ALPHA PREVIEW
+        <Chip size="sm" color="danger">
+          <Chip.Label className="font-semibold">ALPHA PREVIEW</Chip.Label>
         </Chip>
       </div>
       <div className="global-toolbar-center">{children}</div>
       <div className="global-toolbar-right">
+        <Button
+          size="sm"
+          variant="ghost"
+          isIconOnly
+          aria-label="Toggle theme"
+          onPress={toggleTheme}
+          className="theme-toggle"
+        >
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </Button>
         {user && (
           <>
             {user.user_metadata?.avatar_url && (
@@ -41,12 +49,13 @@ function GlobalToolbar({ children }) {
             <span className="toolbar-user-name">
               {user.user_metadata?.full_name || user.email}
             </span>
-            <button
-              className="toolbar-btn toolbar-btn-signout"
-              onClick={signOut}
+            <Button
+              size="sm"
+              variant="tertiary"
+              onPress={signOut}
             >
               Sign out
-            </button>
+            </Button>
           </>
         )}
       </div>

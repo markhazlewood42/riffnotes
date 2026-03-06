@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button, Card, Spinner } from '@heroui/react';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import GlobalToolbar from '../components/GlobalToolbar';
@@ -66,38 +67,44 @@ function SongBrowser() {
       <main className="song-browser-content">
         <div className="song-browser-header">
           <h2 className="song-browser-title">Your Songs</h2>
-          <button className="new-song-btn" onClick={createSong}>+ New Song</button>
+          <Button color="accent" onPress={createSong}>+ New Song</Button>
         </div>
 
         {loading ? (
-          <p className="song-browser-status">Loading...</p>
+          <div className="song-browser-status">
+            <Spinner size="lg" color="accent" />
+          </div>
         ) : songs.length === 0 ? (
           <div className="song-browser-empty">
             <p>No songs yet.</p>
-            <button className="new-song-btn" onClick={createSong}>Create your first song</button>
+            <Button color="accent" onPress={createSong} className="mt-4">
+              Create your first song
+            </Button>
           </div>
         ) : (
           <div className="song-grid">
             {songs.map(song => (
-              <div
+              <Card
                 key={song.id}
-                className="song-card"
+                className="song-card cursor-pointer"
                 onClick={() => navigate(`/songs/${song.id}`)}
               >
-                <h3 className="song-card-title">
-                  {song.title || 'Untitled'}
-                </h3>
-                <p className="song-card-date">
-                  {formatDate(song.updated_at || song.created_at)}
-                </p>
-                <button
-                  className="song-card-delete"
-                  onClick={(e) => deleteSong(e, song.id)}
-                  title="Delete song"
-                >
-                  &times;
-                </button>
-              </div>
+                <Card.Content className="song-card-body">
+                  <h3 className="song-card-title">
+                    {song.title || 'Untitled'}
+                  </h3>
+                  <p className="song-card-date">
+                    {formatDate(song.updated_at || song.created_at)}
+                  </p>
+                  <button
+                    className="song-card-delete"
+                    onClick={(e) => deleteSong(e, song.id)}
+                    title="Delete song"
+                  >
+                    &times;
+                  </button>
+                </Card.Content>
+              </Card>
             ))}
           </div>
         )}

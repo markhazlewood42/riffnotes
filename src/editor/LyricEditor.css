@@ -9,7 +9,7 @@
   font-weight: 500;
   font-style: normal;
   line-height: 225%;
-  color: #000;
+  color: var(--color-editor-text);
   font-feature-settings:
     "liga" off,
     "clig" off;
@@ -27,7 +27,7 @@
   bottom: 25px;
   right: 25%;
   width: 1px;
-  background: #d0d0d4;
+  background: var(--color-editor-divider);
   pointer-events: none;
 }
 
@@ -41,7 +41,7 @@
   font-weight: 700;
   font-style: normal;
   line-height: 120%;
-  color: #3f3f46;
+  color: var(--color-editor-title);
   font-feature-settings:
     "liga" off,
     "clig" off;
@@ -91,5 +91,5 @@
 
 /* Selection styling */
 .lyric-editor .tiptap ::selection {
-  background: rgba(0, 102, 204, 0.2);
+  background: var(--color-editor-selection);
 }

@@ -1,6 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Blinker:wght@700&family=Montserrat:wght@500&display=swap');
 
 @import "tailwindcss";
-@plugin '../hero.js';
-@source '../node_modules/@heroui/theme/dist/**/*.{js,mjs}';
-@custom-variant dark (&:is(.dark *));
+@import "@heroui/styles";
+
+/* Override HeroUI accent to purple */
+:root,
+[data-theme="light"] {
+  --accent: oklch(0.47 0.27 293);
+  --accent-foreground: var(--snow);
+}
+
+.dark,
+[data-theme="dark"] {
+  --accent: oklch(0.6 0.25 293);
+  --accent-foreground: var(--snow);
+}

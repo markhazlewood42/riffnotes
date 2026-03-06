@@ -1,5 +1,7 @@
 body {
   background-color: var(--color-bg-page);
+  color: var(--color-text-primary);
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .app-container {
@@ -14,42 +16,16 @@ body {
   width: var(--document-max-width);
   flex-shrink: 0;
   background: var(--color-bg-document);
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--surface-shadow);
   min-height: 1056px;
   display: flex;
   flex-direction: column;
   zoom: 1.5;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 
 /* Body wraps the editor and carries the annotation divider */
 .document-body {
   flex: 1;
   position: relative;
-}
-
-
-.app-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  width: 100%;
-  max-width: var(--document-max-width);
-  padding: 0 0 8px;
-}
-
-.print-btn {
-  background: none;
-  border: 1px solid var(--color-border);
-  color: var(--color-text-secondary);
-  padding: 6px 16px;
-  border-radius: 6px;
-  font-family: var(--font-ui);
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.print-btn:hover {
-  background: var(--color-bg-document);
-  color: var(--color-text-primary);
-  border-color: var(--color-text-secondary);
 }

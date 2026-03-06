@@ -1,5 +1,5 @@
-import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
+import { Spinner } from '@heroui/react';
 import { useAuth } from '../context/AuthContext';
 
 function ProtectedRoute() {
@@ -8,7 +8,7 @@ function ProtectedRoute() {
   if (loading) {
     return (
       <div className="loading-screen">
-        <p>Loading...</p>
+        <Spinner size="lg" color="accent" />
       </div>
     );
   }

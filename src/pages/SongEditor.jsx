@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Button, Spinner } from '@heroui/react';
 import { supabase } from '../supabase';
 import { LyricSheetProvider, useLyricSheet } from '../context/LyricSheetContext';
 import LyricEditor from '../editor/LyricEditor';
@@ -19,9 +20,9 @@ function SongEditorInner() {
     <>
       <GlobalToolbar>
         <SaveIndicator />
-        <button className="toolbar-btn" onClick={() => window.print()}>
+        <Button size="sm" variant="outline" onPress={() => window.print()}>
           Print
-        </button>
+        </Button>
       </GlobalToolbar>
       <div className="app-container">
         <div className="document-container">
@@ -58,21 +59,21 @@ function SongEditor() {
   }, [id]);
 
   if (loading) {
-    return <div className="loading-screen"><p>Loading...</p></div>;
+    return (
+      <div className="loading-screen">
+        <Spinner size="lg" color="accent" />
+      </div>
+    );
   }
 
   if (error || !songData) {
     return (
       <div className="loading-screen">
-        <div style={{ textAlign: 'center' }}>
-          <p>{error || 'Song not found'}</p>
-          <button
-            className="toolbar-btn"
-            style={{ marginTop: 16 }}
-            onClick={() => navigate('/')}
-          >
+        <div className="text-center">
+          <p className="mb-4">{error || 'Song not found'}</p>
+          <Button variant="outline" onPress={() => navigate('/')}>
             Back to songs
-          </button>
+          </Button>
         </div>
       </div>
     );

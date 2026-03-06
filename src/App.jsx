@@ -6,7 +6,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import LoginPage from "./pages/LoginPage";
 import SongBrowser from "./pages/SongBrowser";
 import SongEditor from "./pages/SongEditor";
-import "./styles/annotations.css";
 import "./styles/variables.css";
 
 function App() {
