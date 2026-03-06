@@ -36,8 +36,9 @@
     display: none;
   }
 
-  /* Hide the app toolbar (Print button container) */
-  .app-toolbar {
+  /* Hide toolbars */
+  .app-toolbar,
+  .global-toolbar {
     display: none;
   }
 

@@ -1,0 +1,124 @@
+.song-browser-page {
+  min-height: 100vh;
+  background: var(--color-bg-page);
+}
+
+.song-browser-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.song-browser-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.song-browser-title {
+  font-family: var(--font-ui);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.new-song-btn {
+  padding: 8px 20px;
+  background: var(--color-chord);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.new-song-btn:hover {
+  opacity: 0.9;
+}
+
+.song-browser-status {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: 40px;
+}
+
+.song-browser-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-ui);
+  font-size: 14px;
+}
+
+.song-browser-empty .new-song-btn {
+  margin-top: 16px;
+}
+
+.song-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.song-card {
+  position: relative;
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 20px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.song-card:hover {
+  border-color: var(--color-chord);
+  box-shadow: 0 2px 8px rgba(130, 23, 231, 0.1);
+}
+
+.song-card-title {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-card-date {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.song-card-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.song-card:hover .song-card-delete {
+  opacity: 1;
+}
+
+.song-card-delete:hover {
+  color: #dc2626;
+  background: #fef2f2;
+}

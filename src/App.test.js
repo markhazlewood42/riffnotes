@@ -1,25 +1,31 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
-// LyricEditor uses TipTap which doesn't work in jsdom — mock it
+// Mock supabase client
+jest.mock('./supabase', () => ({
+  supabase: {
+    auth: {
+      getSession: () => Promise.resolve({ data: { session: null } }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: jest.fn() } } }),
+    },
+  },
+}));
+
+// LyricEditor uses TipTap which doesn't work in jsdom
 jest.mock('./editor/LyricEditor', () => () => <div data-testid="lyric-editor" />);
 
 import App from './App';
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 
-beforeEach(() => {
-  // Provide a minimal localStorage stub so LyricSheetProvider doesn't crash
-  Storage.prototype.getItem = jest.fn(() => null);
-  Storage.prototype.setItem = jest.fn();
-  window.print = jest.fn();
-});
-
-test('renders a Print button', () => {
-  render(<App />);
-  expect(screen.getByRole('button', { name: /print/i })).toBeInTheDocument();
-});
-
-test('Print button calls window.print()', () => {
-  render(<App />);
-  fireEvent.click(screen.getByRole('button', { name: /print/i }));
-  expect(window.print).toHaveBeenCalledTimes(1);
+test('renders login page when not authenticated', async () => {
+  render(
+    <BrowserRouter>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+  // Should redirect to login since there's no session
+  expect(await screen.findByText(/sign in with google/i)).toBeInTheDocument();
 });

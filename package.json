@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@supabase/supabase-js": "^2.98.0",
     "@tiptap/extension-bubble-menu": "^3.19.0",
     "@tiptap/extension-placeholder": "^3.19.0",
     "@tiptap/pm": "^3.19.0",
@@ -10,7 +11,8 @@
     "@tiptap/starter-kit": "^3.19.0",
     "nanoid": "^5.1.6",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.30.3"
   },
   "scripts": {
     "start": "react-scripts start",

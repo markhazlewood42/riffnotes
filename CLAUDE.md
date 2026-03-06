@@ -17,14 +17,38 @@ No linter is explicitly configured beyond the default `react-app` ESLint config 
 
 GigNotes is a lyrics annotation app with a **two-layer data model**:
 
-1. **TipTap document** (via `useEditor`) — manages the text structure: lyric lines, song title, section markers, repeat refs.
-2. **AnnotationStore** (`LyricSheetContext` + `annotationReducer`) — a flat `{ [id]: annotation }` map stored in React Context and persisted to `localStorage` under key `gignotes-data`. Annotations are linked to lines by `lineId`.
+1. **TipTap document** (via `useEditor`) — manages the text structure: lyric lines and song title.
+2. **AnnotationStore** (`LyricSheetContext` + `annotationReducer`) — a flat `{ [id]: annotation }` map stored in React Context and persisted to Supabase. Annotations are linked to lines by `lineId`.
+
+Both layers are stored in a single `songs` table in Supabase (PostgreSQL) with row-level security.
+
+### Auth & routing
+
+- **Supabase Auth** with Google OAuth — `AuthContext.js` provides `user`, `signInWithGoogle`, `signOut`
+- **React Router v6** — three routes: `/login` (LoginPage), `/` (SongBrowser), `/songs/:id` (SongEditor)
+- **ProtectedRoute** wraps authenticated routes and redirects to `/login`
+- **GlobalToolbar** is a sticky header with app name/back link, children slot for actions, and user avatar/sign-out
 
 ### How layers connect
 
 - `LyricLine.js` extends TipTap's built-in `Paragraph` (keeps node name `'paragraph'` — required for ProseMirror schema validity). It adds a `lineId` attribute that is auto-assigned on `onCreate` and on `Enter` keypress.
-- `AnnotatedLineView.jsx` is a React NodeView rendered for every paragraph node. It reads the annotation store via `useLyricSheet()` and renders chord overlays (above text, positioned with `ch` units) and right-side notes (with a dynamically-measured leader line).
-- `AnnotationToolbar.jsx` is a BubbleMenu that appears on text selection. Toolbar buttons use `onMouseDown` + `e.preventDefault()` to prevent editor blur, capture `lineId`/`charOffset` into a ref _before_ rendering an input component, then dispatch to the annotation store.
+- `AnnotatedLineView.jsx` is a React NodeView rendered for every paragraph node. It reads the annotation store via `useLyricSheet()` and renders chord overlays (above text, pixel-positioned via DOM Range measurement) and right-side notes (with a dynamically-measured leader line). When `editingNote.lineId` matches, it shows an inline text input in the right column instead of the saved note.
+- `AnnotationToolbar.jsx` is a BubbleMenu that appears on text selection (hidden in song title). Toolbar buttons use `onMouseDown` + `e.preventDefault()` to prevent editor blur, capture `lineId`/`charOffset` into a ref _before_ triggering input, then dispatch to the annotation store or call `startEditingNote()` from context.
+
+### Data persistence
+
+- `LyricSheetProvider` takes `songId`, `initialDocument`, and `initialAnnotations` props from `SongEditor`
+- Auto-saves to Supabase with 1-second debounce via `requestSave()` — called on annotation changes and editor `onUpdate`
+- `saveStatus` state (`'saved'` | `'saving'` | `'unsaved'`) is exposed in context and shown in the toolbar
+- Song title is extracted from the TipTap document JSON on each save for display in the song browser
+- `SongEditor` uses `key={id}` on the provider to force full remount when switching songs
+
+### Database schema
+
+Single `songs` table with RLS — migration in `supabase/migration.sql`:
+- `id` (uuid), `user_id` (references auth.users), `title`, `document` (jsonb), `annotations` (jsonb), `created_at`, `updated_at`
+- Row-level security: users can only CRUD their own songs
+- `updated_at` auto-updates via trigger
 
 ### TipTap v3 import paths
 
@@ -40,7 +64,7 @@ StarterKit is configured with `paragraph: false` and `heading: false` to avoid c
 
 ### Annotation types
 
-All annotations live in `state.annotations` (flat map). Selectors in `annotationReducer.js` (`getChordsForLine`, `getRightNoteForLine`, etc.) filter by `lineId` and `type`. Types: `chord`, `right-side`, `sticking`, `counting`.
+All annotations live in `state.annotations` (flat map). Selectors in `annotationReducer.js` (`getChordsForLine`, `getRightNoteForLine`) filter by `lineId` and `type`. Active types: `chord`, `right-side`.
 
 ### Key gotcha: LyricLine must extend Paragraph
 
@@ -71,4 +95,10 @@ All visual tokens live in `src/styles/variables.css`. Key values:
 
 Title is styled directly in `LyricEditor.css`: Blinker Bold 22px, color `#3F3F46`.
 
-`.document-container` uses `zoom: 1.5` for screen readability. This is reset to `zoom: 1` in `@media print` so print layout is unaffected. The TipTap document is **not persisted** — only annotations survive page reload (stored in `localStorage` under `gignotes-data`).
+`.document-container` uses `zoom: 1.5` for screen readability. This is reset to `zoom: 1` in `@media print` so print layout is unaffected.
+
+### Environment
+
+- `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_ANON_KEY` in `.env` (CRA convention)
+- Deployed to Vercel as static SPA with `vercel.json` rewrite for client-side routing
+- React Router v7 has ESM issues with CRA's Jest — pinned to v6

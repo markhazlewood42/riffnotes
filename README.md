@@ -1,124 +1,124 @@
 # GigNotes
 
-A React-based web app for annotating song lyrics with performance notes for band practice.
+A web app for annotating song lyrics with chords, performance notes, and more — built for musicians preparing for gigs and rehearsals.
 
 **Website:** [gig-notes.com](https://gig-notes.com)
 
-## Current Status: Working Prototype
+## Tech Stack
 
-A functional lyrics editor with multi-layer annotation system. Built with:
-- **React 18** for the framework
-- **TipTap v3.19.0** (ProseMirror-based) for the rich text editor
-- **Two-layer architecture**: TipTap doc for lyrics/structure + separate AnnotationStore for performance notes
-- **Minimal, clean UI** inspired by Google Docs
+- **React 18** + **TipTap v3** (ProseMirror-based rich text editor)
+- **Supabase** for authentication (Google OAuth) and PostgreSQL database
+- **React Router v6** for client-side routing
+- **Vercel** for deployment
+
+## Features
+
+- **Chord annotations** — positioned above lyrics at precise character offsets using DOM Range measurement
+- **Right-side performance notes** — with leader lines anchored to text positions
+- **Multi-song support** — song browser with card grid, create/delete songs
+- **Auto-save** — debounced saves to Supabase on every edit
+- **Google sign-in** — per-user data with row-level security
+- **Print-ready** — clean print layout with `@media print` styles
+- **Google Docs paste handling** — clean import of lyrics from Google Docs
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
 
-### Installation
+- Node.js (v16+)
+- A [Supabase](https://supabase.com) project
 
-1. Navigate to the project directory:
+### Setup
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Copy `.env.example` to `.env` and fill in your Supabase credentials:
+   ```
+   REACT_APP_SUPABASE_URL=https://your-project.supabase.co
+   REACT_APP_SUPABASE_ANON_KEY=your-anon-key
+   ```
+
+3. Run the database migration in your Supabase SQL Editor:
+   ```bash
+   # Paste the contents of supabase/migration.sql
+   ```
+
+4. Enable Google Auth in Supabase Dashboard (Authentication > Providers > Google)
+
+5. Start the dev server:
+   ```bash
+   npm start
+   ```
+
+## Architecture
+
+### Two-layer data model
+
+1. **TipTap document** — manages text structure (lyric lines, song title), persisted as JSON
+2. **AnnotationStore** — a flat `{ [id]: annotation }` map in React Context, persisted alongside the document
+
+Both layers are stored in a single `songs` table in Supabase with row-level security.
+
+### Key components
+
+| Component | Role |
+|-----------|------|
+| `LyricEditor.jsx` | TipTap editor with custom extensions |
+| `AnnotatedLineView.jsx` | React NodeView rendering chords + right-side notes per line |
+| `AnnotationToolbar.jsx` | BubbleMenu for adding annotations on text selection |
+| `LyricSheetContext.js` | Annotation state + auto-save to Supabase |
+| `AuthContext.js` | Google OAuth via Supabase Auth |
+| `SongBrowser.jsx` | Song grid with create/delete |
+| `SongEditor.jsx` | Loads a song and wraps editor in context |
+
+### Project structure
+
+```
+src/
+  supabase.js                    # Supabase client
+  context/
+    AuthContext.js               # Auth provider (Google OAuth)
+    LyricSheetContext.js         # Annotation state + auto-save
+    annotationReducer.js         # Reducer + selectors
+  pages/
+    LoginPage.jsx                # Google sign-in
+    SongBrowser.jsx              # Song card grid
+    SongEditor.jsx               # Song loading + editor wrapper
+  components/
+    GlobalToolbar.jsx            # Sticky header (nav, user, actions)
+    ProtectedRoute.jsx           # Auth guard
+  editor/
+    LyricEditor.jsx              # TipTap editor setup
+    extensions/
+      LyricLine.js               # Custom paragraph with lineId
+      SongTitle.js               # Title node
+      WordHover.js               # Hover extension
+    nodeviews/
+      AnnotatedLineView.jsx      # Chord + note rendering per line
+  toolbar/
+    AnnotationToolbar.jsx        # Bubble menu
+    inputs/
+      ChordInput.jsx             # Chord label input
+  styles/
+    variables.css                # Design tokens
+    annotations.css              # Annotation styles
+```
+
+## Deployment
+
+Deployed to Vercel as a static SPA. The `vercel.json` rewrites all routes to `index.html` for client-side routing.
+
+Environment variables needed in Vercel:
+- `REACT_APP_SUPABASE_URL`
+- `REACT_APP_SUPABASE_ANON_KEY`
+
+## Scripts
+
 ```bash
-cd gignotes
+npm start        # Dev server at http://localhost:3000
+npm run build    # Production build
+npm test         # Run tests (Jest)
 ```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Start the development server:
-```bash
-npm start
-```
-
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
-
-## Current Features
-
-### Editor Basics
-- ✅ Clean, minimal TipTap-based editor
-- ✅ Text formatting (bold, italic)
-- ✅ Bubble menu toolbar on text selection
-- ✅ Placeholder text for empty document
-
-### Annotation System
-- ✅ **Chords** - positioned above lyrics at specific character offsets (click to delete)
-- ✅ **Performance Notes** - right-aligned notes with leader lines anchored to text position
-  - Multiple style variants (default, emphasis, etc.)
-  - Supports character offset anchoring for precise alignment
-- ✅ **Sticking Patterns** - for drum notation (R/L patterns)
-- ✅ **Counting** - rhythmic counting annotations
-- ✅ **Section Markers** - verse, chorus, bridge, etc.
-- ✅ **Section Repeat References** - "repeat chorus", etc.
-
-### Architecture
-- ✅ Custom TipTap extensions (LyricLine, SongTitle, SectionMarker, SectionRepeatRef)
-- ✅ React NodeView for rendering annotated lines
-- ✅ Separate annotation store (React Context + useReducer)
-- ✅ LocalStorage persistence for annotations
-- ✅ Annotations linked to lines via `lineId` attribute
-
-## Next Steps
-
-1. **Staff notation snippets** - Embed musical notation images alongside lyrics
-2. **ProseMirror Decoration-based chords** - More precise chord positioning (currently uses `ch` units)
-3. **Multiple documents** - Save/load multiple song sheets
-4. **PDF export** - Print-ready formatted sheet music
-5. **Improved chord rendering** - Pixel-perfect positioning instead of character-width units
-
-## Project Structure
-
-```
-gignotes/
-├── public/
-│   └── index.html
-├── src/
-│   ├── App.js                              # Main application component
-│   ├── index.js                            # Entry point
-│   ├── context/
-│   │   ├── LyricSheetContext.js           # React Context provider
-│   │   └── annotationReducer.js           # State management for annotations
-│   ├── editor/
-│   │   ├── LyricEditor.jsx                # Main editor component
-│   │   ├── extensions/
-│   │   │   ├── LyricLine.js               # Custom paragraph extension
-│   │   │   ├── SongTitle.js               # Title node extension
-│   │   │   ├── SectionMarker.js           # Section marker extension
-│   │   │   └── SectionRepeatRef.js        # Repeat reference extension
-│   │   └── nodeviews/
-│   │       └── AnnotatedLineView.jsx      # React NodeView for annotated lines
-│   ├── toolbar/
-│   │   ├── AnnotationToolbar.jsx          # Bubble menu toolbar
-│   │   └── inputs/
-│   │       ├── ChordInput.jsx
-│   │       ├── RightNoteInput.jsx
-│   │       ├── SectionTypeSelector.jsx
-│   │       ├── StickingInput.jsx
-│   │       └── CountingInput.jsx
-│   └── styles/
-│       ├── variables.css
-│       └── annotations.css
-└── package.json
-```
-
-## Technical Notes
-
-### TipTap v3 Implementation
-- **BubbleMenu** imported from `@tiptap/react/menus` (v3 change - NOT from extension package)
-- **LyricLine extends Paragraph** to avoid ProseMirror schema conflicts
-- Uses `ReactNodeViewRenderer` for custom line rendering with annotations
-
-### Annotation Architecture
-- **Two-layer data model**: TipTap manages document structure, separate store manages annotations
-- **Annotations linked by lineId**: Each LyricLine node has a unique `lineId` attribute
-- **LocalStorage persistence**: Annotations auto-save to `lyricSheetState` key
-- **Chord positioning**: Uses `ch` units (character width) - approximate but works for serif fonts
-
-### Known Quirks
-- Selection loss on toolbar clicks prevented via `onMouseDown` + `e.preventDefault()`
-- Selection context captured in ref before input components render
-- Right note leader lines use measured pullback for precise alignment

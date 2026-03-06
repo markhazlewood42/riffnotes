@@ -11,8 +11,16 @@ import { useLyricSheet } from '../context/LyricSheetContext';
 import './LyricEditor.css';
 import '../editor/nodeviews/AnnotatedLineView.css';
 
+const DEFAULT_CONTENT = {
+  type: 'doc',
+  content: [
+    { type: 'songTitle' },
+    { type: 'paragraph' },
+  ],
+};
+
 function LyricEditor() {
-  const { setEditor } = useLyricSheet();
+  const { setEditor, initialDocument, requestSave } = useLyricSheet();
 
   const editor = useEditor({
     extensions: [
@@ -32,14 +40,11 @@ function LyricEditor() {
         showOnlyCurrent: false,
       }),
     ],
-    content: {
-      type: 'doc',
-      content: [
-        { type: 'songTitle' },
-        { type: 'paragraph' },
-      ],
-    },
+    content: initialDocument || DEFAULT_CONTENT,
     autofocus: 'start',
+    onUpdate: () => {
+      requestSave();
+    },
     editorProps: {
       transformPastedHTML: (html) => {
         const doc = new DOMParser().parseFromString(html, 'text/html');

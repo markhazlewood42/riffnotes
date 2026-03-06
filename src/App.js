@@ -1,26 +1,22 @@
 import React from 'react';
-import { LyricSheetProvider } from './context/LyricSheetContext';
-import LyricEditor from './editor/LyricEditor';
+import { Routes, Route } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
+import LoginPage from './pages/LoginPage';
+import SongBrowser from './pages/SongBrowser';
+import SongEditor from './pages/SongEditor';
 import './styles/variables.css';
 import './styles/annotations.css';
 import './App.css';
 
 function App() {
   return (
-    <LyricSheetProvider>
-      <div className="app-container">
-        <div className="app-toolbar">
-          <button className="print-btn" onClick={() => window.print()}>
-            Print
-          </button>
-        </div>
-        <div className="document-container">
-          <div className="document-body">
-            <LyricEditor />
-          </div>
-        </div>
-      </div>
-    </LyricSheetProvider>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<SongBrowser />} />
+        <Route path="/songs/:id" element={<SongEditor />} />
+      </Route>
+    </Routes>
   );
 }
 
