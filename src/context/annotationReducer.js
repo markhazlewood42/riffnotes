@@ -9,6 +9,17 @@ const initialState = {
   songId: null,
 };
 
+function removeRightAnnotationsForLine(annotations, lineId) {
+  const cleaned = {};
+  for (const [id, ann] of Object.entries(annotations)) {
+    if (ann.lineId === lineId && (ann.type === 'right-side' || ann.type === 'image')) {
+      continue;
+    }
+    cleaned[id] = ann;
+  }
+  return cleaned;
+}
+
 function annotationReducer(state, action) {
   switch (action.type) {
     case 'ADD_CHORD': {
@@ -23,11 +34,23 @@ function annotationReducer(state, action) {
     }
     case 'ADD_RIGHT_NOTE': {
       const id = generateId();
+      const cleaned = removeRightAnnotationsForLine(state.annotations, action.payload.lineId);
       return {
         ...state,
         annotations: {
-          ...state.annotations,
+          ...cleaned,
           [id]: { id, type: 'right-side', style: 'default', ...action.payload },
+        },
+      };
+    }
+    case 'ADD_IMAGE': {
+      const id = generateId();
+      const cleaned = removeRightAnnotationsForLine(state.annotations, action.payload.lineId);
+      return {
+        ...state,
+        annotations: {
+          ...cleaned,
+          [id]: { id, type: 'image', ...action.payload },
         },
       };
     }
@@ -95,10 +118,17 @@ function getRightNoteForLine(state, lineId) {
   );
 }
 
+function getImageForLine(state, lineId) {
+  return Object.values(state.annotations).find(
+    (a) => a.type === 'image' && a.lineId === lineId
+  );
+}
+
 export {
   annotationReducer,
   initialState,
   getAnnotationsForLine,
   getChordsForLine,
   getRightNoteForLine,
+  getImageForLine,
 };
