@@ -1,17 +1,22 @@
-import { Button } from '@heroui/react';
-import { Printer } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { LyricSheetProvider } from '../context/LyricSheetContext';
-import LyricEditor from '../editor/LyricEditor';
-import GlobalToolbar from '../components/GlobalToolbar';
+import { Button } from "@heroui/react";
+import { Printer } from "lucide-react";
+import { Link } from "react-router-dom";
+import GlobalToolbar from "../components/GlobalToolbar";
+import { LyricSheetProvider } from "../context/LyricSheetContext";
+import LyricEditor from "../editor/LyricEditor";
 
 const TEST_DOCUMENT = {
-  type: 'doc',
+  type: "doc",
   content: [
-    { type: 'songTitle', content: [{ type: 'text', text: 'Test Song Title' }] },
+    { type: "songTitle", content: [{ type: "text", text: "Test Song Title" }] },
     ...Array.from({ length: 60 }, (_, i) => ({
-      type: 'paragraph',
-      content: [{ type: 'text', text: `This is lyric line ${i + 1} — testing page break layout` }],
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: `This is lyric line ${i + 1} — testing page break layout`,
+        },
+      ],
     })),
   ],
 };
@@ -26,7 +31,9 @@ function TestEditor() {
       <GlobalToolbar />
       <div className="app-container">
         <div className="document-actions">
-          <Link to="/" className="document-actions-back">← All songs</Link>
+          <Link to="/" className="link document-actions-back">
+            ← All songs
+          </Link>
           <Button
             size="sm"
             color="accent"

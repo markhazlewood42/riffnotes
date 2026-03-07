@@ -1,5 +1,5 @@
 import { Button, Chip } from "@heroui/react";
-import { Sun, Moon } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import "./GlobalToolbar.css";
@@ -10,7 +10,12 @@ function GlobalToolbar() {
 
   return (
     <header className="global-toolbar">
-      <Chip size="sm" color="danger" className="toolbar-alpha-chip">
+      <Chip
+        size="md"
+        color="danger"
+        variant="primary"
+        className="toolbar-alpha-chip"
+      >
         <Chip.Label className="font-semibold">ALPHA PREVIEW</Chip.Label>
       </Chip>
       <span className="toolbar-app-name">GigNotes</span>
@@ -23,7 +28,7 @@ function GlobalToolbar() {
           onPress={toggleTheme}
           className="theme-toggle"
         >
-          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
         </Button>
         {user && (
           <>
@@ -38,11 +43,7 @@ function GlobalToolbar() {
             <span className="toolbar-user-name">
               {user.user_metadata?.full_name || user.email}
             </span>
-            <Button
-              size="sm"
-              variant="tertiary"
-              onPress={signOut}
-            >
+            <Button size="sm" variant="tertiary" onPress={signOut}>
               Sign out
             </Button>
           </>
