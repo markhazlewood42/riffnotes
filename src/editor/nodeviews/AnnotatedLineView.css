@@ -154,8 +154,10 @@
   display: block;
 }
 
-/* When the line has an image annotation, center leader line on the image */
+/* When the line has an image annotation, center leader line on the image.
+   Use flex-start so `top` is measured from line top (not text baseline). */
 .annotated-line.has-image-annotation .leader-bridge {
+  align-self: flex-start;
   top: 16px;
 }
 
