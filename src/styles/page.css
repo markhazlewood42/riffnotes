@@ -1,0 +1,84 @@
+/* Per-page visual styling.
+   Each "page" is a visual segment of the continuous TipTap editor.
+   Page breaks are injected by the PageBreaks extension as spacer widgets
+   with three child divs: .page-bottom, .page-gap, .page-top. */
+
+/* ── Page shadow token ─────────────────────────────────────────────── */
+:root {
+  --page-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ── First page: top + side shadows ────────────────────────────────── */
+.document-body {
+  /* Shadow covers top edge and sides of first page.
+     Bottom is handled by the first spacer's .page-bottom or by
+     .document-body's own bottom edge if there's only one page. */
+  box-shadow: var(--page-shadow);
+  clip-path: inset(-20px -20px 0 -20px);
+}
+
+/* Single-page document (no spacers): show full shadow */
+.document-body:not(:has(.page-break-spacer)) {
+  clip-path: none;
+}
+
+/* ── Last page: bottom shadow ──────────────────────────────────────── */
+/* Use a pseudo-element at the bottom of document-body for the last page's
+   bottom shadow. We can't use box-shadow on document-body for both top
+   and bottom because clipping hides the bottom. */
+.document-body::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  box-shadow: var(--page-shadow);
+  clip-path: inset(0 -20px -20px -20px);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.document-body:not(:has(.page-break-spacer))::before {
+  display: none;
+}
+
+/* ── Page break spacer (container) ─────────────────────────────────── */
+.page-break-spacer {
+  position: relative;
+  pointer-events: none;
+  user-select: none;
+  /* Pull spacer out to full page width (negate editor padding) */
+  margin-left: calc(-1 * var(--document-padding));
+  margin-right: calc(-1 * var(--document-padding));
+  /* Above the divider pseudo-element so it hides the divider in gaps */
+  z-index: 1;
+}
+
+/* ── Bottom margin of upper page ───────────────────────────────────── */
+.page-bottom {
+  background-color: var(--color-bg-document);
+  box-shadow: var(--page-shadow);
+  clip-path: inset(0 -20px -20px -20px);
+  position: relative;
+}
+
+/* ── Gap between pages ─────────────────────────────────────────────── */
+.page-gap {
+  background-color: var(--color-bg-page);
+  /* Extend beyond document-body edges to cover its side box-shadows.
+     The spacer already fills document-body's width via negative margins;
+     this pushes the gap 20px further on each side. */
+  margin-left: -20px;
+  margin-right: -20px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* ── Top margin of lower page ──────────────────────────────────────── */
+.page-top {
+  background-color: var(--color-bg-document);
+  box-shadow: var(--page-shadow);
+  clip-path: inset(-20px -20px 0 -20px);
+  position: relative;
+}

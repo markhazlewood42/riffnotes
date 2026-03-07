@@ -1,15 +1,12 @@
-import { Extension } from '@tiptap/core';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
-import { Decoration, DecorationSet } from '@tiptap/pm/view';
+import { Extension } from "@tiptap/core";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import { MARGIN, PAGE_GAP, PAGE_HEIGHT } from "../pageLayout";
 
-const PAGE_HEIGHT = 1056; // letter at 96dpi
-const PAGE_GAP = 10;      // visible gap between pages
-const MARGIN = 72;         // 0.75in top/bottom margin per page
-
-export const pageBreakKey = new PluginKey('pageBreaks');
+export const pageBreakKey = new PluginKey("pageBreaks");
 
 const PageBreaks = Extension.create({
-  name: 'pageBreaks',
+  name: "pageBreaks",
 
   addProseMirrorPlugins() {
     // Stored break data: [{ offset, height }]
@@ -24,15 +21,36 @@ const PageBreaks = Extension.create({
           decorations(state) {
             if (breaks.length === 0) return DecorationSet.empty;
 
-            const decorations = breaks.map(({ offset, height, bottomRemainder }) =>
-              Decoration.widget(offset, () => {
-                const spacer = document.createElement('div');
-                spacer.className = 'page-break-spacer';
-                spacer.style.height = `${height}px`;
-                spacer.style.setProperty('--bottom-remainder', `${bottomRemainder}px`);
-                spacer.contentEditable = 'false';
-                return spacer;
-              }, { side: -1, key: `pb-${offset}-${height}` })
+            const decorations = breaks.map(
+              ({ offset, height, bottomRemainder }) =>
+                Decoration.widget(
+                  offset,
+                  () => {
+                    const spacer = document.createElement("div");
+                    spacer.className = "page-break-spacer";
+                    spacer.style.height = `${height}px`;
+                    spacer.contentEditable = "false";
+
+                    const topMarginHeight =
+                      height - bottomRemainder - PAGE_GAP;
+
+                    const bottom = document.createElement("div");
+                    bottom.className = "page-bottom";
+                    bottom.style.height = `${bottomRemainder}px`;
+
+                    const gap = document.createElement("div");
+                    gap.className = "page-gap";
+                    gap.style.height = `${PAGE_GAP}px`;
+
+                    const top = document.createElement("div");
+                    top.className = "page-top";
+                    top.style.height = `${topMarginHeight}px`;
+
+                    spacer.append(bottom, gap, top);
+                    return spacer;
+                  },
+                  { side: -1, key: `pb-${offset}-${height}` },
+                ),
             );
 
             return DecorationSet.create(state.doc, decorations);
@@ -46,7 +64,7 @@ const PageBreaks = Extension.create({
             if (!view.dom || !view.dom.isConnected) return;
 
             const { doc } = view.state;
-            const container = view.dom.closest('.document-container');
+            const container = view.dom.closest(".document-container");
             if (!container) return;
             const zoom = parseFloat(getComputedStyle(container).zoom) || 1;
 
@@ -54,9 +72,10 @@ const PageBreaks = Extension.create({
             const editorTop = editorRect.top / zoom;
 
             // Measure existing spacer heights already in the DOM from previous render
-            const existingSpacers = view.dom.querySelectorAll('.page-break-spacer');
+            const existingSpacers =
+              view.dom.querySelectorAll(".page-break-spacer");
             const existingSpacerHeights = [];
-            existingSpacers.forEach(s => {
+            existingSpacers.forEach((s) => {
               const r = s.getBoundingClientRect();
               existingSpacerHeights.push({
                 top: r.top / zoom - editorTop,
@@ -94,13 +113,18 @@ const PageBreaks = Extension.create({
                 const nextPageContentStart = pageEnd + PAGE_GAP + MARGIN;
                 const spacerHeight = Math.max(
                   PAGE_GAP,
-                  nextPageContentStart - prevNodeBottom
+                  nextPageContentStart - prevNodeBottom,
                 );
 
-                newBreaks.push({ offset, height: Math.round(spacerHeight), bottomRemainder: Math.round(bottomRemainder) });
+                newBreaks.push({
+                  offset,
+                  height: Math.round(spacerHeight),
+                  bottomRemainder: Math.round(bottomRemainder),
+                });
 
                 currentPage++;
-                pageEnd = currentPage * PAGE_HEIGHT + (currentPage - 1) * PAGE_GAP;
+                pageEnd =
+                  currentPage * PAGE_HEIGHT + (currentPage - 1) * PAGE_GAP;
               }
 
               prevNodeBottom = nodeBottom;
@@ -109,7 +133,12 @@ const PageBreaks = Extension.create({
             // Check if breaks changed
             const changed =
               newBreaks.length !== breaks.length ||
-              newBreaks.some((b, i) => b.offset !== breaks[i].offset || b.height !== breaks[i].height || b.bottomRemainder !== breaks[i].bottomRemainder);
+              newBreaks.some(
+                (b, i) =>
+                  b.offset !== breaks[i].offset ||
+                  b.height !== breaks[i].height ||
+                  b.bottomRemainder !== breaks[i].bottomRemainder,
+              );
 
             if (changed) {
               breaks = newBreaks;
@@ -128,7 +157,7 @@ const PageBreaks = Extension.create({
 
           // Also recalculate on window resize (font rendering changes, etc.)
           const onResize = () => scheduleCalculation();
-          window.addEventListener('resize', onResize);
+          window.addEventListener("resize", onResize);
 
           return {
             update(view, prevState) {
@@ -138,7 +167,7 @@ const PageBreaks = Extension.create({
             },
             destroy() {
               scheduled = false;
-              window.removeEventListener('resize', onResize);
+              window.removeEventListener("resize", onResize);
             },
           };
         },
