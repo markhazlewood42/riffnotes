@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import { NodeViewWrapper, NodeViewContent } from '@tiptap/react';
 import { useLyricSheet } from '../../context/LyricSheetContext';
-import { getRightNoteForLine, getChordsForLine } from '../../context/annotationReducer';
+import { getRightNoteForLine, getChordsForLine, getImageForLine } from '../../context/annotationReducer';
 
 function AnnotatedLineView(props) {
   const { node } = props;
@@ -10,6 +10,11 @@ function AnnotatedLineView(props) {
 
   const rightNote = useMemo(
     () => getRightNoteForLine(state, lineId),
+    [state, lineId]
+  );
+
+  const imageAnnotation = useMemo(
+    () => getImageForLine(state, lineId),
     [state, lineId]
   );
 
@@ -31,6 +36,13 @@ function AnnotatedLineView(props) {
     }
   };
 
+  const handleDeleteImage = (e) => {
+    e.stopPropagation();
+    if (imageAnnotation) {
+      dispatch({ type: 'DELETE_ANNOTATION', payload: { id: imageAnnotation.id } });
+    }
+  };
+
   const handleDeleteChord = (chordId, e) => {
     e.stopPropagation();
     dispatch({ type: 'DELETE_ANNOTATION', payload: { id: chordId } });
@@ -41,13 +53,13 @@ function AnnotatedLineView(props) {
     : '';
 
   const isEditingNote = editingNote?.lineId === lineId;
-  const hasAnnotation = !!rightNote;
+  const hasAnnotation = !!rightNote || !!imageAnnotation;
   const showRightColumn = hasAnnotation || isEditingNote;
 
   // charOffset for leader line: use editing position when creating, existing note's position otherwise
   const charOffsetForLeader = isEditingNote
     ? editingNote.charOffset
-    : (rightNote?.charOffset ?? null);
+    : (rightNote?.charOffset ?? imageAnnotation?.charOffset ?? null);
 
   const wrapperRef = useRef(null);
   const noteInputRef = useRef(null);
@@ -167,6 +179,35 @@ function AnnotatedLineView(props) {
     editorRef.current?.commands.focus();
   }, [stopEditingNote, editorRef]);
 
+  const handleNotePaste = useCallback((e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          dispatch({
+            type: 'ADD_IMAGE',
+            payload: {
+              lineId,
+              charOffset: editingNote.charOffset,
+              dataUrl: reader.result,
+            },
+          });
+          stopEditingNote();
+          editorRef.current?.commands.focus();
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+    }
+  }, [dispatch, lineId, editingNote, stopEditingNote, editorRef]);
+
   useEffect(() => {
     measurePullback();
   }, [measurePullback]);
@@ -199,7 +240,7 @@ function AnnotatedLineView(props) {
 
   return (
     <NodeViewWrapper
-      className={`annotated-line ${showRightColumn ? 'has-right-annotation' : ''}`}
+      className={`annotated-line ${showRightColumn ? 'has-right-annotation' : ''} ${imageAnnotation && !isEditingNote ? 'has-image-annotation' : ''}`}
       data-line-id={lineId}
     >
       <div className="lyric-content-wrapper" ref={wrapperRef}>
@@ -221,15 +262,27 @@ function AnnotatedLineView(props) {
               className="note-inline-input"
               type="text"
               placeholder="type note…"
+              onPaste={handleNotePaste}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') { e.preventDefault(); handleNoteSubmit(e.target.value); }
                 else if (e.key === 'Escape') { handleNoteCancel(); }
               }}
               onBlur={(e) => {
-                // Dismiss without saving if focus leaves without Enter
                 handleNoteCancel();
               }}
             />
+          ) : imageAnnotation ? (
+            <div
+              className="right-annotation-image-container"
+              title="Click to delete"
+              onClick={handleDeleteImage}
+            >
+              <img
+                className="right-annotation-image"
+                src={imageAnnotation.dataUrl}
+                alt="Annotation"
+              />
+            </div>
           ) : (
             <span
               className={`right-annotation-text ${styleClass}`}
