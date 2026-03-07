@@ -69,6 +69,11 @@
     min-height: auto !important;
     background: white !important;
     box-shadow: none !important;
+    clip-path: none !important;
+  }
+
+  .document-body::before {
+    display: none !important;
   }
 
   /* KEEP tiptap padding (72px = 0.75in) — it IS the page margin.
@@ -81,9 +86,14 @@
   /* Keep spacers visible — they provide per-page bottom/top margins.
      The browser's page break falls within the spacer, splitting it into
      bottom margin (current page) and top margin (next page).
-     Override the screen gradient to solid white. */
-  .page-break-spacer {
+     Strip shadows and ensure solid white. */
+  .page-break-spacer,
+  .page-bottom,
+  .page-gap,
+  .page-top {
     background: white !important;
+    box-shadow: none !important;
+    clip-path: none !important;
   }
 
   /* Hide all app chrome */

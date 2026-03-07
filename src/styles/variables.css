@@ -42,9 +42,9 @@
   --font-size-sticking: 10px;
   --font-size-counting: 10px;
 
-  /* Page dimensions (letter at 96dpi) */
+  /* Page dimensions (letter at 96dpi) — JS values live in src/editor/pageLayout.js */
   --page-height: 1056px;
-  --page-gap: 10px;
+  --page-gap: 24px;
   --page-break-color: #c0c0c8;
 
   /* Spacing */

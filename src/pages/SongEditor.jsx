@@ -8,10 +8,8 @@ import {
   useLyricSheet,
 } from "../context/LyricSheetContext";
 import LyricEditor from "../editor/LyricEditor";
+import { PAGE_GAP, PAGE_HEIGHT } from "../editor/pageLayout";
 import { supabase } from "../supabase";
-
-const PAGE_HEIGHT = 1056;
-const PAGE_GAP = 10;
 
 function SaveIndicator() {
   const { saveStatus } = useLyricSheet();

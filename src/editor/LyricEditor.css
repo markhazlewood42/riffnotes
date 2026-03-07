@@ -16,15 +16,16 @@
   padding: var(--document-padding);
   min-height: calc(var(--page-height) - var(--document-padding) * 2);
   outline: none;
+  position: relative;
 }
 
 /* Vertical divider between lyrics and annotation area.
    Spacers cover full width with z-index: 1 to hide the divider in page gaps. */
-.document-body::after {
+.lyric-editor .tiptap::after {
   content: "";
   position: absolute;
-  top: calc(var(--document-padding) + 45px);
-  bottom: var(--document-padding);
+  top: 45px;
+  bottom: 0;
   right: 25%;
   width: 1px;
   pointer-events: none;
@@ -90,28 +91,7 @@
   white-space: nowrap;
 }
 
-/* Page break spacer — injected by PageBreaks extension between nodes at page boundaries.
-   Shows: bottom margin (white) → page gap (gray) → top margin (white). */
-.page-break-spacer {
-  position: relative;
-  pointer-events: none;
-  user-select: none;
-  /* Pull spacer out to full page width (negate editor padding) */
-  margin-left: calc(-1 * var(--document-padding));
-  margin-right: calc(-1 * var(--document-padding));
-  /* Above the divider pseudo-element so it hides the divider in gaps */
-  z-index: 1;
-  /* Three-part gradient: white bottom-margin, gray gap, white top-margin */
-  background: linear-gradient(
-    to bottom,
-    var(--color-bg-document) 0,
-    var(--color-bg-document) var(--bottom-remainder),
-    var(--color-bg-page) var(--bottom-remainder),
-    var(--color-bg-page) calc(var(--bottom-remainder) + var(--page-gap)),
-    var(--color-bg-document) calc(var(--bottom-remainder) + var(--page-gap))
-  );
-  /* Subtle shadow lines at page edges within the gap */
-}
+/* Page break spacer styles are in src/styles/page.css */
 
 /* Selection styling */
 .lyric-editor .tiptap ::selection {

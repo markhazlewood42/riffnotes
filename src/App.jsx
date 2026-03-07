@@ -7,6 +7,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import LoginPage from "./pages/LoginPage";
 import SongBrowser from "./pages/SongBrowser";
 import SongEditor from "./pages/SongEditor";
+import "./styles/page.css";
 import "./styles/variables.css";
 
 const AUTH_BYPASS = import.meta.env.VITE_AUTH_BYPASS === 'true';
