@@ -207,40 +207,40 @@ function AnnotatedLineView(props) {
         <NodeViewContent className="lyric-content" />
       </div>
       {showRightColumn && (
-        <>
-          <span
-            className="leader-bridge"
-            contentEditable={false}
-            style={pullbackPx > 0 ? { marginLeft: `-${pullbackPx}px` } : undefined}
-          />
-          <div className="right-annotation-column" contentEditable={false}>
-            {isEditingNote ? (
-              <input
-                ref={noteInputRef}
-                className="note-inline-input"
-                type="text"
-                placeholder="type note…"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') { e.preventDefault(); handleNoteSubmit(e.target.value); }
-                  else if (e.key === 'Escape') { handleNoteCancel(); }
-                }}
-                onBlur={(e) => {
-                  // Dismiss without saving if focus leaves without Enter
-                  handleNoteCancel();
-                }}
-              />
-            ) : (
-              <span
-                className={`right-annotation-text ${styleClass}`}
-                title="Click to delete"
-                onClick={handleDeleteRightNote}
-              >
-                {rightNote.value}
-              </span>
-            )}
-          </div>
-        </>
+        <span
+          className="leader-bridge"
+          contentEditable={false}
+          style={pullbackPx > 0 ? { marginLeft: `-${pullbackPx}px` } : undefined}
+        />
       )}
+      <div className="right-annotation-column" contentEditable={false}>
+        {showRightColumn && (
+          isEditingNote ? (
+            <input
+              ref={noteInputRef}
+              className="note-inline-input"
+              type="text"
+              placeholder="type note…"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') { e.preventDefault(); handleNoteSubmit(e.target.value); }
+                else if (e.key === 'Escape') { handleNoteCancel(); }
+              }}
+              onBlur={(e) => {
+                // Dismiss without saving if focus leaves without Enter
+                handleNoteCancel();
+              }}
+            />
+          ) : (
+            <span
+              className={`right-annotation-text ${styleClass}`}
+              title="Click to delete"
+              onClick={handleDeleteRightNote}
+            >
+              {rightNote.value}
+            </span>
+          )
+        )}
+      </div>
     </NodeViewWrapper>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Spinner } from '@heroui/react';
+import { Trash2 } from 'lucide-react';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import GlobalToolbar from '../components/GlobalToolbar';
@@ -101,7 +102,7 @@ function SongBrowser() {
                     onClick={(e) => deleteSong(e, song.id)}
                     title="Delete song"
                   >
-                    &times;
+                    <Trash2 size={14} />
                   </button>
                 </Card.Content>
               </Card>

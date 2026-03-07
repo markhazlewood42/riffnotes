@@ -72,16 +72,17 @@
   position: absolute;
   top: 8px;
   right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  font-size: 18px;
   color: var(--color-text-secondary);
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.15s, color 0.15s;
-  padding: 2px 6px;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  padding: 4px;
   border-radius: 4px;
-  line-height: 1;
 }
 
 .song-card:hover .song-card-delete {

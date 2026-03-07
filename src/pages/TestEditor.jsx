@@ -1,4 +1,6 @@
 import { Button } from '@heroui/react';
+import { Printer } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { LyricSheetProvider } from '../context/LyricSheetContext';
 import LyricEditor from '../editor/LyricEditor';
 import GlobalToolbar from '../components/GlobalToolbar';
@@ -21,12 +23,19 @@ function TestEditor() {
       initialDocument={TEST_DOCUMENT}
       initialAnnotations={{}}
     >
-      <GlobalToolbar>
-        <Button size="sm" variant="outline" onPress={() => window.print()}>
-          Print
-        </Button>
-      </GlobalToolbar>
+      <GlobalToolbar />
       <div className="app-container">
+        <div className="document-actions">
+          <Link to="/" className="document-actions-back">← All songs</Link>
+          <Button
+            size="sm"
+            color="accent"
+            onPress={() => window.print()}
+            startContent={<Printer size={16} />}
+          >
+            Print
+          </Button>
+        </div>
         <div className="document-container">
           <div className="document-body">
             <LyricEditor />

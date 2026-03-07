@@ -87,7 +87,8 @@
   }
 
   /* Hide all app chrome */
-  .global-toolbar {
+  .global-toolbar,
+  .document-actions {
     display: none !important;
   }
 

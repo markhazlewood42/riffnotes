@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button, Spinner } from '@heroui/react';
+import { Printer } from 'lucide-react';
 import { supabase } from '../supabase';
 import { LyricSheetProvider, useLyricSheet } from '../context/LyricSheetContext';
 import LyricEditor from '../editor/LyricEditor';
@@ -49,13 +50,20 @@ function SongEditorInner() {
 
   return (
     <>
-      <GlobalToolbar>
-        <SaveIndicator />
-        <Button size="sm" variant="outline" onPress={() => window.print()}>
-          Print
-        </Button>
-      </GlobalToolbar>
+      <GlobalToolbar />
       <div className="app-container">
+        <div className="document-actions">
+          <Link to="/" className="document-actions-back">← All songs</Link>
+          <SaveIndicator />
+          <Button
+            size="sm"
+            color="accent"
+            onPress={() => window.print()}
+            startContent={<Printer size={16} />}
+          >
+            Print
+          </Button>
+        </div>
         <div className="document-container">
           <div className="document-body" ref={bodyRef}>
             <LyricEditor />

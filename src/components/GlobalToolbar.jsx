@@ -1,30 +1,19 @@
 import { Button, Chip } from "@heroui/react";
-import { Link, useLocation } from "react-router-dom";
+import { Sun, Moon } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import "./GlobalToolbar.css";
 
-function GlobalToolbar({ children }) {
+function GlobalToolbar() {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const location = useLocation();
-  const isEditing = location.pathname.startsWith("/songs/");
 
   return (
     <header className="global-toolbar">
-      <div className="global-toolbar-left">
-        {isEditing ? (
-          <Link to="/" className="toolbar-back-link">
-            &larr; Songs
-          </Link>
-        ) : (
-          <span className="toolbar-app-name">GigNotes</span>
-        )}
-        <Chip size="sm" color="danger">
-          <Chip.Label className="font-semibold">ALPHA PREVIEW</Chip.Label>
-        </Chip>
-      </div>
-      <div className="global-toolbar-center">{children}</div>
+      <Chip size="sm" color="danger" className="toolbar-alpha-chip">
+        <Chip.Label className="font-semibold">ALPHA PREVIEW</Chip.Label>
+      </Chip>
+      <span className="toolbar-app-name">GigNotes</span>
       <div className="global-toolbar-right">
         <Button
           size="sm"
@@ -34,7 +23,7 @@ function GlobalToolbar({ children }) {
           onPress={toggleTheme}
           className="theme-toggle"
         >
-          {theme === 'dark' ? '☀️' : '🌙'}
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </Button>
         {user && (
           <>
