@@ -132,6 +132,35 @@
   color: color-mix(in srgb, var(--color-right-annotation) 40%, transparent);
 }
 
+/* Image annotation — fixed 32px height, proportional width, clipped at column edge */
+.right-annotation-image-container {
+  position: absolute;
+  top: 0;
+  left: 16px;
+  max-width: calc(100% - 16px);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.right-annotation-image-container:hover {
+  opacity: 0.8;
+}
+
+.right-annotation-image {
+  height: 32px;
+  width: auto;
+  border: 0.5px solid var(--color-right-annotation);
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.25);
+  display: block;
+}
+
+/* When the line has an image annotation, center leader line on the image.
+   Use flex-start so `top` is measured from line top (not text baseline). */
+.annotated-line.has-image-annotation .leader-bridge {
+  align-self: flex-start;
+  top: 16px;
+}
+
 /* Word hover highlight — applied via ProseMirror Decoration */
 .word-hover-highlight {
   background-color: var(--color-word-hover);
