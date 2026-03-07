@@ -1,5 +1,5 @@
 import { Button, Chip } from "@heroui/react";
-import { Moon, Sun } from "lucide-react";
+import { CoffeeIcon, Moon, Sun } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import "./GlobalToolbar.css";
@@ -10,14 +10,21 @@ function GlobalToolbar() {
 
   return (
     <header className="global-toolbar">
-      <Chip
-        size="md"
-        color="danger"
-        variant="primary"
-        className="toolbar-alpha-chip"
-      >
-        <Chip.Label className="font-semibold">ALPHA PREVIEW</Chip.Label>
-      </Chip>
+      <div className="toolbar-alpha-chip">
+        <Chip size="md" color="danger" variant="primary">
+          <Chip.Label className="font-semibold">ALPHA PREVIEW</Chip.Label>
+        </Chip>
+        <a
+          href="https://buymeacoffee.com/markhazlewood"
+          target="_blank"
+          className="ml-4"
+        >
+          <Button size="sm" variant="tertiary">
+            <CoffeeIcon />
+            Buy me a coffee
+          </Button>
+        </a>
+      </div>
       <span className="toolbar-app-name">GigNotes</span>
       <div className="global-toolbar-right">
         <Button

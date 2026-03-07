@@ -9,7 +9,9 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 }
 
 .toolbar-app-name {
@@ -18,6 +20,11 @@
   font-size: 22px;
   color: var(--color-editor-title);
   line-height: 1.2;
+}
+
+.toolbar-left-section {
+  position: absolute;
+  left: 32px;
 }
 
 .toolbar-alpha-chip {
