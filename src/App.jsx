@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Route, Routes } from "react-router-dom";
@@ -7,6 +8,9 @@ import LoginPage from "./pages/LoginPage";
 import SongBrowser from "./pages/SongBrowser";
 import SongEditor from "./pages/SongEditor";
 import "./styles/variables.css";
+
+const AUTH_BYPASS = import.meta.env.VITE_AUTH_BYPASS === 'true';
+const TestEditor = AUTH_BYPASS ? lazy(() => import('./pages/TestEditor')) : null;
 
 function App() {
   return (
@@ -19,6 +23,9 @@ function App() {
           <Route path="/" element={<SongBrowser />} />
           <Route path="/songs/:id" element={<SongEditor />} />
         </Route>
+        {TestEditor && (
+          <Route path="/test" element={<Suspense><TestEditor /></Suspense>} />
+        )}
       </Routes>
     </>
   );

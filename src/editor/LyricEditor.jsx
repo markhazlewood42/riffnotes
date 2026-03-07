@@ -6,6 +6,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import LyricLine from './extensions/LyricLine';
 import SongTitle from './extensions/SongTitle';
 import WordHover from './extensions/WordHover';
+import PageBreaks from './extensions/PageBreaks';
 import AnnotationToolbar from '../toolbar/AnnotationToolbar';
 import { useLyricSheet } from '../context/LyricSheetContext';
 import './LyricEditor.css';
@@ -32,6 +33,7 @@ function LyricEditor() {
       LyricLine,
       SongTitle,
       WordHover,
+      PageBreaks,
       Placeholder.configure({
         placeholder: ({ node }) => {
           if (node.type.name === 'songTitle') return 'Song title...';

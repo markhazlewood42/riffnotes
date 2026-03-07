@@ -42,10 +42,15 @@
   --font-size-sticking: 10px;
   --font-size-counting: 10px;
 
+  /* Page dimensions (letter at 96dpi) */
+  --page-height: 1056px;
+  --page-gap: 10px;
+  --page-break-color: #c0c0c8;
+
   /* Spacing */
   --line-height-lyrics: 200%;
   --document-max-width: 816px;
-  --document-padding: 25px;
+  --document-padding: 72px;
   --annotation-right-min-width: 200px;
 }
 
@@ -68,4 +73,6 @@
   --color-editor-divider: oklch(28% 0.006 286.033);
   --color-editor-selection: rgba(176, 108, 255, 0.25);
   --color-word-hover: rgba(130, 23, 231, 0.2);
+
+  --page-break-color: #555;
 }

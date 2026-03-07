@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Spinner } from '@heroui/react';
 import { supabase } from '../supabase';
 import { LyricSheetProvider, useLyricSheet } from '../context/LyricSheetContext';
 import LyricEditor from '../editor/LyricEditor';
 import GlobalToolbar from '../components/GlobalToolbar';
+
+const PAGE_HEIGHT = 1056;
+const PAGE_GAP = 10;
 
 function SaveIndicator() {
   const { saveStatus } = useLyricSheet();
@@ -16,6 +19,34 @@ function SaveIndicator() {
 }
 
 function SongEditorInner() {
+  const bodyRef = useRef(null);
+
+  useEffect(() => {
+    const body = bodyRef.current;
+    if (!body) return;
+
+    const snapToPages = () => {
+      const tiptap = body.querySelector('.tiptap');
+      if (!tiptap) return;
+      // scrollHeight includes spacer heights. Subtract spacer total to get
+      // pure content height, then calculate pages from that.
+      const spacers = tiptap.querySelectorAll('.page-break-spacer');
+      let spacerTotal = 0;
+      spacers.forEach(s => { spacerTotal += s.offsetHeight; });
+      const contentHeight = tiptap.scrollHeight - spacerTotal;
+      const pages = Math.max(1, Math.ceil(contentHeight / PAGE_HEIGHT));
+      const totalHeight = pages * PAGE_HEIGHT + (pages - 1) * PAGE_GAP;
+      // Add back spacer heights since they're part of the rendered layout
+      body.style.minHeight = `${totalHeight + spacerTotal}px`;
+    };
+
+    const observer = new ResizeObserver(snapToPages);
+    const tiptap = body.querySelector('.tiptap');
+    if (tiptap) observer.observe(tiptap);
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
       <GlobalToolbar>
@@ -26,7 +57,7 @@ function SongEditorInner() {
       </GlobalToolbar>
       <div className="app-container">
         <div className="document-container">
-          <div className="document-body">
+          <div className="document-body" ref={bodyRef}>
             <LyricEditor />
           </div>
         </div>

@@ -3,11 +3,20 @@ import { supabase } from '../supabase';
 
 const AuthContext = createContext(null);
 
+const AUTH_BYPASS = import.meta.env.VITE_AUTH_BYPASS === 'true';
+const FAKE_USER = {
+  id: 'test-user-00000000-0000-0000-0000-000000000000',
+  email: 'test@localhost',
+  user_metadata: { full_name: 'Test User', avatar_url: '' },
+};
+
 function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(AUTH_BYPASS ? FAKE_USER : null);
+  const [loading, setLoading] = useState(!AUTH_BYPASS);
 
   useEffect(() => {
+    if (AUTH_BYPASS) return;
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);

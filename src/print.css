@@ -1,64 +1,117 @@
 @media print {
-  /* Page setup */
+  /* Page = letter paper, no margins — the document's own 72px padding IS the margin.
+     This keeps print geometry identical to the editor (816px wide, 72px padding). */
   @page {
     size: letter portrait;
-    margin: 0.75in;
+    margin: 0;
   }
 
-  /* Preserve annotation colors — without this, browsers strip colored text to black */
+  /* Preserve annotation colors — browsers strip colored text to black without this */
   * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  /* Force light mode and white background for print */
-  :root {
-    color-scheme: light;
+  /* Force light appearance everywhere — override dark mode at every level.
+     HeroUI dark theme sets backgrounds via .dark class with high specificity. */
+  html, html.dark, html.light,
+  html[data-theme="dark"], html[data-theme="light"] {
+    background: white !important;
+    color: #1a1a1a !important;
+    color-scheme: light !important;
   }
 
   body {
-    background: white;
-    color: #1a1a1a;
+    background: white !important;
+    color: #1a1a1a !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  /* Remove screen chrome from app shell */
+  /* Force light-mode annotation and editor colors.
+     Must target .dark and [data-theme] to override dark mode specificity. */
+  :root,
+  .dark,
+  [data-theme="dark"] {
+    --color-editor-text: #000 !important;
+    --color-editor-title: #3f3f46 !important;
+    --color-editor-divider: #d0d0d4 !important;
+    --color-chord: #8217e7 !important;
+    --color-right-annotation: #8217e7 !important;
+    --color-right-annotation-rest: #cc3333 !important;
+    --color-right-annotation-special: #ff4081 !important;
+    --color-leader-dots: #bca8d1 !important;
+    --color-bg-document: white !important;
+    --color-bg-page: white !important;
+    --color-word-hover: #f2e5ff !important;
+  }
+
+  /* Strip app shell — document fills the page directly */
   .app-container {
-    padding: 0;
-    min-height: auto;
-    display: block;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: auto !important;
+    display: block !important;
+    background: transparent !important;
   }
 
-  /* Document fills the print area; remove decorative shadow and screen zoom */
+  /* Document at its native 816px width (= letter width at 96dpi).
+     Zoom reset from 1.5 → 1 but padding and layout stay identical to screen. */
   .document-container {
-    max-width: 100%;
-    width: 100%;
-    box-shadow: none;
-    zoom: 1;
+    width: var(--document-max-width) !important;
+    max-width: none !important;
+    zoom: 1 !important;
+    background: transparent !important;
   }
 
-  /* Hide the print button itself */
-  .print-btn {
-    display: none;
+  /* Remove decorative page styling */
+  .document-body {
+    min-height: auto !important;
+    background: white !important;
+    box-shadow: none !important;
   }
 
-  /* Hide toolbars */
-  .app-toolbar,
+  /* KEEP tiptap padding (72px = 0.75in) — it IS the page margin.
+     Content area width matches the editor exactly. */
+  .lyric-editor .tiptap {
+    min-height: auto !important;
+    color: #000 !important;
+  }
+
+  /* Keep spacers visible — they provide per-page bottom/top margins.
+     The browser's page break falls within the spacer, splitting it into
+     bottom margin (current page) and top margin (next page).
+     Override the screen gradient to solid white. */
+  .page-break-spacer {
+    background: white !important;
+  }
+
+  /* Hide all app chrome */
   .global-toolbar {
-    display: none;
+    display: none !important;
   }
 
-  /* Hide the BubbleMenu toolbar (TipTap renders this via Tippy.js) */
+  /* Hide the BubbleMenu toolbar (TipTap renders via Tippy.js) */
   .tippy-box {
     display: none !important;
   }
 
-  /* Avoid splitting a lyric line with its chord overlay or right annotation across pages */
+  /* Avoid splitting a lyric line + its chord/annotation across pages */
   .annotated-line {
     break-inside: avoid;
   }
 
-  /* Avoid a section marker sitting alone at the bottom of a page */
+  /* Keep section markers with the content below them */
   h2 {
     break-after: avoid;
+  }
+
+  /* Disable interactive hover effects */
+  .right-annotation-text:hover {
+    text-decoration: none;
+  }
+
+  .chord-positioned:hover {
+    opacity: 1;
   }
 }

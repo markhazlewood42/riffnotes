@@ -15,17 +15,19 @@ body {
 .document-container {
   width: var(--document-max-width);
   flex-shrink: 0;
-  background: var(--color-bg-document);
-  box-shadow: var(--surface-shadow);
-  min-height: 1056px;
   display: flex;
   flex-direction: column;
   zoom: 1.5;
-  transition: background 0.2s, box-shadow 0.2s;
+  position: relative;
+  /* No background or shadow here — individual pages are rendered via the gradient */
+  background-color: transparent;
 }
 
-/* Body wraps the editor and carries the annotation divider */
+/* Page visualization: solid white document, spacers handle page breaks */
 .document-body {
   flex: 1;
   position: relative;
+  background-color: var(--color-bg-document);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.2s;
 }
