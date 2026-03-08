@@ -19,7 +19,7 @@ function GlobalToolbar() {
           target="_blank"
           className="ml-4"
         >
-          <Button size="sm" variant="tertiary">
+          <Button size="sm" variant="secondary">
             <CoffeeIcon />
             Buy me a coffee
           </Button>
