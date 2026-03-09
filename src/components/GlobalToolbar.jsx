@@ -1,5 +1,5 @@
 import { Button, Chip } from "@heroui/react";
-import { CoffeeIcon, Moon, Sun } from "lucide-react";
+import { CoffeeIcon, LogOut, Moon, Sun } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import "./GlobalToolbar.css";
@@ -10,23 +10,26 @@ function GlobalToolbar() {
 
   return (
     <header className="global-toolbar">
-      <div className="toolbar-alpha-chip">
+      <div className="toolbar-left">
         <Chip size="md" color="danger" variant="primary">
-          <Chip.Label className="font-semibold">ALPHA PREVIEW</Chip.Label>
+          <Chip.Label className="font-semibold">
+            <span className="toolbar-chip-full">ALPHA PREVIEW</span>
+            <span className="toolbar-chip-short">ALPHA</span>
+          </Chip.Label>
         </Chip>
         <a
           href="https://buymeacoffee.com/markhazlewood"
           target="_blank"
-          className="ml-4"
+          rel="noopener noreferrer"
         >
-          <Button size="sm" variant="secondary">
-            <CoffeeIcon />
-            Buy me a coffee
+          <Button size="sm" variant="secondary" className="toolbar-coffee-btn">
+            <CoffeeIcon size={16} />
+            <span className="toolbar-btn-label toolbar-coffee-label">Buy me a coffee</span>
           </Button>
         </a>
       </div>
       <span className="toolbar-app-name">GigNotes</span>
-      <div className="global-toolbar-right">
+      <div className="toolbar-right">
         <Button
           size="sm"
           variant="ghost"
@@ -50,8 +53,14 @@ function GlobalToolbar() {
             <span className="toolbar-user-name">
               {user.user_metadata?.full_name || user.email}
             </span>
-            <Button size="sm" variant="tertiary" onPress={signOut}>
-              Sign out
+            <Button
+              size="sm"
+              variant="tertiary"
+              onPress={signOut}
+              className="toolbar-signout-btn"
+            >
+              <span className="toolbar-btn-label">Sign out</span>
+              <LogOut size={16} className="toolbar-signout-icon" />
             </Button>
           </>
         )}

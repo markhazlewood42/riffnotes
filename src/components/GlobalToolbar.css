@@ -25,17 +25,22 @@
   line-height: 1.2;
 }
 
-.toolbar-left-section {
+/* ── Left section ─────────────────────────────────────────────────── */
+.toolbar-left {
   position: absolute;
   left: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.toolbar-alpha-chip {
-  position: absolute;
-  left: 32px;
+/* Chip text variants — show full by default, short at sm */
+.toolbar-chip-short {
+  display: none;
 }
 
-.global-toolbar-right {
+/* ── Right section ────────────────────────────────────────────────── */
+.toolbar-right {
   position: absolute;
   right: 10px;
   display: flex;
@@ -57,6 +62,57 @@
 
 .theme-toggle {
   font-size: 16px;
+}
+
+/* Sign out icon — hidden by default, shown at sm */
+.toolbar-signout-icon {
+  display: none;
+}
+
+/* ── Medium breakpoint (≤ 900px): hide username, coffee label ─────── */
+@media (max-width: 900px) {
+  .toolbar-user-name {
+    display: none;
+  }
+
+  .toolbar-coffee-label {
+    display: none;
+  }
+}
+
+/* ── Small breakpoint (≤ 640px): icon-only buttons, short chip ───── */
+@media (max-width: 640px) {
+  .global-toolbar {
+    padding: 12px 16px;
+  }
+
+  .toolbar-left {
+    left: 16px;
+  }
+
+  .toolbar-right {
+    right: 12px;
+    gap: 4px;
+  }
+
+  /* Short chip text */
+  .toolbar-chip-full {
+    display: none;
+  }
+
+  .toolbar-chip-short {
+    display: inline;
+  }
+
+  /* Hide button text labels */
+  .toolbar-btn-label {
+    display: none;
+  }
+
+  /* Show sign out icon */
+  .toolbar-signout-icon {
+    display: block;
+  }
 }
 
 @media print {
