@@ -98,3 +98,16 @@
   color: var(--danger);
   background: oklch(from var(--danger) l c h / 0.1);
 }
+
+.song-card-locked {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  padding: 4px;
+  opacity: 0.5;
+  cursor: default;
+}

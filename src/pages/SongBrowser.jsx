@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Spinner } from '@heroui/react';
-import { Trash2 } from 'lucide-react';
+import { Lock, Trash2 } from 'lucide-react';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import GlobalToolbar from '../components/GlobalToolbar';
@@ -16,7 +16,7 @@ function SongBrowser() {
   useEffect(() => {
     supabase
       .from('songs')
-      .select('id, title, updated_at, created_at')
+      .select('id, title, updated_at, created_at, is_locked')
       .order('updated_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) console.error('Failed to load songs:', error);
@@ -97,13 +97,19 @@ function SongBrowser() {
                   <p className="song-card-date">
                     {formatDate(song.updated_at || song.created_at)}
                   </p>
-                  <button
-                    className="song-card-delete"
-                    onClick={(e) => deleteSong(e, song.id)}
-                    title="Delete song"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  {song.is_locked ? (
+                    <span className="song-card-locked" title="This song is locked">
+                      <Lock size={14} />
+                    </span>
+                  ) : (
+                    <button
+                      className="song-card-delete"
+                      onClick={(e) => deleteSong(e, song.id)}
+                      title="Delete song"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </Card.Content>
               </Card>
             ))}
