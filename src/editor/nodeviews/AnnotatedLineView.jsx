@@ -1,12 +1,16 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import { NodeViewWrapper, NodeViewContent } from '@tiptap/react';
 import { useLyricSheet } from '../../context/LyricSheetContext';
+import { supabase } from '../../supabase';
 import { getRightNoteForLine, getChordsForLine, getImageForLine } from '../../context/annotationReducer';
 
 function AnnotatedLineView(props) {
   const { node } = props;
   const lineId = node.attrs.lineId;
-  const { state, dispatch, editingNote, stopEditingNote, editorRef } = useLyricSheet();
+  const { state, dispatch, editingNote, stopEditingNote, editorRef, isLocked } = useLyricSheet();
+
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   const rightNote = useMemo(
     () => getRightNoteForLine(state, lineId),
@@ -31,6 +35,7 @@ function AnnotatedLineView(props) {
 
   const handleDeleteRightNote = (e) => {
     e.stopPropagation();
+    if (isLocked) return;
     if (rightNote) {
       dispatch({ type: 'DELETE_ANNOTATION', payload: { id: rightNote.id } });
     }
@@ -38,6 +43,7 @@ function AnnotatedLineView(props) {
 
   const handleDeleteImage = (e) => {
     e.stopPropagation();
+    if (isLocked) return;
     if (imageAnnotation) {
       dispatch({ type: 'DELETE_ANNOTATION', payload: { id: imageAnnotation.id } });
     }
@@ -45,6 +51,7 @@ function AnnotatedLineView(props) {
 
   const handleDeleteChord = (chordId, e) => {
     e.stopPropagation();
+    if (isLocked) return;
     dispatch({ type: 'DELETE_ANNOTATION', payload: { id: chordId } });
   };
 
@@ -179,7 +186,7 @@ function AnnotatedLineView(props) {
     editorRef.current?.commands.focus();
   }, [stopEditingNote, editorRef]);
 
-  const handleNotePaste = useCallback((e) => {
+  const handleNotePaste = useCallback(async (e) => {
     const items = e.clipboardData?.items;
     if (!items) return;
 
@@ -189,20 +196,47 @@ function AnnotatedLineView(props) {
         const file = item.getAsFile();
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = () => {
+        // Show image instantly with a local blob URL
+        const blobUrl = URL.createObjectURL(file);
+        dispatch({
+          type: 'ADD_IMAGE',
+          payload: {
+            lineId,
+            charOffset: editingNote.charOffset,
+            url: blobUrl,
+          },
+        });
+        stopEditingNote();
+        editorRef.current?.commands.focus();
+
+        // Upload to Storage in the background, then swap URL
+        const ext = file.type.split('/')[1] || 'png';
+        const fileName = `${crypto.randomUUID()}.${ext}`;
+
+        const { error } = await supabase.storage
+          .from('annotation-images')
+          .upload(fileName, file, { contentType: file.type });
+
+        if (error) {
+          console.error('Image upload failed:', error);
+          return;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from('annotation-images')
+          .getPublicUrl(fileName);
+
+        // Find the annotation we just created and update its URL
+        const ann = Object.values(stateRef.current.annotations).find(
+          (a) => a.type === 'image' && a.url === blobUrl
+        );
+        if (ann) {
           dispatch({
-            type: 'ADD_IMAGE',
-            payload: {
-              lineId,
-              charOffset: editingNote.charOffset,
-              dataUrl: reader.result,
-            },
+            type: 'UPDATE_ANNOTATION',
+            payload: { id: ann.id, changes: { url: urlData.publicUrl } },
           });
-          stopEditingNote();
-          editorRef.current?.commands.focus();
-        };
-        reader.readAsDataURL(file);
+        }
+        URL.revokeObjectURL(blobUrl);
         return;
       }
     }
@@ -279,7 +313,7 @@ function AnnotatedLineView(props) {
             >
               <img
                 className="right-annotation-image"
-                src={imageAnnotation.dataUrl}
+                src={imageAnnotation.url}
                 alt="Annotation"
               />
             </div>

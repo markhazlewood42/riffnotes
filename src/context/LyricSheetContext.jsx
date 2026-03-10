@@ -11,7 +11,7 @@ function extractTitleFromDoc(doc) {
   return titleNode.content.map(n => n.text || '').join('');
 }
 
-function LyricSheetProvider({ songId, initialDocument, initialAnnotations, children }) {
+function LyricSheetProvider({ songId, initialDocument, initialAnnotations, isLocked, children }) {
   const [state, dispatch] = useReducer(annotationReducer, {
     annotations: initialAnnotations || {},
     songId,
@@ -28,6 +28,7 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, child
   songIdRef.current = songId;
 
   const requestSave = useCallback(() => {
+    if (isLocked) return;
     setSaveStatus('unsaved');
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(async () => {
@@ -46,7 +47,7 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, child
         .eq('id', sid);
       setSaveStatus(error ? 'unsaved' : 'saved');
     }, 1000);
-  }, []);
+  }, [isLocked]);
 
   // Auto-save when annotations change (skip initial render)
   const isFirstRender = useRef(true);
@@ -88,6 +89,7 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, child
     requestSave,
     saveStatus,
     initialDocument,
+    isLocked,
   };
 
   return (

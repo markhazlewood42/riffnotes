@@ -17,6 +17,7 @@ function SongBrowser() {
     supabase
       .from('songs')
       .select('id, title, updated_at, created_at, is_locked')
+      .order('is_locked', { ascending: false })
       .order('updated_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) console.error('Failed to load songs:', error);

@@ -34,18 +34,28 @@ Both layers are stored in a single `songs` table in Supabase (PostgreSQL) with r
 
 ### Data persistence
 
-- `LyricSheetProvider` takes `songId`, `initialDocument`, and `initialAnnotations` props from `SongEditor`
+- `LyricSheetProvider` takes `songId`, `initialDocument`, `initialAnnotations`, and `isLocked` props from `SongEditor`
 - Auto-saves to Supabase with 1-second debounce via `requestSave()` — called on annotation changes and editor `onUpdate`
 - `saveStatus` state (`'saved'` | `'saving'` | `'unsaved'`) is exposed in context and shown in the toolbar
 - Song title is extracted from the TipTap document JSON on each save for display in the song browser
 - `SongEditor` uses `key={id}` on the provider to force full remount when switching songs
+- **Image annotations** are stored in Supabase Storage (`annotation-images` bucket, public). Pasted images are uploaded via `supabase.storage.from('annotation-images').upload()` and stored as public URLs in the annotation JSON.
+
+### Locked songs (example song)
+
+- `is_locked` boolean column on `songs` table — locked songs cannot be edited or deleted
+- New users receive a seeded example song via a Postgres trigger (`seed_example_song_trigger`)
+- Existing users can be backfilled via `supabase/backfill.sql`
+- When `isLocked` is true: editor is `editable: false`, BubbleMenu is hidden, annotation delete handlers are no-ops, saves are blocked, and "Example song" replaces the save indicator
+- In SongBrowser: locked songs sort first, show a lock icon instead of delete button
 
 ### Database schema
 
 Single `songs` table with RLS — migration in `supabase/migration.sql`:
-- `id` (uuid), `user_id` (references auth.users), `title`, `document` (jsonb), `annotations` (jsonb), `created_at`, `updated_at`
+- `id` (uuid), `user_id` (references auth.users), `title`, `document` (jsonb), `annotations` (jsonb), `is_locked` (boolean), `created_at`, `updated_at`
 - Row-level security: users can only CRUD their own songs
 - `updated_at` auto-updates via trigger
+- Supabase Storage: `annotation-images` bucket (public) with INSERT/DELETE policies for authenticated users
 
 ### TipTap v3 import paths
 
@@ -62,7 +72,7 @@ StarterKit is configured with `paragraph: false` and `heading: false` to avoid c
 
 ### Annotation types
 
-All annotations live in `state.annotations` (flat map). Selectors in `annotationReducer.js` (`getChordsForLine`, `getRightNoteForLine`) filter by `lineId` and `type`. Active types: `chord`, `right-side`.
+All annotations live in `state.annotations` (flat map). Selectors in `annotationReducer.js` (`getChordsForLine`, `getRightNoteForLine`, `getImageForLine`) filter by `lineId` and `type`. Active types: `chord`, `right-side`, `image`.
 
 ### Key gotcha: LyricLine must extend Paragraph
 

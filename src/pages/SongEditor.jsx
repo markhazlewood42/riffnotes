@@ -12,7 +12,8 @@ import { PAGE_GAP, PAGE_HEIGHT } from "../editor/pageLayout";
 import { supabase } from "../supabase";
 
 function SaveIndicator() {
-  const { saveStatus } = useLyricSheet();
+  const { saveStatus, isLocked } = useLyricSheet();
+  if (isLocked) return <span className="save-indicator">Example song</span>;
   if (saveStatus === "saving" || saveStatus === "unsaved") {
     return <Spinner size="sm" color="current" className="save-indicator" />;
   }
@@ -128,6 +129,7 @@ function SongEditor() {
       songId={id}
       initialDocument={songData.document}
       initialAnnotations={songData.annotations}
+      isLocked={songData.is_locked}
     >
       <SongEditorInner />
     </LyricSheetProvider>

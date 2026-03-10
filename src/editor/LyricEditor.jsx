@@ -21,7 +21,7 @@ const DEFAULT_CONTENT = {
 };
 
 function LyricEditor() {
-  const { setEditor, initialDocument, requestSave } = useLyricSheet();
+  const { setEditor, initialDocument, requestSave, isLocked } = useLyricSheet();
 
   const editor = useEditor({
     extensions: [
@@ -43,7 +43,8 @@ function LyricEditor() {
       }),
     ],
     content: initialDocument || DEFAULT_CONTENT,
-    autofocus: 'start',
+    editable: !isLocked,
+    autofocus: isLocked ? false : 'start',
     onUpdate: () => {
       requestSave();
     },
@@ -102,7 +103,7 @@ function LyricEditor() {
 
   return (
     <div className="lyric-editor">
-      <BubbleMenu
+      {!isLocked && <BubbleMenu
         editor={editor}
         shouldShow={({ editor, state, from, to }) => {
           // Show when there's a text selection (not just a cursor)
@@ -122,7 +123,7 @@ function LyricEditor() {
         }}
       >
         <AnnotationToolbar editor={editor} />
-      </BubbleMenu>
+      </BubbleMenu>}
       <EditorContent editor={editor} />
     </div>
   );
