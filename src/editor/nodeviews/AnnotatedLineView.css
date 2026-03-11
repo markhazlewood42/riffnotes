@@ -93,12 +93,19 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
+  cursor: pointer;
 }
 
 .right-annotation-actions-wrapper--image {
   top: 0;
   width: auto;
   align-items: center;
+  gap: 0; /* gap is excluded from shrink-to-fit width, creating a cursor dead zone;
+             use padding-left on .annotation-actions instead */
+}
+
+.right-annotation-actions-wrapper--image .annotation-actions {
+  padding-left: 8px; /* covers the gap — padding IS part of the element's hit area */
 }
 
 .right-annotation-text {
@@ -109,7 +116,6 @@
   font-family: var(--font-ui);
   font-size: var(--font-size-right-note);
   color: var(--color-right-annotation);
-  cursor: default;
   font-weight: 400;
   line-height: 180%;
 }
@@ -145,7 +151,6 @@
 
 .annotation-action-btn--disabled {
   opacity: 0.2;
-  cursor: default;
   pointer-events: none;
 }
 
@@ -159,7 +164,9 @@
 .annotation-action-btn--confirm {
   color: #1fa855;
   opacity: 0.75;
-  transition: opacity 0.12s ease, transform 0.12s ease;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
   transform: translateX(0);
 }
 
