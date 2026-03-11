@@ -149,9 +149,23 @@
   pointer-events: none;
 }
 
+/* Hidden buttons take up layout space but are invisible and non-interactive.
+   Higher specificity than :hover so the hidden state always wins. */
+.annotation-action-btn.annotation-action-btn--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .annotation-action-btn--confirm {
   color: #1fa855;
   opacity: 0.75;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  transform: translateX(0);
+}
+
+/* Confirm button slides in subtly from the left when it appears */
+.annotation-action-btn--confirm.annotation-action-btn--hidden {
+  transform: translateX(-3px);
 }
 
 .annotation-action-btn--confirm:hover {

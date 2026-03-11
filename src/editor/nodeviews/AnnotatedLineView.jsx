@@ -299,14 +299,12 @@ function AnnotatedLineView(props) {
     if (rightAnnotationState === 'hover') setRightAnnotationState('idle');
   };
 
-  // Show delete UI when hovering or confirming (but not when locked)
-  const showDeleteUI = !isLocked && (rightAnnotationState === 'hover' || rightAnnotationState === 'confirm');
-
-  // Shared action buttons rendered next to the annotation
-  const annotationActions = showDeleteUI && (
+  // Action buttons — always rendered (when not locked) so the hover area and layout
+  // stay constant regardless of state. Visibility is toggled via CSS classes only.
+  const annotationActions = !isLocked && (
     <div className="annotation-actions">
       <button
-        className={`annotation-action-btn${rightAnnotationState === 'confirm' ? ' annotation-action-btn--disabled' : ''}`}
+        className={`annotation-action-btn${rightAnnotationState === 'idle' ? ' annotation-action-btn--hidden' : ''}${rightAnnotationState === 'confirm' ? ' annotation-action-btn--disabled' : ''}`}
         disabled={rightAnnotationState === 'confirm'}
         onMouseDown={rightAnnotationState === 'hover' ? (e) => {
           e.preventDefault();
@@ -316,18 +314,16 @@ function AnnotatedLineView(props) {
       >
         <Trash2 size={12} />
       </button>
-      {rightAnnotationState === 'confirm' && (
-        <button
-          className="annotation-action-btn annotation-action-btn--confirm"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            imageAnnotation ? handleDeleteImage(e) : handleDeleteRightNote(e);
-          }}
-        >
-          <Check size={12} />
-        </button>
-      )}
+      <button
+        className={`annotation-action-btn annotation-action-btn--confirm${rightAnnotationState !== 'confirm' ? ' annotation-action-btn--hidden' : ''}`}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          imageAnnotation ? handleDeleteImage(e) : handleDeleteRightNote(e);
+        }}
+      >
+        <Check size={12} />
+      </button>
     </div>
   );
 
