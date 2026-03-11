@@ -1,8 +1,8 @@
-# GigNotes
+# RiffNotes
 
 A web app for annotating song lyrics with chords, performance notes, and more — built for musicians preparing for gigs and rehearsals.
 
-**Website:** [gig-notes.com](https://gig-notes.com)
+**Website:** [riffnotes.app](https://riffnotes.app)
 
 ## Tech Stack
 

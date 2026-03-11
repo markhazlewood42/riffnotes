@@ -22,7 +22,7 @@ function LoginPage() {
     <div className="login-page">
       <Card className="login-card">
         <Card.Content className="login-card-body">
-          <h1 className="login-title">GigNotes</h1>
+          <h1 className="login-title">RiffNotes</h1>
           <p className="login-tagline">Annotate your lyrics with chords, notes, and more.</p>
           <Button
             variant="outline"

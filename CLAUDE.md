@@ -12,7 +12,7 @@ npm run preview  # Preview production build locally
 
 ## Architecture
 
-GigNotes is a lyrics annotation app with a **two-layer data model**:
+RiffNotes is a lyrics annotation app with a **two-layer data model**:
 
 1. **TipTap document** (via `useEditor`) — manages the text structure: lyric lines and song title.
 2. **AnnotationStore** (`LyricSheetContext` + `annotationReducer`) — a flat `{ [id]: annotation }` map stored in React Context and persisted to Supabase. Annotations are linked to lines by `lineId`.

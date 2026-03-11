@@ -28,7 +28,7 @@ function GlobalToolbar() {
           </Button>
         </a>
       </div>
-      <span className="toolbar-app-name">GigNotes</span>
+      <span className="toolbar-app-name">RiffNotes</span>
       <div className="toolbar-right">
         <Button
           size="sm"
