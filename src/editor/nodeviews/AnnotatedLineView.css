@@ -86,7 +86,7 @@
 
 .right-annotation-text {
   position: absolute;
-  top: 4px;
+  top: 8px;
   left: 16px;
   width: calc(100% - 16px);
   white-space: normal;
@@ -96,6 +96,7 @@
   color: var(--color-right-annotation);
   cursor: pointer;
   font-weight: 400;
+  line-height: 180%;
 }
 
 .right-annotation-text:hover {

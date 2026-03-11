@@ -43,11 +43,19 @@ const SongTitle = Node.create({
 
   addKeyboardShortcuts() {
     return {
-      'Mod-Shift-t': () => this.editor.commands.toggleSongTitle(),
-      Enter: () => this.editor.chain()
-        .splitBlock()
-        .setNode('paragraph', { lineId: generateLineId() })
-        .run(),
+      'Alt-Shift-t': () => this.editor.commands.toggleSongTitle(),
+      Enter: () => {
+        // Always split AFTER the full title text, never at cursor position.
+        // Splitting at position 0 or mid-title would move the title text into
+        // a lyric paragraph (setNode converts the post-split block).
+        const { $from } = this.editor.state.selection;
+        const titleEnd = $from.end();
+        return this.editor.chain()
+          .setTextSelection(titleEnd)
+          .splitBlock()
+          .setNode('paragraph', { lineId: generateLineId() })
+          .run();
+      },
       Tab: () => {
         const doc = this.editor.state.doc;
         let firstParaPos = null;

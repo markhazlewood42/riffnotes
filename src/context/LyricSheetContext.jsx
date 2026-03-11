@@ -4,7 +4,7 @@ import { annotationReducer } from './annotationReducer';
 
 const LyricSheetContext = createContext(null);
 
-function extractTitleFromDoc(doc) {
+export function extractTitleFromDoc(doc) {
   if (!doc?.content) return '';
   const titleNode = doc.content.find(n => n.type === 'songTitle');
   if (!titleNode?.content) return '';

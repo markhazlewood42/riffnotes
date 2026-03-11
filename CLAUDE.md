@@ -85,7 +85,7 @@ Creating a new TipTap node named `paragraph` causes infinite recursion in ProseM
 | `Tab` | Song title | Jump to first lyric paragraph |
 | `Shift-Tab` | Any lyric line | Jump back to end of song title |
 | `Enter` | Song title | Split and convert to lyric paragraph |
-| `Mod-Shift-t` | Anywhere | Toggle song title node |
+| `Alt-Shift-t` | Anywhere | Toggle song title node (Mod-Shift-t conflicts with Chrome on Windows) |
 
 ### Design system
 

@@ -1,24 +1,12 @@
 import { Button, Spinner } from "@heroui/react";
-import { Printer } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import DocumentActions from "../components/DocumentActions";
 import GlobalToolbar from "../components/GlobalToolbar";
-import {
-  LyricSheetProvider,
-  useLyricSheet,
-} from "../context/LyricSheetContext";
+import { LyricSheetProvider } from "../context/LyricSheetContext";
 import LyricEditor from "../editor/LyricEditor";
 import { PAGE_GAP, PAGE_HEIGHT } from "../editor/pageLayout";
 import { supabase } from "../supabase";
-
-function SaveIndicator() {
-  const { saveStatus, isLocked } = useLyricSheet();
-  if (isLocked) return <span className="save-indicator">Example song</span>;
-  if (saveStatus === "saving" || saveStatus === "unsaved") {
-    return <Spinner size="sm" color="current" className="save-indicator" />;
-  }
-  return <span className="save-indicator">Saved</span>;
-}
 
 function SongEditorInner() {
   const bodyRef = useRef(null);
@@ -55,20 +43,7 @@ function SongEditorInner() {
     <>
       <GlobalToolbar />
       <div className="app-container">
-        <div className="document-actions">
-          <Link to="/" className="link document-actions-back">
-            ← All songs
-          </Link>
-          <SaveIndicator />
-          <Button
-            size="sm"
-            color="accent"
-            onPress={() => window.print()}
-            startContent={<Printer size={16} />}
-          >
-            Print
-          </Button>
-        </div>
+        <DocumentActions />
         <div className="document-container">
           <div className="document-body" ref={bodyRef}>
             <LyricEditor />
@@ -87,6 +62,8 @@ function SongEditor() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    setLoading(true);
+    setSongData(null);
     supabase
       .from("songs")
       .select("*")

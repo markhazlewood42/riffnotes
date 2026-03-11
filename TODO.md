@@ -1,9 +1,5 @@
 ### Before alpha
 
-- Finish implementing the example song for all users.
-- Add a "duplicate" action to document toolbar. Allow example song to be duplicated.
-- Look into database architecture - songs should not be shared across users!
-- Reduce line height of right text annotations to avoid crowding
 - Right annotation deletion via button, not clicking on the item.
 - Make it harder to accidentally delete things. Require two steps.
 - UNDO!!!!!!
