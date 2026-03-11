@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import { NodeViewWrapper, NodeViewContent } from '@tiptap/react';
+import { Trash2, Check } from 'lucide-react';
 import { useLyricSheet } from '../../context/LyricSheetContext';
 import { supabase } from '../../supabase';
 import { getRightNoteForLine, getChordsForLine, getImageForLine } from '../../context/annotationReducer';
@@ -33,19 +34,37 @@ function AnnotatedLineView(props) {
     [chords]
   );
 
+  // Two-step delete: 'idle' | 'hover' | 'confirm'
+  const [rightAnnotationState, setRightAnnotationState] = useState('idle');
+  const rightAnnotationRef = useRef(null);
+
+  // Dismiss confirm state on outside click
+  useEffect(() => {
+    if (rightAnnotationState !== 'confirm') return;
+    const handler = (e) => {
+      if (rightAnnotationRef.current && !rightAnnotationRef.current.contains(e.target)) {
+        setRightAnnotationState('idle');
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [rightAnnotationState]);
+
   const handleDeleteRightNote = (e) => {
-    e.stopPropagation();
+    e?.stopPropagation();
     if (isLocked) return;
     if (rightNote) {
       dispatch({ type: 'DELETE_ANNOTATION', payload: { id: rightNote.id } });
+      setRightAnnotationState('idle');
     }
   };
 
   const handleDeleteImage = (e) => {
-    e.stopPropagation();
+    e?.stopPropagation();
     if (isLocked) return;
     if (imageAnnotation) {
       dispatch({ type: 'DELETE_ANNOTATION', payload: { id: imageAnnotation.id } });
+      setRightAnnotationState('idle');
     }
   };
 
@@ -272,6 +291,46 @@ function AnnotatedLineView(props) {
     </div>
   ) : null;
 
+  // Shared mouse handlers for right annotation hover/confirm states
+  const rightAnnotationMouseEnter = () => {
+    if (!isLocked && rightAnnotationState === 'idle') setRightAnnotationState('hover');
+  };
+  const rightAnnotationMouseLeave = () => {
+    if (rightAnnotationState === 'hover') setRightAnnotationState('idle');
+  };
+
+  // Show delete UI when hovering or confirming (but not when locked)
+  const showDeleteUI = !isLocked && (rightAnnotationState === 'hover' || rightAnnotationState === 'confirm');
+
+  // Shared action buttons rendered next to the annotation
+  const annotationActions = showDeleteUI && (
+    <div className="annotation-actions">
+      <button
+        className={`annotation-action-btn${rightAnnotationState === 'confirm' ? ' annotation-action-btn--disabled' : ''}`}
+        disabled={rightAnnotationState === 'confirm'}
+        onMouseDown={rightAnnotationState === 'hover' ? (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setRightAnnotationState('confirm');
+        } : undefined}
+      >
+        <Trash2 size={12} />
+      </button>
+      {rightAnnotationState === 'confirm' && (
+        <button
+          className="annotation-action-btn annotation-action-btn--confirm"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            imageAnnotation ? handleDeleteImage(e) : handleDeleteRightNote(e);
+          }}
+        >
+          <Check size={12} />
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <NodeViewWrapper
       className={`annotated-line ${showRightColumn ? 'has-right-annotation' : ''} ${imageAnnotation && !isEditingNote ? 'has-image-annotation' : ''}`}
@@ -307,24 +366,32 @@ function AnnotatedLineView(props) {
             />
           ) : imageAnnotation ? (
             <div
-              className="right-annotation-image-container"
-              title="Click to delete"
-              onClick={handleDeleteImage}
+              ref={rightAnnotationRef}
+              className="right-annotation-actions-wrapper right-annotation-actions-wrapper--image"
+              onMouseEnter={rightAnnotationMouseEnter}
+              onMouseLeave={rightAnnotationMouseLeave}
             >
-              <img
-                className="right-annotation-image"
-                src={imageAnnotation.url}
-                alt="Annotation"
-              />
+              <div className="right-annotation-image-container">
+                <img
+                  className="right-annotation-image"
+                  src={imageAnnotation.url}
+                  alt="Annotation"
+                />
+              </div>
+              {annotationActions}
             </div>
           ) : (
-            <span
-              className={`right-annotation-text ${styleClass}`}
-              title="Click to delete"
-              onClick={handleDeleteRightNote}
+            <div
+              ref={rightAnnotationRef}
+              className="right-annotation-actions-wrapper"
+              onMouseEnter={rightAnnotationMouseEnter}
+              onMouseLeave={rightAnnotationMouseLeave}
             >
-              {rightNote.value}
-            </span>
+              <span className={`right-annotation-text ${styleClass}${rightAnnotationState !== 'idle' ? ' is-active' : ''}`}>
+                {rightNote.value}
+              </span>
+              {annotationActions}
+            </div>
           )
         )}
       </div>

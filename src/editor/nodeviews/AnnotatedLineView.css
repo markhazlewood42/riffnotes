@@ -84,23 +84,78 @@
   overflow: visible;
 }
 
-.right-annotation-text {
+/* Wrapper for right annotation content + action buttons */
+.right-annotation-actions-wrapper {
   position: absolute;
   top: 8px;
   left: 16px;
   width: calc(100% - 16px);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.right-annotation-actions-wrapper--image {
+  top: 0;
+  width: auto;
+  align-items: center;
+}
+
+.right-annotation-text {
+  flex: 1 1 auto;
+  min-width: 0;
   white-space: normal;
   overflow-wrap: break-word;
   font-family: var(--font-ui);
   font-size: var(--font-size-right-note);
   color: var(--color-right-annotation);
-  cursor: pointer;
+  cursor: default;
   font-weight: 400;
   line-height: 180%;
 }
 
-.right-annotation-text:hover {
+.right-annotation-text.is-active {
   text-decoration: underline;
+}
+
+/* Delete / confirm action buttons */
+.annotation-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.annotation-action-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-right-annotation);
+  opacity: 0.4;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  user-select: none;
+}
+
+.annotation-action-btn:hover {
+  opacity: 0.85;
+}
+
+.annotation-action-btn--disabled {
+  opacity: 0.2;
+  cursor: default;
+  pointer-events: none;
+}
+
+.annotation-action-btn--confirm {
+  color: #1fa855;
+  opacity: 0.75;
+}
+
+.annotation-action-btn--confirm:hover {
+  opacity: 1;
 }
 
 .right-annotation-text.style-rest {
@@ -135,19 +190,11 @@
 
 /* Image annotation — fixed 32px height, proportional width, clipped at column edge */
 .right-annotation-image-container {
-  position: absolute;
-  top: 0;
-  left: 16px;
-  max-width: 100%;
   overflow: hidden;
-  cursor: pointer;
+  flex-shrink: 0;
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.25);
   border: 1px solid var(--color-right-annotation);
   border-radius: var(--radius-xs);
-}
-
-.right-annotation-image-container:hover {
-  opacity: 0.8;
 }
 
 .right-annotation-image {
