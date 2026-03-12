@@ -350,7 +350,7 @@ function AnnotatedLineView(props) {
               ref={noteInputRef}
               className="note-inline-input"
               type="text"
-              placeholder="type note…"
+              placeholder="type note or paste image"
               onPaste={handleNotePaste}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') { e.preventDefault(); handleNoteSubmit(e.target.value); }

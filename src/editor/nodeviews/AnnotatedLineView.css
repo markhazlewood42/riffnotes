@@ -77,6 +77,7 @@
 .right-annotation-column {
   /* Matches the right 25% column: 25% of annotated-line width minus half the
      document padding to account for the asymmetry between body 25% and editor interior. */
+
   flex: 0 0 calc(25% - calc(var(--document-padding) / 2));
   align-self: flex-start;
   position: relative;
@@ -89,11 +90,14 @@
   position: absolute;
   top: 8px;
   left: 16px;
-  width: calc(100% - 16px);
+  width: calc(100%);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   cursor: pointer;
+  /* Annotation overflows below height:0 column into subsequent lyric rows.
+     z-index ensures hover/click events are captured over those rows. */
+  z-index: 1;
 }
 
 .right-annotation-actions-wrapper--image {
@@ -201,6 +205,7 @@
   font-size: var(--font-size-right-note);
   font-weight: 500;
   padding: 0;
+  margin-left: 8px;
   outline: none;
   width: 100%;
 }
