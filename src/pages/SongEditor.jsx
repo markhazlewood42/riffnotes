@@ -62,6 +62,11 @@ function SongEditor() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (id === "new") {
+      setSongData({ document: null, annotations: {}, is_locked: false });
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setSongData(null);
     supabase
@@ -103,7 +108,7 @@ function SongEditor() {
   return (
     <LyricSheetProvider
       key={id}
-      songId={id}
+      songId={id === "new" ? null : id}
       initialDocument={songData.document}
       initialAnnotations={songData.annotations}
       isLocked={songData.is_locked}

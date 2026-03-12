@@ -29,21 +29,44 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, isLoc
 
   const requestSave = useCallback(() => {
     if (isLocked) return;
+    // For new (unsaved) songs, skip the save cycle entirely until there's content.
+    if (!songIdRef.current) {
+      const hasContent = (editorRef.current?.getText().trim().length ?? 0) > 0;
+      if (!hasContent) return;
+    }
     setSaveStatus('unsaved');
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(async () => {
       const sid = songIdRef.current;
-      if (!sid) return;
       const doc = editorRef.current?.getJSON() || null;
       const title = extractTitleFromDoc(doc);
+      if (!sid) {
+        // First save for a new song — INSERT
+        const hasContent = (editorRef.current?.getText().trim().length ?? 0) > 0;
+        if (!hasContent) { setSaveStatus('saved'); return; }
+        setSaveStatus('saving');
+        const { data: { user } } = await supabase.auth.getUser();
+        const { data, error } = await supabase
+          .from('songs')
+          .insert({ user_id: user.id, title, document: doc, annotations: stateRef.current.annotations })
+          .select('id')
+          .single();
+        if (!error) {
+          songIdRef.current = data.id;
+          setSaveStatus('saved');
+          // Update URL to the real song ID without triggering a React Router
+          // navigation (which would remount the editor and lose state).
+          window.history.replaceState(null, '', `/songs/${data.id}`);
+        } else {
+          setSaveStatus('unsaved');
+        }
+        return;
+      }
+      // Existing song — UPDATE
       setSaveStatus('saving');
       const { error } = await supabase
         .from('songs')
-        .update({
-          title,
-          document: doc,
-          annotations: stateRef.current.annotations,
-        })
+        .update({ title, document: doc, annotations: stateRef.current.annotations })
         .eq('id', sid);
       setSaveStatus(error ? 'unsaved' : 'saved');
     }, 1000);

@@ -1,14 +1,22 @@
 import { Button, Spinner } from "@heroui/react";
-import { Copy, Printer } from "lucide-react";
+import { Copy, LockIcon, Printer } from "lucide-react";
 import { useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { extractTitleFromDoc, useLyricSheet } from "../context/LyricSheetContext";
+import {
+  extractTitleFromDoc,
+  useLyricSheet,
+} from "../context/LyricSheetContext";
 import { supabase } from "../supabase";
 
 function SaveIndicator() {
   const { saveStatus, isLocked } = useLyricSheet();
-  if (isLocked) return <span className="save-indicator">Example song</span>;
+  if (isLocked)
+    return (
+      <span className="save-indicator">
+        <LockIcon size={18} />
+      </span>
+    );
   if (saveStatus === "saving" || saveStatus === "unsaved") {
     return <Spinner size="sm" color="current" className="save-indicator" />;
   }
@@ -89,16 +97,16 @@ function DocumentActions() {
       >
         {({ isPending }) => (
           <>
-            {isPending ? <Spinner size="sm" color="current" /> : <Copy size={16} />}
+            {isPending ? (
+              <Spinner size="sm" color="current" />
+            ) : (
+              <Copy size={16} />
+            )}
             Make a copy
           </>
         )}
       </Button>
-      <Button
-        size="sm"
-        variant="primary"
-        onPress={() => window.print()}
-      >
+      <Button size="sm" variant="primary" onPress={() => window.print()}>
         <Printer size={16} />
         Print
       </Button>
