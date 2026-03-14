@@ -9,12 +9,19 @@ function AdminPage() {
   const [profiles, setProfiles] = useState([]);
   const [songStats, setSongStats] = useState({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     Promise.all([
       supabase.from('profiles').select('*').order('full_name', { ascending: true }),
       supabase.from('songs').select('user_id, updated_at'),
     ]).then(([profilesRes, songsRes]) => {
+      if (profilesRes.error || songsRes.error) {
+        console.error('Admin data fetch failed:', profilesRes.error, songsRes.error);
+        setError('Failed to load admin data.');
+        return;
+      }
+
       setProfiles(profilesRes.data || []);
 
       // Aggregate song stats per user
@@ -30,6 +37,10 @@ function AdminPage() {
         }
       }
       setSongStats(stats);
+    }).catch((err) => {
+      console.error('Admin data fetch failed:', err);
+      setError('Failed to load admin data.');
+    }).finally(() => {
       setLoading(false);
     });
   }, []);
@@ -59,6 +70,8 @@ function AdminPage() {
           <div className="admin-loading">
             <Spinner size="lg" color="accent" />
           </div>
+        ) : error ? (
+          <div className="admin-error">{error}</div>
         ) : (
           <>
             <div className="admin-stats">

@@ -66,6 +66,14 @@
   padding: 40px;
 }
 
+.admin-error {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--danger);
+  text-align: center;
+  padding: 40px;
+}
+
 .admin-table {
   width: 100%;
   border-collapse: collapse;
