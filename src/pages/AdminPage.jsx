@@ -12,7 +12,7 @@ function AdminPage() {
 
   useEffect(() => {
     Promise.all([
-      supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+      supabase.from('profiles').select('*').order('full_name', { ascending: true }),
       supabase.from('songs').select('user_id, updated_at'),
     ]).then(([profilesRes, songsRes]) => {
       setProfiles(profilesRes.data || []);
