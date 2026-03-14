@@ -86,39 +86,50 @@ function AdminPage() {
             </div>
 
             <Table aria-label="Users">
-              <TableHeader>
-                <TableColumn>Name</TableColumn>
-                <TableColumn>Email</TableColumn>
-                <TableColumn>Signed Up</TableColumn>
-                <TableColumn>Last Active</TableColumn>
-                <TableColumn>Songs</TableColumn>
+              <TableHeader
+                columns={[
+                  { key: 'name', label: 'Name' },
+                  { key: 'email', label: 'Email' },
+                  { key: 'signedUp', label: 'Signed Up' },
+                  { key: 'lastActive', label: 'Last Active' },
+                  { key: 'songs', label: 'Songs' },
+                ]}
+              >
+                {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
               </TableHeader>
-              <TableBody>
-                {profiles.map((profile) => {
-                  const stats = songStats[profile.id];
-                  const lastActive = stats?.lastActive
+              <TableBody items={profiles.map((profile) => {
+                const stats = songStats[profile.id];
+                return {
+                  key: profile.id,
+                  name: profile.full_name || '—',
+                  avatarUrl: profile.avatar_url,
+                  email: profile.email || '—',
+                  signedUp: formatDate(profile.created_at),
+                  lastActive: stats?.lastActive
                     ? formatDate(stats.lastActive)
-                    : formatDate(profile.created_at);
-                  return (
-                    <TableRow key={profile.id}>
-                      <TableCell>
-                        {profile.avatar_url && (
-                          <img
-                            src={profile.avatar_url}
-                            alt=""
-                            className="admin-user-avatar"
-                            referrerPolicy="no-referrer"
-                          />
-                        )}
-                        {profile.full_name || '—'}
-                      </TableCell>
-                      <TableCell>{profile.email || '—'}</TableCell>
-                      <TableCell>{formatDate(profile.created_at)}</TableCell>
-                      <TableCell>{lastActive}</TableCell>
-                      <TableCell>{stats?.count || 0}</TableCell>
-                    </TableRow>
-                  );
-                })}
+                    : formatDate(profile.created_at),
+                  songs: stats?.count || 0,
+                };
+              })}>
+                {(item) => (
+                  <TableRow key={item.key}>
+                    <TableCell>
+                      {item.avatarUrl && (
+                        <img
+                          src={item.avatarUrl}
+                          alt=""
+                          className="admin-user-avatar"
+                          referrerPolicy="no-referrer"
+                        />
+                      )}
+                      {item.name}
+                    </TableCell>
+                    <TableCell>{item.email}</TableCell>
+                    <TableCell>{item.signedUp}</TableCell>
+                    <TableCell>{item.lastActive}</TableCell>
+                    <TableCell>{item.songs}</TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </>
