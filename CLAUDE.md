@@ -21,10 +21,11 @@ Both layers are stored in a single `songs` table in Supabase (PostgreSQL) with r
 
 ### Auth & routing
 
-- **Supabase Auth** with Google OAuth — `AuthContext.js` provides `user`, `signInWithGoogle`, `signOut`
-- **React Router v6** — three routes: `/login` (LoginPage), `/` (SongBrowser), `/songs/:id` (SongEditor)
+- **Supabase Auth** with Google OAuth — `AuthContext.jsx` provides `user`, `loading`, `isAdmin`, `signInWithGoogle`, `signOut`
+- **React Router v6** — routes: `/login` (LoginPage), `/` (SongBrowser), `/songs/:id` (SongEditor), `/admin` (AdminPage, admin only)
 - **ProtectedRoute** wraps authenticated routes and redirects to `/login`
-- **GlobalToolbar** is a sticky header with app name/back link, children slot for actions, and user avatar/sign-out
+- **AdminRoute** wraps admin routes, redirects non-admins to `/`
+- **GlobalToolbar** is a sticky header with app name (links to `/`), alpha chip, admin link (shield icon, admin only), and user avatar/sign-out
 
 ### How layers connect
 
@@ -51,11 +52,20 @@ Both layers are stored in a single `songs` table in Supabase (PostgreSQL) with r
 
 ### Database schema
 
-Single `songs` table with RLS — migration in `supabase/migration.sql`:
+Two tables with RLS:
+
+**`songs`** — migration in `supabase/migration.sql`:
 - `id` (uuid), `user_id` (references auth.users), `title`, `document` (jsonb), `annotations` (jsonb), `is_locked` (boolean), `created_at`, `updated_at`
-- Row-level security: users can only CRUD their own songs
+- Row-level security: users can CRUD their own songs; admins can SELECT all songs
 - `updated_at` auto-updates via trigger
 - Supabase Storage: `annotation-images` bucket (public) with INSERT/DELETE policies for authenticated users
+
+**`profiles`** — migration in `supabase/add_profiles_and_admin.sql`:
+- `id` (uuid, FK to auth.users), `is_admin` (boolean), `full_name`, `email`, `avatar_url`, `created_at`
+- Auto-created via `on_auth_user_created_profile` trigger (copies Google OAuth metadata)
+- `is_admin(uid)` SQL helper function (SECURITY DEFINER) used in RLS policies
+- Row-level security: users can SELECT own profile; admins can SELECT all profiles
+- `is_admin` is only changed via direct SQL — no client-side write policies
 
 ### TipTap v3 import paths
 
