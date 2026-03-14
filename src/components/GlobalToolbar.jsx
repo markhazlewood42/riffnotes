@@ -29,7 +29,7 @@ function GlobalToolbar() {
           </Button>
         </a>
       </div>
-      <span className="toolbar-app-name">RiffNotes</span>
+      <Link to="/" className="toolbar-app-name">RiffNotes</Link>
       <div className="toolbar-right">
         {isAdmin && (
           <Link to="/admin" className="toolbar-admin-link" title="Admin">

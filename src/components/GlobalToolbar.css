@@ -23,6 +23,7 @@
   font-size: 22px;
   color: var(--color-editor-title);
   line-height: 1.2;
+  text-decoration: none;
 }
 
 /* ── Left section ─────────────────────────────────────────────────── */
