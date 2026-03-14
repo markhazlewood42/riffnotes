@@ -1,11 +1,12 @@
 import { Button, Chip } from "@heroui/react";
-import { CoffeeIcon, LogOut, Moon, Sun } from "lucide-react";
+import { CoffeeIcon, LogOut, Moon, Shield, Sun } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import "./GlobalToolbar.css";
 
 function GlobalToolbar() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -28,8 +29,18 @@ function GlobalToolbar() {
           </Button>
         </a>
       </div>
-      <span className="toolbar-app-name">RiffNotes</span>
+      <Link to="/" className="toolbar-app-name">RiffNotes</Link>
       <div className="toolbar-right">
+        {isAdmin && (
+          <Link
+            to="/admin"
+            className="toolbar-admin-link"
+            title="Admin"
+            aria-label="Admin"
+          >
+            <Shield size={16} />
+          </Link>
+        )}
         <Button
           size="sm"
           variant="ghost"
