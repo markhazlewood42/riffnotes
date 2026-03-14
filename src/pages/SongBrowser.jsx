@@ -3,11 +3,13 @@ import { LockIcon, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GlobalToolbar from "../components/GlobalToolbar";
+import { useAuth } from "../context/AuthContext";
 import { supabase } from "../supabase";
 import "./SongBrowser.css";
 
 function SongBrowser() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -15,6 +17,7 @@ function SongBrowser() {
     supabase
       .from("songs")
       .select("id, title, updated_at, created_at, is_locked")
+      .eq("user_id", user.id)
       .order("is_locked", { ascending: false })
       .order("updated_at", { ascending: false })
       .then(({ data, error }) => {

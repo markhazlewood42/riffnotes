@@ -1,4 +1,13 @@
-import { Card, Spinner, Table } from '@heroui/react';
+import {
+  Card,
+  Spinner,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+} from '@heroui/react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import GlobalToolbar from '../components/GlobalToolbar';
@@ -77,22 +86,22 @@ function AdminPage() {
             </div>
 
             <Table aria-label="Users">
-              <Table.Header>
-                <Table.Column>Name</Table.Column>
-                <Table.Column>Email</Table.Column>
-                <Table.Column>Signed Up</Table.Column>
-                <Table.Column>Last Active</Table.Column>
-                <Table.Column>Songs</Table.Column>
-              </Table.Header>
-              <Table.Body>
+              <TableHeader>
+                <TableColumn>Name</TableColumn>
+                <TableColumn>Email</TableColumn>
+                <TableColumn>Signed Up</TableColumn>
+                <TableColumn>Last Active</TableColumn>
+                <TableColumn>Songs</TableColumn>
+              </TableHeader>
+              <TableBody>
                 {profiles.map((profile) => {
                   const stats = songStats[profile.id];
                   const lastActive = stats?.lastActive
                     ? formatDate(stats.lastActive)
                     : formatDate(profile.created_at);
                   return (
-                    <Table.Row key={profile.id}>
-                      <Table.Cell>
+                    <TableRow key={profile.id}>
+                      <TableCell>
                         {profile.avatar_url && (
                           <img
                             src={profile.avatar_url}
@@ -102,15 +111,15 @@ function AdminPage() {
                           />
                         )}
                         {profile.full_name || '—'}
-                      </Table.Cell>
-                      <Table.Cell>{profile.email || '—'}</Table.Cell>
-                      <Table.Cell>{formatDate(profile.created_at)}</Table.Cell>
-                      <Table.Cell>{lastActive}</Table.Cell>
-                      <Table.Cell>{stats?.count || 0}</Table.Cell>
-                    </Table.Row>
+                      </TableCell>
+                      <TableCell>{profile.email || '—'}</TableCell>
+                      <TableCell>{formatDate(profile.created_at)}</TableCell>
+                      <TableCell>{lastActive}</TableCell>
+                      <TableCell>{stats?.count || 0}</TableCell>
+                    </TableRow>
                   );
                 })}
-              </Table.Body>
+              </TableBody>
             </Table>
           </>
         )}
