@@ -6,10 +6,14 @@ import GlobalToolbar from "../components/GlobalToolbar";
 import { LyricSheetProvider } from "../context/LyricSheetContext";
 import LyricEditor from "../editor/LyricEditor";
 import { PAGE_GAP, PAGE_HEIGHT } from "../editor/pageLayout";
+import { useLyricSheet } from "../context/LyricSheetContext";
+import { useAnnotationLayout } from "../hooks/useAnnotationLayout";
 import { supabase } from "../supabase";
 
 function SongEditorInner() {
   const bodyRef = useRef(null);
+  const { state, editingNote, setLayoutMap } = useLyricSheet();
+  useAnnotationLayout(bodyRef, state.annotations, editingNote, setLayoutMap);
 
   useEffect(() => {
     const body = bodyRef.current;
