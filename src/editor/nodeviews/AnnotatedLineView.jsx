@@ -4,7 +4,7 @@ import { Trash2, Check } from 'lucide-react';
 import { useLyricSheet } from '../../context/LyricSheetContext';
 import { supabase } from '../../supabase';
 import { getRightNoteForLine, getChordsForLine, getImageForLine } from '../../context/annotationReducer';
-import { BEND_INSET } from '../../hooks/useAnnotationLayout';
+import { BEND_INSET, LEADER_OVERSHOOT } from '../../hooks/useAnnotationLayout';
 
 function AnnotatedLineView(props) {
   const { node } = props;
@@ -100,7 +100,7 @@ function AnnotatedLineView(props) {
   const noteInputRef = useRef(null);
   const leaderRef = useRef(null);
   const [pullbackPx, setPullbackPx] = useState(0);
-  const [leaderSize, setLeaderSize] = useState({ width: 0, height: 0 });
+  const [leaderWidth, setLeaderWidth] = useState(0);
   const [chordLeftPositions, setChordLeftPositions] = useState({});
 
   // Auto-focus the inline input when editing starts
@@ -280,18 +280,18 @@ function AnnotatedLineView(props) {
     measureChordPositions();
   }, [measureChordPositions, node.textContent]);
 
-  // Measure leader container dimensions for SVG viewBox
+  // Measure leader container width for SVG viewBox
   const measureLeader = useCallback(() => {
     if (!leaderRef.current) return;
     const container = leaderRef.current.closest('.document-container');
     const zoom = container ? (parseFloat(getComputedStyle(container).zoom) || 1) : 1;
     const rect = leaderRef.current.getBoundingClientRect();
-    setLeaderSize({ width: rect.width / zoom, height: rect.height / zoom });
+    setLeaderWidth(rect.width / zoom);
   }, []);
 
   useEffect(() => {
     measureLeader();
-  }, [measureLeader, displacement, pullbackPx]);
+  }, [measureLeader, pullbackPx]);
 
   // Build chord overlay — pixel positions from DOM measurement, ch fallback on first render
   const chordOverlay = sortedChords.length > 0 ? (
@@ -367,34 +367,36 @@ function AnnotatedLineView(props) {
           contentEditable={false}
           style={{
             marginLeft: pullbackPx > 0 ? `-${pullbackPx}px` : undefined,
-            height: displacement > 0 ? `${displacement + 20}px` : undefined,
-            alignSelf: displacement > 0 ? 'flex-start' : undefined,
           }}
         >
           <svg
             className="leader-line-svg"
-            viewBox={`0 0 ${leaderSize.width} ${leaderSize.height || 20}`}
+            style={{
+              width: `calc(100% + ${LEADER_OVERSHOOT}px)`,
+              ...(displacement > 0 ? { height: `${displacement + 2}px` } : {}),
+            }}
+            viewBox={`0 0 ${(leaderWidth || 1) + LEADER_OVERSHOOT} ${displacement > 0 ? displacement + 2 : 1}`}
             preserveAspectRatio="none"
           >
-            {displacement > 0 && leaderSize.width > 0 ? (
+            {displacement > 0 && leaderWidth > 0 ? (
               <>
                 <line
-                  x1="0" y1="10"
-                  x2={Math.max(0, leaderSize.width - BEND_INSET)} y2="10"
+                  x1="0" y1="2"
+                  x2={Math.max(0, leaderWidth - BEND_INSET)} y2="2"
                   className="leader-line"
                   vectorEffect="non-scaling-stroke"
                 />
                 <line
-                  x1={Math.max(0, leaderSize.width - BEND_INSET)} y1="10"
-                  x2={leaderSize.width} y2={leaderSize.height || 20}
+                  x1={Math.max(0, leaderWidth - BEND_INSET)} y1="2"
+                  x2={leaderWidth + LEADER_OVERSHOOT} y2={displacement + 2}
                   className="leader-line"
                   vectorEffect="non-scaling-stroke"
                 />
               </>
             ) : (
               <line
-                x1="0" y1="50%"
-                x2="100%" y2="50%"
+                x1="0" y1="2"
+                x2={leaderWidth + LEADER_OVERSHOOT} y2="2"
                 className="leader-line"
                 vectorEffect="non-scaling-stroke"
               />
