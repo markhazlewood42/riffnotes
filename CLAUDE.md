@@ -42,7 +42,7 @@ Right-column annotations are prevented from overlapping by a layout coordinator:
 - `AnnotatedLineView` reads `layoutMap[lineId]` for `{ top, height, displacement, lineTop }` and applies `annotationTopOffset = layout.top - layout.lineTop` as CSS `top` on the annotation wrapper.
 - Leader lines are SVG-based dashed lines. Non-displaced: horizontal. Displaced: horizontal-then-diagonal elbow (bend point at `BEND_INSET` px from column divider, line extends `LEADER_OVERSHOOT` px past divider).
 - Leader container uses `height: 0; overflow: visible` so annotations never affect lyric line spacing.
-- Named constants in `useAnnotationLayout.js`: `ANNOTATION_GAP` (8px), `BEND_INSET` (12px), `LEADER_OVERSHOOT` (10px).
+- Named constants in `useAnnotationLayout.js`: `ANNOTATION_GAP` (10px), `BEND_INSET` (12px), `LEADER_OVERSHOOT` (10px).
 
 ### Data persistence
 

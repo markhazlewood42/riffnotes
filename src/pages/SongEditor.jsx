@@ -3,10 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DocumentActions from "../components/DocumentActions";
 import GlobalToolbar from "../components/GlobalToolbar";
-import { LyricSheetProvider } from "../context/LyricSheetContext";
+import { LyricSheetProvider, useLyricSheet } from "../context/LyricSheetContext";
 import LyricEditor from "../editor/LyricEditor";
 import { PAGE_GAP, PAGE_HEIGHT } from "../editor/pageLayout";
-import { useLyricSheet } from "../context/LyricSheetContext";
 import { useAnnotationLayout } from "../hooks/useAnnotationLayout";
 import { supabase } from "../supabase";
 
