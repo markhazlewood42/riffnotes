@@ -8,7 +8,7 @@ import { getRightNoteForLine, getChordsForLine, getImageForLine } from '../../co
 function AnnotatedLineView(props) {
   const { node } = props;
   const lineId = node.attrs.lineId;
-  const { state, dispatch, editingNote, stopEditingNote, editorRef, isLocked } = useLyricSheet();
+  const { state, dispatch, editingNote, stopEditingNote, editorRef, isLocked, layoutMap } = useLyricSheet();
 
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -86,6 +86,14 @@ function AnnotatedLineView(props) {
   const charOffsetForLeader = isEditingNote
     ? editingNote.charOffset
     : (rightNote?.charOffset ?? imageAnnotation?.charOffset ?? null);
+
+  // Layout coordinator: compute relative top offset for this line's annotation.
+  // layout.top is absolute (relative to .document-body), layout.lineTop is the line's
+  // position in the same coordinate space. The difference gives us the CSS `top` value
+  // to apply to the annotation wrapper (which is position: absolute within the line).
+  const layout = layoutMap?.[lineId];
+  const annotationTopOffset = layout ? layout.top - layout.lineTop : null;
+  const displacement = layout?.displacement ?? 0;
 
   const wrapperRef = useRef(null);
   const noteInputRef = useRef(null);
@@ -346,24 +354,30 @@ function AnnotatedLineView(props) {
       <div className="right-annotation-column" contentEditable={false}>
         {showRightColumn && (
           isEditingNote ? (
-            <input
-              ref={noteInputRef}
-              className="note-inline-input"
-              type="text"
-              placeholder="type note or paste image"
-              onPaste={handleNotePaste}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') { e.preventDefault(); handleNoteSubmit(e.target.value); }
-                else if (e.key === 'Escape') { handleNoteCancel(); }
-              }}
-              onBlur={(e) => {
-                handleNoteCancel();
-              }}
-            />
+            <div
+              className="right-annotation-actions-wrapper"
+              style={annotationTopOffset != null ? { top: `${annotationTopOffset}px` } : undefined}
+            >
+              <input
+                ref={noteInputRef}
+                className="note-inline-input"
+                type="text"
+                placeholder="type note or paste image"
+                onPaste={handleNotePaste}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); handleNoteSubmit(e.target.value); }
+                  else if (e.key === 'Escape') { handleNoteCancel(); }
+                }}
+                onBlur={(e) => {
+                  handleNoteCancel();
+                }}
+              />
+            </div>
           ) : imageAnnotation ? (
             <div
               ref={rightAnnotationRef}
               className="right-annotation-actions-wrapper right-annotation-actions-wrapper--image"
+              style={annotationTopOffset != null ? { top: `${annotationTopOffset}px` } : undefined}
               onMouseEnter={rightAnnotationMouseEnter}
               onMouseLeave={rightAnnotationMouseLeave}
             >
@@ -380,6 +394,7 @@ function AnnotatedLineView(props) {
             <div
               ref={rightAnnotationRef}
               className="right-annotation-actions-wrapper"
+              style={annotationTopOffset != null ? { top: `${annotationTopOffset}px` } : undefined}
               onMouseEnter={rightAnnotationMouseEnter}
               onMouseLeave={rightAnnotationMouseLeave}
             >
