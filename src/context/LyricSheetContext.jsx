@@ -19,6 +19,19 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, isLoc
 
   const [editingNote, setEditingNote] = useState(null);
   const [saveStatus, setSaveStatus] = useState('saved');
+  const [layoutMap, setLayoutMap] = useState({});
+  const [layoutReady, setLayoutReady] = useState(false);
+  const layoutReadyRef = useRef(false);
+
+  const setLayoutMapOnce = useCallback((map) => {
+    setLayoutMap(map);
+    if (!layoutReadyRef.current) {
+      layoutReadyRef.current = true;
+      // Defer enabling transitions to the next frame so the initial layout
+      // paints without animation before transitions become active.
+      requestAnimationFrame(() => setLayoutReady(true));
+    }
+  }, []);
 
   const editorRef = useRef(null);
   const saveTimerRef = useRef(null);
@@ -113,6 +126,9 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, isLoc
     saveStatus,
     initialDocument,
     isLocked,
+    layoutMap,
+    setLayoutMap: setLayoutMapOnce,
+    layoutReady,
   };
 
   return (

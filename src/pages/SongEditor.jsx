@@ -3,13 +3,16 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DocumentActions from "../components/DocumentActions";
 import GlobalToolbar from "../components/GlobalToolbar";
-import { LyricSheetProvider } from "../context/LyricSheetContext";
+import { LyricSheetProvider, useLyricSheet } from "../context/LyricSheetContext";
 import LyricEditor from "../editor/LyricEditor";
 import { PAGE_GAP, PAGE_HEIGHT } from "../editor/pageLayout";
+import { useAnnotationLayout } from "../hooks/useAnnotationLayout";
 import { supabase } from "../supabase";
 
 function SongEditorInner() {
   const bodyRef = useRef(null);
+  const { state, editingNote, setLayoutMap, layoutReady } = useLyricSheet();
+  useAnnotationLayout(bodyRef, state.annotations, editingNote, setLayoutMap);
 
   useEffect(() => {
     const body = bodyRef.current;
@@ -45,7 +48,7 @@ function SongEditorInner() {
       <div className="app-container">
         <DocumentActions />
         <div className="document-container">
-          <div className="document-body" ref={bodyRef}>
+          <div className={`document-body${layoutReady ? " layout-ready" : ""}`} ref={bodyRef}>
             <LyricEditor />
           </div>
         </div>

@@ -8,10 +8,11 @@ _(nothing blocking)_
 - SaaS analytics
 - More actions on image annotations. Allow text notes to be entered above or below the image.
 - Remove image from storage bucket on deletion.
-- Improve right annotation rendering to support better vertical stacking and avoid overlapping
-  - Redesign connectors to bend when needed
+- **Architecture: Shared Annotation Rail (Approach B)** — move all right-column annotation rendering from individual AnnotatedLineView NodeViews into a single AnnotationRail overlay component. This would simplify layout coordination (single component handles stacking) and enable features like drag-to-reorder. Deferred in favor of Approach A (coordinator) for initial implementation.
+- Page-break-aware annotation stacking — handle annotations that would cross page boundaries
 - Multi-user collaboration??
 - Improve rendering of longer staff images
+- Extract hardcoded pixel values across the codebase into named constants or CSS custom properties
 
 ### Big ideas
 

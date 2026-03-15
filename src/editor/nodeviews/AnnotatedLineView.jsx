@@ -4,11 +4,12 @@ import { Trash2, Check } from 'lucide-react';
 import { useLyricSheet } from '../../context/LyricSheetContext';
 import { supabase } from '../../supabase';
 import { getRightNoteForLine, getChordsForLine, getImageForLine } from '../../context/annotationReducer';
+import { BEND_INSET, LEADER_OVERSHOOT } from '../../hooks/useAnnotationLayout';
 
 function AnnotatedLineView(props) {
   const { node } = props;
   const lineId = node.attrs.lineId;
-  const { state, dispatch, editingNote, stopEditingNote, editorRef, isLocked } = useLyricSheet();
+  const { state, dispatch, editingNote, stopEditingNote, editorRef, isLocked, layoutMap } = useLyricSheet();
 
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -87,9 +88,19 @@ function AnnotatedLineView(props) {
     ? editingNote.charOffset
     : (rightNote?.charOffset ?? imageAnnotation?.charOffset ?? null);
 
+  // Layout coordinator: compute relative top offset for this line's annotation.
+  // layout.top is absolute (relative to .document-body), layout.lineTop is the line's
+  // position in the same coordinate space. The difference gives us the CSS `top` value
+  // to apply to the annotation wrapper (which is position: absolute within the line).
+  const layout = layoutMap?.[lineId];
+  const annotationTopOffset = layout ? layout.top - layout.lineTop : null;
+  const displacement = layout?.displacement ?? 0;
+
   const wrapperRef = useRef(null);
   const noteInputRef = useRef(null);
+  const leaderRef = useRef(null);
   const [pullbackPx, setPullbackPx] = useState(0);
+  const [leaderWidth, setLeaderWidth] = useState(0);
   const [chordLeftPositions, setChordLeftPositions] = useState({});
 
   // Auto-focus the inline input when editing starts
@@ -269,6 +280,19 @@ function AnnotatedLineView(props) {
     measureChordPositions();
   }, [measureChordPositions, node.textContent]);
 
+  // Measure leader container width for SVG viewBox
+  const measureLeader = useCallback(() => {
+    if (!leaderRef.current) return;
+    const container = leaderRef.current.closest('.document-container');
+    const zoom = container ? (parseFloat(getComputedStyle(container).zoom) || 1) : 1;
+    const rect = leaderRef.current.getBoundingClientRect();
+    setLeaderWidth(rect.width / zoom);
+  }, []);
+
+  useEffect(() => {
+    measureLeader();
+  }, [measureLeader, pullbackPx]);
+
   // Build chord overlay — pixel positions from DOM measurement, ch fallback on first render
   const chordOverlay = sortedChords.length > 0 ? (
     <div className="chord-overlay" contentEditable={false}>
@@ -329,7 +353,7 @@ function AnnotatedLineView(props) {
 
   return (
     <NodeViewWrapper
-      className={`annotated-line ${showRightColumn ? 'has-right-annotation' : ''} ${imageAnnotation && !isEditingNote ? 'has-image-annotation' : ''}`}
+      className={`annotated-line ${showRightColumn ? 'has-right-annotation' : ''}`}
       data-line-id={lineId}
     >
       <div className="lyric-content-wrapper" ref={wrapperRef}>
@@ -337,33 +361,76 @@ function AnnotatedLineView(props) {
         <NodeViewContent className="lyric-content" />
       </div>
       {showRightColumn && (
-        <span
-          className="leader-bridge"
+        <div
+          ref={leaderRef}
+          className="leader-line-container"
           contentEditable={false}
-          style={pullbackPx > 0 ? { marginLeft: `-${pullbackPx}px` } : undefined}
-        />
+          style={{
+            marginLeft: pullbackPx > 0 ? `-${pullbackPx}px` : undefined,
+          }}
+        >
+          <svg
+            className="leader-line-svg"
+            style={{
+              width: `calc(100% + ${LEADER_OVERSHOOT}px)`,
+              ...(displacement > 0 ? { height: `${displacement + 2}px` } : {}),
+            }}
+            viewBox={`0 0 ${(leaderWidth || 1) + LEADER_OVERSHOOT} ${displacement > 0 ? displacement + 2 : 1}`}
+            preserveAspectRatio="none"
+          >
+            {displacement > 0 && leaderWidth > 0 ? (
+              <>
+                <line
+                  x1="0" y1="2"
+                  x2={Math.max(0, leaderWidth - BEND_INSET)} y2="2"
+                  className="leader-line"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <line
+                  x1={Math.max(0, leaderWidth - BEND_INSET)} y1="2"
+                  x2={leaderWidth + LEADER_OVERSHOOT} y2={displacement + 2}
+                  className="leader-line"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </>
+            ) : (
+              <line
+                x1="0" y1="2"
+                x2={leaderWidth + LEADER_OVERSHOOT} y2="2"
+                className="leader-line"
+                vectorEffect="non-scaling-stroke"
+              />
+            )}
+          </svg>
+        </div>
       )}
       <div className="right-annotation-column" contentEditable={false}>
         {showRightColumn && (
           isEditingNote ? (
-            <input
-              ref={noteInputRef}
-              className="note-inline-input"
-              type="text"
-              placeholder="type note or paste image"
-              onPaste={handleNotePaste}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') { e.preventDefault(); handleNoteSubmit(e.target.value); }
-                else if (e.key === 'Escape') { handleNoteCancel(); }
-              }}
-              onBlur={(e) => {
-                handleNoteCancel();
-              }}
-            />
+            <div
+              className="right-annotation-actions-wrapper"
+              style={annotationTopOffset != null ? { top: `${annotationTopOffset}px` } : undefined}
+            >
+              <input
+                ref={noteInputRef}
+                className="note-inline-input"
+                type="text"
+                placeholder="type note or paste image"
+                onPaste={handleNotePaste}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); handleNoteSubmit(e.target.value); }
+                  else if (e.key === 'Escape') { handleNoteCancel(); }
+                }}
+                onBlur={(e) => {
+                  handleNoteCancel();
+                }}
+              />
+            </div>
           ) : imageAnnotation ? (
             <div
               ref={rightAnnotationRef}
               className="right-annotation-actions-wrapper right-annotation-actions-wrapper--image"
+              style={annotationTopOffset != null ? { top: `${annotationTopOffset}px` } : undefined}
               onMouseEnter={rightAnnotationMouseEnter}
               onMouseLeave={rightAnnotationMouseLeave}
             >
@@ -380,6 +447,7 @@ function AnnotatedLineView(props) {
             <div
               ref={rightAnnotationRef}
               className="right-annotation-actions-wrapper"
+              style={annotationTopOffset != null ? { top: `${annotationTopOffset}px` } : undefined}
               onMouseEnter={rightAnnotationMouseEnter}
               onMouseLeave={rightAnnotationMouseLeave}
             >
