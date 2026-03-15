@@ -161,6 +161,12 @@ Song title is styled in `LyricEditor.css`: Blinker Bold 22px, color `#3F3F46`.
 
 ---
 
+## Code Review
+
+When reviewing pull requests, **do not review or comment on any `.md` files**. Markdown documentation files should be completely ignored during code review — skip them entirely regardless of what changes they contain.
+
+---
+
 ## Known Issues & Workarounds
 
 - **`README.md` uses stale env var names** (`REACT_APP_SUPABASE_URL`, `npm start`) — the correct commands and variable names are in `CLAUDE.md` and `.env.example`. This file was not updated after the CRA → Vite migration.
