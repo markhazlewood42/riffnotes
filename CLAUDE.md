@@ -33,6 +33,17 @@ Both layers are stored in a single `songs` table in Supabase (PostgreSQL) with r
 - `AnnotatedLineView.jsx` is a React NodeView rendered for every paragraph node. It reads the annotation store via `useLyricSheet()` and renders chord overlays (above text, pixel-positioned via DOM Range measurement) and right-side notes (with a dynamically-measured leader line). When `editingNote.lineId` matches, it shows an inline text input in the right column instead of the saved note.
 - `AnnotationToolbar.jsx` is a BubbleMenu that appears on text selection (hidden in song title). Toolbar buttons use `onMouseDown` + `e.preventDefault()` to prevent editor blur, capture `lineId`/`charOffset` into a ref _before_ triggering input, then dispatch to the annotation store or call `startEditingNote()` from context.
 
+### Annotation stacking (layout coordinator)
+
+Right-column annotations are prevented from overlapping by a layout coordinator:
+
+- `useAnnotationLayout` hook (`src/hooks/useAnnotationLayout.js`) measures line element DOM positions, computes stacked layout via `computeStackedLayout()`, and writes a `layoutMap` to context via `setLayoutMap`.
+- `SongEditorInner` wires the hook: `useAnnotationLayout(bodyRef, state.annotations, editingNote, setLayoutMap)`.
+- `AnnotatedLineView` reads `layoutMap[lineId]` for `{ top, height, displacement, lineTop }` and applies `annotationTopOffset = layout.top - layout.lineTop` as CSS `top` on the annotation wrapper.
+- Leader lines are SVG-based dashed lines. Non-displaced: horizontal. Displaced: horizontal-then-diagonal elbow (bend point at `BEND_INSET` px from column divider, line extends `LEADER_OVERSHOOT` px past divider).
+- Leader container uses `height: 0; overflow: visible` so annotations never affect lyric line spacing.
+- Named constants in `useAnnotationLayout.js`: `ANNOTATION_GAP` (8px), `BEND_INSET` (12px), `LEADER_OVERSHOOT` (10px).
+
 ### Data persistence
 
 - `LyricSheetProvider` takes `songId`, `initialDocument`, `initialAnnotations`, and `isLocked` props from `SongEditor`
