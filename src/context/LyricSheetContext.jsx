@@ -19,6 +19,7 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, isLoc
 
   const [editingNote, setEditingNote] = useState(null);
   const [saveStatus, setSaveStatus] = useState('saved');
+  const [layoutMap, setLayoutMap] = useState({});
 
   const editorRef = useRef(null);
   const saveTimerRef = useRef(null);
@@ -113,6 +114,8 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, isLoc
     saveStatus,
     initialDocument,
     isLocked,
+    layoutMap,
+    setLayoutMap,
   };
 
   return (
