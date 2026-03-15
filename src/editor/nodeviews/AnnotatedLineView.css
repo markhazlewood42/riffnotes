@@ -114,6 +114,13 @@
              use padding-left on .annotation-actions instead */
 }
 
+/* Transitions only activate after initial layout is complete */
+.layout-ready .right-annotation-actions-wrapper,
+.layout-ready .right-annotation-actions-wrapper--image,
+.layout-ready .note-inline-input {
+  transition: top 50ms ease-out;
+}
+
 .right-annotation-actions-wrapper--image .annotation-actions {
   padding-left: 8px; /* covers the gap — padding IS part of the element's hit area */
 }
