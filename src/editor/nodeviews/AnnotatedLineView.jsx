@@ -4,6 +4,7 @@ import { Trash2, Check } from 'lucide-react';
 import { useLyricSheet } from '../../context/LyricSheetContext';
 import { supabase } from '../../supabase';
 import { getRightNoteForLine, getChordsForLine, getImageForLine } from '../../context/annotationReducer';
+import { BEND_INSET } from '../../hooks/useAnnotationLayout';
 
 function AnnotatedLineView(props) {
   const { node } = props;
@@ -97,7 +98,9 @@ function AnnotatedLineView(props) {
 
   const wrapperRef = useRef(null);
   const noteInputRef = useRef(null);
+  const leaderRef = useRef(null);
   const [pullbackPx, setPullbackPx] = useState(0);
+  const [leaderSize, setLeaderSize] = useState({ width: 0, height: 0 });
   const [chordLeftPositions, setChordLeftPositions] = useState({});
 
   // Auto-focus the inline input when editing starts
@@ -277,6 +280,19 @@ function AnnotatedLineView(props) {
     measureChordPositions();
   }, [measureChordPositions, node.textContent]);
 
+  // Measure leader container dimensions for SVG viewBox
+  const measureLeader = useCallback(() => {
+    if (!leaderRef.current) return;
+    const container = leaderRef.current.closest('.document-container');
+    const zoom = container ? (parseFloat(getComputedStyle(container).zoom) || 1) : 1;
+    const rect = leaderRef.current.getBoundingClientRect();
+    setLeaderSize({ width: rect.width / zoom, height: rect.height / zoom });
+  }, []);
+
+  useEffect(() => {
+    measureLeader();
+  }, [measureLeader, displacement, pullbackPx]);
+
   // Build chord overlay — pixel positions from DOM measurement, ch fallback on first render
   const chordOverlay = sortedChords.length > 0 ? (
     <div className="chord-overlay" contentEditable={false}>
@@ -337,7 +353,7 @@ function AnnotatedLineView(props) {
 
   return (
     <NodeViewWrapper
-      className={`annotated-line ${showRightColumn ? 'has-right-annotation' : ''} ${imageAnnotation && !isEditingNote ? 'has-image-annotation' : ''}`}
+      className={`annotated-line ${showRightColumn ? 'has-right-annotation' : ''}`}
       data-line-id={lineId}
     >
       <div className="lyric-content-wrapper" ref={wrapperRef}>
@@ -345,11 +361,46 @@ function AnnotatedLineView(props) {
         <NodeViewContent className="lyric-content" />
       </div>
       {showRightColumn && (
-        <span
-          className="leader-bridge"
+        <div
+          ref={leaderRef}
+          className="leader-line-container"
           contentEditable={false}
-          style={pullbackPx > 0 ? { marginLeft: `-${pullbackPx}px` } : undefined}
-        />
+          style={{
+            marginLeft: pullbackPx > 0 ? `-${pullbackPx}px` : undefined,
+            height: displacement > 0 ? `${displacement + 20}px` : undefined,
+            alignSelf: displacement > 0 ? 'flex-start' : undefined,
+          }}
+        >
+          <svg
+            className="leader-line-svg"
+            viewBox={`0 0 ${leaderSize.width} ${leaderSize.height || 20}`}
+            preserveAspectRatio="none"
+          >
+            {displacement > 0 && leaderSize.width > 0 ? (
+              <>
+                <line
+                  x1="0" y1="10"
+                  x2={Math.max(0, leaderSize.width - BEND_INSET)} y2="10"
+                  className="leader-line"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <line
+                  x1={Math.max(0, leaderSize.width - BEND_INSET)} y1="10"
+                  x2={leaderSize.width} y2={leaderSize.height || 20}
+                  className="leader-line"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </>
+            ) : (
+              <line
+                x1="0" y1="50%"
+                x2="100%" y2="50%"
+                className="leader-line"
+                vectorEffect="non-scaling-stroke"
+              />
+            )}
+          </svg>
+        </div>
       )}
       <div className="right-annotation-column" contentEditable={false}>
         {showRightColumn && (

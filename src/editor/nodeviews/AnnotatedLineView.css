@@ -48,26 +48,29 @@
 }
 
 /*
- * Leader line: pulls back via negative margin-left to start at the
- * charOffset position, then extends through the gap to the annotation column.
- * The ::after pseudo-element extends the dashed line 8px past the divider
- * so it visually overlaps the divider, making the connection clear.
+ * Leader line: SVG-based dashed line connecting lyrics to annotations.
+ * Container is a flex child that fills the gap between lyric content and annotation column.
+ * For displaced annotations, the container grows taller and the SVG draws an angled path.
  */
-.leader-bridge {
+.leader-line-container {
   flex: 1 1 60px;
   min-width: 24px;
-  border-bottom: 1px dashed var(--color-leader-dots);
   position: relative;
-  top: 3px;
+  height: 20px;
 }
 
-.leader-bridge::after {
-  content: "";
-  position: absolute;
-  right: -8px;
-  bottom: -1px;
-  width: 8px;
-  border-bottom: 1px dashed var(--color-leader-dots);
+.leader-line-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  display: block;
+}
+
+.leader-line {
+  stroke: var(--color-leader-dots);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  fill: none;
 }
 
 /*
@@ -224,16 +227,10 @@
 }
 
 .right-annotation-image {
-  height: 32px;
+  min-height: 32px;
+  max-height: 36px;
   width: auto;
   display: block;
-}
-
-/* When the line has an image annotation, center leader line on the image.
-   Use flex-start so `top` is measured from line top (not text baseline). */
-.annotated-line.has-image-annotation .leader-bridge {
-  align-self: flex-start;
-  top: 16px;
 }
 
 /* Word hover highlight — applied via ProseMirror Decoration */
