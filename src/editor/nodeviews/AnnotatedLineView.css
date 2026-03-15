@@ -101,6 +101,7 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  transition: top 50ms ease-out;
   /* Annotation overflows below height:0 column into subsequent lyric rows.
      z-index ensures hover/click events are captured over those rows. */
   z-index: 1;
@@ -110,6 +111,7 @@
   top: 0;
   width: auto;
   align-items: center;
+  transition: top 50ms ease-out;
   gap: 0; /* gap is excluded from shrink-to-fit width, creating a cursor dead zone;
              use padding-left on .annotation-actions instead */
 }
@@ -214,6 +216,7 @@
   margin-left: 8px;
   outline: none;
   width: 100%;
+  transition: top 50ms ease-out;
 }
 
 .note-inline-input::placeholder {
