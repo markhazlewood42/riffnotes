@@ -12,7 +12,7 @@ import { supabase } from "../supabase";
 
 function SongEditorInner() {
   const bodyRef = useRef(null);
-  const { state, editingNote, setLayoutMap } = useLyricSheet();
+  const { state, editingNote, setLayoutMap, layoutReady } = useLyricSheet();
   useAnnotationLayout(bodyRef, state.annotations, editingNote, setLayoutMap);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ function SongEditorInner() {
       <div className="app-container">
         <DocumentActions />
         <div className="document-container">
-          <div className="document-body" ref={bodyRef}>
+          <div className={`document-body${layoutReady ? " layout-ready" : ""}`} ref={bodyRef}>
             <LyricEditor />
           </div>
         </div>
