@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useLyricSheet } from '../context/LyricSheetContext';
 import ChordInput from './inputs/ChordInput';
 import './AnnotationToolbar.css';
@@ -9,6 +9,17 @@ function AnnotationToolbar({ editor }) {
 
   // Store selection context when a button is clicked, before editor loses focus
   const selectionRef = useRef({ lineId: null, charOffset: 0 });
+
+  // Reset toolbar state when the editor selection changes (e.g. user makes a
+  // new text selection).  This prevents the toolbar from getting stuck in chord
+  // input mode with a stale selectionRef after the BubbleMenu hides and re-shows
+  // (BubbleMenu keeps children mounted, so local state persists otherwise).
+  useEffect(() => {
+    if (!editor) return;
+    const reset = () => setActiveInput(null);
+    editor.on('selectionUpdate', reset);
+    return () => editor.off('selectionUpdate', reset);
+  }, [editor]);
 
   const captureSelection = useCallback(() => {
     if (!editor) return;
@@ -36,11 +47,13 @@ function AnnotationToolbar({ editor }) {
 
   const handleAddChord = (value) => {
     const { lineId, charOffset, endOffset } = selectionRef.current;
-    if (!lineId || !value.trim()) return;
-    dispatch({
-      type: 'ADD_CHORD',
-      payload: { lineId, charOffset, charOffsetEnd: endOffset ?? charOffset, value: value.trim() },
-    });
+    if (lineId && value.trim()) {
+      dispatch({
+        type: 'ADD_CHORD',
+        payload: { lineId, charOffset, charOffsetEnd: endOffset ?? charOffset, value: value.trim() },
+      });
+    }
+    // Always reset, even if lineId was stale — prevents stuck state
     setActiveInput(null);
     editor.commands.focus();
   };
