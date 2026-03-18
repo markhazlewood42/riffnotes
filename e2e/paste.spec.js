@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { gotoTestEditor, resetEditor, pasteText, setDocument } from './helpers.js';
+import { gotoTestEditor, resetEditor, pasteText } from './helpers.js';
 
 test.describe('Paste behavior', () => {
   test.beforeEach(async ({ page }) => {
