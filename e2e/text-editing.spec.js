@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { gotoTestEditor, resetEditor, setDocument, oneLineDoc } from './helpers.js';
+import { gotoTestEditor, resetEditor, oneLineDoc } from './helpers.js';
 
 test.describe('Text editing', () => {
   test.beforeEach(async ({ page }) => {
