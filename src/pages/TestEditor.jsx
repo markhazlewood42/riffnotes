@@ -227,7 +227,7 @@ const TEST_ANNOTATIONS = {
 
 function TestEditorInner() {
   const bodyRef = useRef(null);
-  const { state, editingNote, setLayoutMap, layoutReady, dispatch, editorRef } = useLyricSheet();
+  const { state, editingNote, setLayoutMap, layoutReady, dispatch, editorRef, startEditingNote } = useLyricSheet();
   useAnnotationLayout(bodyRef, state.annotations, editingNote, setLayoutMap);
 
   // Refs so the __TEST__ API always reads current values without stale closures
@@ -334,13 +334,18 @@ function TestEditorInner() {
         annotations: stateRef.current.annotations,
         editingNote: editingNoteRef.current,
       }),
+
+      startEditingNote: (lineId, charOffset) => readyPromise.then(() => {
+        startEditingNote(lineId, charOffset);
+        return new Promise((resolve) => requestAnimationFrame(resolve));
+      }),
     };
 
     return () => {
       cancelled = true;
       delete window.__TEST__;
     };
-  }, [dispatch, editorRef]);
+  }, [dispatch, editorRef, startEditingNote]);
 
   return (
     <>
