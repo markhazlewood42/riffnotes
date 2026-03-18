@@ -5,10 +5,9 @@
  * which is exposed by TestEditor.jsx in auth-bypass mode.
  */
 
-import { expect } from '@playwright/test';
-
 /**
  * Navigate to /test and wait for the editor to be ready.
+ * Call this once per test file in a beforeAll, or inline in tests that need a fresh page.
  * Call this once per test file in a beforeAll, or inline in tests that need a fresh page.
  */
 export async function gotoTestEditor(page) {
