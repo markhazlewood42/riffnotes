@@ -227,8 +227,14 @@ const TEST_ANNOTATIONS = {
 
 function TestEditorInner() {
   const bodyRef = useRef(null);
-  const { state, editingNote, setLayoutMap, layoutReady } = useLyricSheet();
+  const { state, editingNote, setLayoutMap, layoutReady, dispatch, editorRef } = useLyricSheet();
   useAnnotationLayout(bodyRef, state.annotations, editingNote, setLayoutMap);
+
+  // Refs so the __TEST__ API always reads current values without stale closures
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const editingNoteRef = useRef(editingNote);
+  editingNoteRef.current = editingNote;
 
   useEffect(() => {
     const body = bodyRef.current;
@@ -251,6 +257,90 @@ function TestEditorInner() {
     if (tiptap) observer.observe(tiptap);
     return () => observer.disconnect();
   }, []);
+
+  // Programmatic test control API
+  useEffect(() => {
+    let cancelled = false;
+
+    // Poll via rAF until the TipTap editor instance is available
+    const readyPromise = new Promise((resolve) => {
+      const check = () => {
+        if (cancelled) return;
+        if (editorRef.current) { resolve(); return; }
+        requestAnimationFrame(check);
+      };
+      check();
+    });
+
+    const EMPTY_DOC = {
+      type: 'doc',
+      content: [{ type: 'songTitle' }, { type: 'paragraph' }],
+    };
+
+    // Waits for the next TipTap 'update' event + one rAF.
+    // CRITICAL: Register the listener BEFORE dispatching the command —
+    // TipTap fires the 'update' event synchronously during setContent,
+    // so registering after would miss it.
+    function afterNextUpdate() {
+      return new Promise((resolve) => {
+        const onUpdate = () => {
+          editorRef.current.off('update', onUpdate);
+          requestAnimationFrame(resolve);
+        };
+        editorRef.current.on('update', onUpdate);
+      });
+    }
+
+    window.__TEST__ = {
+      ready: readyPromise,
+
+      resetEditor: () => readyPromise.then(() => {
+        dispatch({ type: 'LOAD', payload: { annotations: {}, songId: 'test-song' } });
+        const settled = afterNextUpdate(); // register BEFORE dispatching
+        editorRef.current.commands.setContent(EMPTY_DOC);
+        return settled;
+      }),
+
+      setDocument: (doc) => readyPromise.then(() => {
+        const settled = afterNextUpdate(); // register BEFORE dispatching
+        editorRef.current.commands.setContent(doc);
+        return settled;
+      }),
+
+      setAnnotations: (annotations) => readyPromise.then(() => {
+        dispatch({ type: 'LOAD', payload: { annotations, songId: 'test-song' } });
+        return new Promise((resolve) => requestAnimationFrame(resolve));
+      }),
+
+      selectText: (searchText) => readyPromise.then(() => new Promise((resolve) => {
+        const editor = editorRef.current;
+        let found = false;
+        editor.state.doc.descendants((node, pos) => {
+          if (found) return false;
+          if (node.isText && node.text.includes(searchText)) {
+            const offset = node.text.indexOf(searchText);
+            editor.chain()
+              .setTextSelection({ from: pos + offset, to: pos + offset + searchText.length })
+              .run();
+            found = true;
+            return false;
+          }
+        });
+        requestAnimationFrame(() => resolve(found));
+      })),
+
+      getState: () => ({
+        document: editorRef.current?.getJSON(),
+        annotations: stateRef.current.annotations,
+        editingNote: editingNoteRef.current,
+      }),
+    };
+
+    return () => {
+      cancelled = true;
+      delete window.__TEST__;
+    };
+  }, [dispatch, editorRef]);
 
   return (
     <>
