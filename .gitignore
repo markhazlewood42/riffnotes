@@ -27,3 +27,4 @@ yarn-error.log*
 # Working files
 .superpowers/
 implementation-notes.md
+.worktrees/

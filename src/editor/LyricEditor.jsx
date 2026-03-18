@@ -3,6 +3,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import { Fragment, Slice } from '@tiptap/pm/model';
+import { normalizePasteLines } from './pasteUtils.js';
 import Placeholder from '@tiptap/extension-placeholder';
 import LyricLine from './extensions/LyricLine';
 import SongTitle from './extensions/SongTitle';
@@ -58,7 +59,7 @@ function LyricEditor() {
 
         // Collapse runs of 3+ blank lines to 2 (one empty paragraph), but
         // preserve single blank lines as empty paragraphs (verse separators).
-        const lines = text.replace(/\n{3,}/g, '\n\n').split(/\n/);
+        const lines = normalizePasteLines(text);
         const { schema } = view.state;
         const nodes = lines.map(line => {
           const trimmed = line.trim();
