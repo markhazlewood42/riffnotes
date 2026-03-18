@@ -44,12 +44,26 @@ const DATA_IMG =
  */
 async function getAllAnnotationRects(page) {
   return page.evaluate(() => {
-    const wrappers = document.querySelectorAll('.right-annotation-actions-wrapper');
+    const container =
+      document.querySelector('.document-container') || document.body || document.documentElement
+
+    const zoomStyle = container ? window.getComputedStyle(container).zoom : null
+    const zoom = (() => {
+      if (!zoomStyle || zoomStyle === 'normal') return 1
+      const parsed = parseFloat(zoomStyle)
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : 1
+    })()
+
+    const wrappers = document.querySelectorAll('.right-annotation-actions-wrapper')
     return Array.from(wrappers).map((el) => {
-      const r = el.getBoundingClientRect();
-      return { top: r.top, bottom: r.bottom, height: r.height };
-    });
-  });
+      const r = el.getBoundingClientRect()
+      return {
+        top: r.top / zoom,
+        bottom: r.bottom / zoom,
+        height: r.height / zoom,
+      }
+    })
+  })
 }
 
 test.describe('Annotation stacking', () => {
