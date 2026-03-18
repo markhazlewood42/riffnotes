@@ -33,6 +33,7 @@
     "test:server": "cross-env VITE_AUTH_BYPASS=true vite --port 3002"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@vitejs/plugin-react": "^5.1.4",
     "cross-env": "^10.1.0",
     "jsdom": "^29.0.0",
