@@ -1,5 +1,5 @@
-import { Button } from '@heroui/react';
-import { FileText, Music, Search, X } from 'lucide-react';
+import { Button, CloseButton, SearchField } from '@heroui/react';
+import { FileText, Music } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { searchSongs } from '../services/lrclib';
 import './FindSongModal.css';
@@ -89,32 +89,25 @@ function FindSongModal({ isOpen, onClose, onAddSong }) {
   return (
     <div className="find-song-backdrop" onClick={handleBackdropClick}>
       <div className="find-song-modal" role="dialog" aria-modal="true" aria-label="Find a song">
-        <button className="find-song-close" onClick={handleClose} aria-label="Close">
-          <X size={16} />
-        </button>
+        <CloseButton className="find-song-close" onPress={handleClose} aria-label="Close" />
 
         <div className="find-song-body">
           {/* Left pane */}
           <div className="find-song-left">
-            <div className="find-song-search-field">
-              <div className="find-song-search-input-wrapper">
-                <Search size={16} className="find-song-search-icon" />
-                <input
-                  type="text"
-                  className="find-song-search-input"
-                  placeholder="Find a song ..."
-                  value={query}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  autoFocus
-                />
-                {query && (
-                  <button className="find-song-clear" onClick={() => handleSearch('')} aria-label="Clear search">
-                    <X size={12} />
-                  </button>
-                )}
-              </div>
+            <SearchField
+              value={query}
+              onChange={handleSearch}
+              aria-label="Find a song"
+              autoFocus
+              className="find-song-search-field"
+            >
+              <SearchField.Group>
+                <SearchField.SearchIcon />
+                <SearchField.Input placeholder="Find a song ..." />
+                <SearchField.ClearButton />
+              </SearchField.Group>
               <p className="find-song-search-hint">Search for a song by title or artist</p>
-            </div>
+            </SearchField>
 
             <div className="find-song-separator-h" />
 
