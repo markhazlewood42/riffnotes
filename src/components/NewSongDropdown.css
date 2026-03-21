@@ -1,0 +1,39 @@
+.new-song-dropdown-menu {
+  min-width: 240px;
+}
+
+.new-song-dropdown-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 12px;
+  padding: 10px 14px !important;
+}
+
+.new-song-dropdown-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--accent);
+}
+
+.new-song-dropdown-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.new-song-dropdown-title {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.new-song-dropdown-description {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
