@@ -1,6 +1,6 @@
 import { Button } from '@heroui/react';
 import { FileText, Music, Search, X } from 'lucide-react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { searchSongs } from '../services/lrclib';
 import './FindSongModal.css';
 
@@ -13,6 +13,7 @@ function FindSongModal({ isOpen, onClose, onAddSong }) {
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [searchDone, setSearchDone] = useState(false);
   const debounceRef = useRef(null);
   const abortRef = useRef(null);
 
@@ -20,6 +21,7 @@ function FindSongModal({ isOpen, onClose, onAddSong }) {
     setQuery(value);
     setSelectedSong(null);
     setError(null);
+    setSearchDone(false);
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (abortRef.current) abortRef.current.abort();
@@ -36,6 +38,7 @@ function FindSongModal({ isOpen, onClose, onAddSong }) {
       try {
         const data = await searchSongs(value, { signal: abortRef.current.signal });
         setResults(data);
+        setSearchDone(true);
       } catch (err) {
         if (err.name === 'AbortError') return;
         console.error('Song search failed:', err);
@@ -52,10 +55,22 @@ function FindSongModal({ isOpen, onClose, onAddSong }) {
     setResults([]);
     setSelectedSong(null);
     setError(null);
+    setSearchDone(false);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (abortRef.current) abortRef.current.abort();
     onClose();
   };
+
+  // Keyboard: Escape to close, Enter to add selected song
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') handleClose();
+      if (e.key === 'Enter' && selectedSong && !adding) handleAddSong();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, selectedSong, adding]);
 
   const handleAddSong = async () => {
     if (!selectedSong || adding) return;
@@ -105,9 +120,14 @@ function FindSongModal({ isOpen, onClose, onAddSong }) {
 
             <div className="find-song-results-area">
               {error && <p className="find-song-error">{error}</p>}
-              {!error && results.length === 0 && !searching && (
+              {!error && results.length === 0 && !searching && !searchDone && (
                 <div className="find-song-empty-state">
                   <Music size={40} />
+                </div>
+              )}
+              {!error && results.length === 0 && !searching && searchDone && (
+                <div className="find-song-empty-state find-song-empty-state--searching">
+                  <p className="find-song-no-results">No songs found</p>
                 </div>
               )}
               {!error && searching && results.length === 0 && (

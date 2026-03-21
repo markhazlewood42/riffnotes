@@ -170,6 +170,11 @@
   color: var(--muted-foreground, #71717a);
 }
 
+.find-song-no-results {
+  font-size: 14px;
+  color: var(--muted-foreground, #71717a);
+}
+
 .find-song-error {
   font-size: 12px;
   color: var(--danger, #ff383c);
