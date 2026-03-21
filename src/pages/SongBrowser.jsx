@@ -6,6 +6,7 @@ import FindSongModal from "../components/FindSongModal";
 import GlobalToolbar from "../components/GlobalToolbar";
 import NewSongDropdown from "../components/NewSongDropdown";
 import { useAuth } from "../context/AuthContext";
+import { buildDocumentFromLyrics } from "../services/songDocument";
 import { supabase } from "../supabase";
 import "./SongBrowser.css";
 
@@ -118,9 +119,27 @@ function SongBrowser() {
       <FindSongModal
         isOpen={findModalOpen}
         onClose={() => setFindModalOpen(false)}
-        onAddSong={(song) => {
-          console.log('Add song:', song); // placeholder for Task 4
-          setFindModalOpen(false);
+        onAddSong={async (song) => {
+          const title = `${song.artistName} - ${song.trackName}`;
+          const document = buildDocumentFromLyrics(title, song.plainLyrics);
+
+          const { data, error } = await supabase
+            .from("songs")
+            .insert({
+              user_id: user.id,
+              title,
+              document,
+              annotations: {},
+            })
+            .select("id")
+            .single();
+
+          if (error) {
+            console.error("Failed to create song:", error);
+            return;
+          }
+
+          navigate(`/songs/${data.id}`);
         }}
       />
     </div>

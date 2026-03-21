@@ -12,6 +12,7 @@ function FindSongModal({ isOpen, onClose, onAddSong }) {
   const [selectedSong, setSelectedSong] = useState(null);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState(null);
+  const [adding, setAdding] = useState(false);
   const debounceRef = useRef(null);
   const abortRef = useRef(null);
 
@@ -56,9 +57,11 @@ function FindSongModal({ isOpen, onClose, onAddSong }) {
     onClose();
   };
 
-  const handleAddSong = () => {
-    if (!selectedSong) return;
-    onAddSong(selectedSong);
+  const handleAddSong = async () => {
+    if (!selectedSong || adding) return;
+    setAdding(true);
+    await onAddSong(selectedSong);
+    setAdding(false);
     handleClose();
   };
 
@@ -155,8 +158,8 @@ function FindSongModal({ isOpen, onClose, onAddSong }) {
 
         <div className="find-song-footer">
           <Button variant="secondary" onPress={handleClose} size="sm">Cancel</Button>
-          <Button variant="primary" onPress={handleAddSong} size="sm" isDisabled={!selectedSong}>
-            Add song
+          <Button variant="primary" onPress={handleAddSong} size="sm" isDisabled={!selectedSong || adding}>
+            {adding ? 'Adding...' : 'Add song'}
           </Button>
         </div>
       </div>
