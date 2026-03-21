@@ -4,45 +4,21 @@
   --find-song-modal-height: 630px;
 }
 
-/* Backdrop */
-.find-song-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-/* Modal panel */
-.find-song-modal {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 48px 24px 24px;
-  height: var(--find-song-modal-height);
-  max-height: 80vh;
-  width: calc(
-    var(--find-song-pane-width) + var(--find-song-preview-width) + 10px + 1px +
+/* Modal container — override HeroUI size to match our split-pane layout */
+.find-song-container {
+  max-width: calc(
+    var(--find-song-pane-width) + var(--find-song-preview-width) + 24px + 1px +
       48px
   );
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--background);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  width: 100%;
 }
 
-/* Close button — positioning only, styling from HeroUI CloseButton */
-.find-song-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 1;
+.find-song-dialog {
+  height: var(--find-song-modal-height);
+  max-height: 80vh;
 }
 
-/* Body layout */
+/* Body layout — split pane */
 .find-song-body {
   display: flex;
   gap: 24px;
@@ -69,20 +45,7 @@
   font-size: 12px;
   line-height: 1.34;
   color: var(--muted-foreground, #71717a);
-  padding: 0 4px;
-}
-
-/* Separators */
-.find-song-separator-h {
-  height: 1px;
-  background: var(--color-border);
-  flex-shrink: 0;
-}
-
-.find-song-separator-v {
-  width: 1px;
-  background: var(--color-border);
-  flex-shrink: 0;
+  padding: 4px 0 0;
 }
 
 /* Results area */
@@ -102,7 +65,7 @@
   opacity: 0.3;
 }
 
-.find-song-empty-state--searching {
+.find-song-empty-state--visible {
   opacity: 1;
 }
 
@@ -122,35 +85,7 @@
   padding: 12px;
 }
 
-/* Results list */
-.find-song-results-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.find-song-result-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 6px 12px;
-  min-height: 36px;
-  border: none;
-  background: transparent;
-  border-radius: 20px;
-  cursor: pointer;
-  width: 100%;
-  text-align: left;
-}
-
-.find-song-result-item:hover {
-  background: var(--default-100, #f4f4f5);
-}
-
-.find-song-result-item.selected {
-  outline: 2px solid var(--accent-500, #8217e7);
-  outline-offset: -2px;
-}
-
+/* Results list — text layout within ListBox items */
 .find-song-result-title {
   font-size: 14px;
   font-weight: 500;
@@ -226,14 +161,6 @@
   white-space: pre-wrap;
   border-right: 0.5px solid var(--color-editor-divider, #d0d0d4);
   padding-right: 4px;
-}
-
-/* Footer */
-.find-song-footer {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  flex-shrink: 0;
 }
 
 /* Dark mode overrides */
