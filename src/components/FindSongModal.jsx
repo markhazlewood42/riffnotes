@@ -1,0 +1,167 @@
+import { Button } from '@heroui/react';
+import { FileText, Music, Search, X } from 'lucide-react';
+import { useCallback, useRef, useState } from 'react';
+import { searchSongs } from '../services/lrclib';
+import './FindSongModal.css';
+
+const DEBOUNCE_MS = 400;
+
+function FindSongModal({ isOpen, onClose, onAddSong }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [selectedSong, setSelectedSong] = useState(null);
+  const [searching, setSearching] = useState(false);
+  const [error, setError] = useState(null);
+  const debounceRef = useRef(null);
+  const abortRef = useRef(null);
+
+  const handleSearch = useCallback((value) => {
+    setQuery(value);
+    setSelectedSong(null);
+    setError(null);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (abortRef.current) abortRef.current.abort();
+
+    if (!value || value.trim().length < 2) {
+      setResults([]);
+      setSearching(false);
+      return;
+    }
+
+    setSearching(true);
+    debounceRef.current = setTimeout(async () => {
+      abortRef.current = new AbortController();
+      try {
+        const data = await searchSongs(value, { signal: abortRef.current.signal });
+        setResults(data);
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        console.error('Song search failed:', err);
+        setError('Could not reach the song database. Check your connection and try again.');
+        setResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, DEBOUNCE_MS);
+  }, []);
+
+  const handleClose = () => {
+    setQuery('');
+    setResults([]);
+    setSelectedSong(null);
+    setError(null);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (abortRef.current) abortRef.current.abort();
+    onClose();
+  };
+
+  const handleAddSong = () => {
+    if (!selectedSong) return;
+    onAddSong(selectedSong);
+    handleClose();
+  };
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) handleClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="find-song-backdrop" onClick={handleBackdropClick}>
+      <div className="find-song-modal" role="dialog" aria-modal="true" aria-label="Find a song">
+        <button className="find-song-close" onClick={handleClose} aria-label="Close">
+          <X size={16} />
+        </button>
+
+        <div className="find-song-body">
+          {/* Left pane */}
+          <div className="find-song-left">
+            <div className="find-song-search-field">
+              <div className="find-song-search-input-wrapper">
+                <Search size={16} className="find-song-search-icon" />
+                <input
+                  type="text"
+                  className="find-song-search-input"
+                  placeholder="Find a song ..."
+                  value={query}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  autoFocus
+                />
+                {query && (
+                  <button className="find-song-clear" onClick={() => handleSearch('')} aria-label="Clear search">
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+              <p className="find-song-search-hint">Search for a song by title or artist</p>
+            </div>
+
+            <div className="find-song-separator-h" />
+
+            <div className="find-song-results-area">
+              {error && <p className="find-song-error">{error}</p>}
+              {!error && results.length === 0 && !searching && (
+                <div className="find-song-empty-state">
+                  <Music size={40} />
+                </div>
+              )}
+              {!error && searching && results.length === 0 && (
+                <div className="find-song-empty-state find-song-empty-state--searching">
+                  <p className="find-song-searching-text">Searching...</p>
+                </div>
+              )}
+              {results.length > 0 && (
+                <div className="find-song-results-list">
+                  {results.map((song) => (
+                    <button
+                      key={song.id}
+                      className={`find-song-result-item${selectedSong?.id === song.id ? ' selected' : ''}`}
+                      onClick={() => setSelectedSong(song)}
+                    >
+                      <span className="find-song-result-title">{song.trackName}</span>
+                      <span className="find-song-result-artist">{song.artistName}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="find-song-separator-v" />
+
+          {/* Right pane */}
+          <div className="find-song-right">
+            {!selectedSong ? (
+              <div className="find-song-preview-empty">
+                <FileText size={20} />
+                <p>Preview</p>
+              </div>
+            ) : (
+              <div className="find-song-preview">
+                <div className="find-song-preview-doc">
+                  <h3 className="find-song-preview-title">
+                    {selectedSong.artistName} - {selectedSong.trackName}
+                  </h3>
+                  <div className="find-song-preview-lyrics">
+                    {selectedSong.plainLyrics}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="find-song-footer">
+          <Button variant="secondary" onPress={handleClose} size="sm">Cancel</Button>
+          <Button variant="primary" onPress={handleAddSong} size="sm" isDisabled={!selectedSong}>
+            Add song
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default FindSongModal;

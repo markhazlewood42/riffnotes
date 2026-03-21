@@ -2,6 +2,7 @@ import { Card, Spinner } from "@heroui/react";
 import { LockIcon, Music, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import FindSongModal from "../components/FindSongModal";
 import GlobalToolbar from "../components/GlobalToolbar";
 import NewSongDropdown from "../components/NewSongDropdown";
 import { useAuth } from "../context/AuthContext";
@@ -113,6 +114,15 @@ function SongBrowser() {
           </div>
         )}
       </main>
+
+      <FindSongModal
+        isOpen={findModalOpen}
+        onClose={() => setFindModalOpen(false)}
+        onAddSong={(song) => {
+          console.log('Add song:', song); // placeholder for Task 4
+          setFindModalOpen(false);
+        }}
+      />
     </div>
   );
 }
