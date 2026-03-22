@@ -163,15 +163,4 @@
   padding-right: 4px;
 }
 
-/* Dark mode overrides */
-.dark .find-song-preview-doc {
-  background: var(--surface, #27272a);
-}
-
-.dark .find-song-preview-title {
-  color: var(--foreground);
-}
-
-.dark .find-song-preview-lyrics {
-  color: var(--foreground);
-}
+/* Preview doc always renders as a white page, even in dark mode */
