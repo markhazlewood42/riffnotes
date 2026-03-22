@@ -96,6 +96,11 @@
   padding: 4px;
 }
 
+/* Separators — vertical shown by default, horizontal hidden */
+.find-song-separator-horizontal {
+  display: none;
+}
+
 /* Right pane */
 .find-song-right {
   flex: 1;
@@ -135,6 +140,8 @@
 
 .find-song-preview-doc {
   width: var(--find-song-preview-width);
+  min-width: 220px;
+  max-width: 312px;
   max-height: 100%;
   overflow-y: auto;
   background: white;
@@ -164,3 +171,82 @@
 }
 
 /* Preview doc always renders as a white page, even in dark mode */
+
+/* ── Responsive: medium breakpoint (900px) ── */
+@media (max-width: 900px) {
+  :root {
+    --find-song-pane-width: 300px;
+    --find-song-preview-width: 360px;
+  }
+
+  .find-song-dialog {
+    padding: 24px;
+  }
+}
+
+/* ── Responsive: small breakpoint (640px) ── */
+@media (max-width: 640px) {
+  :root {
+    --find-song-pane-width: 100%;
+    --find-song-preview-width: 100%;
+  }
+
+  .find-song-container {
+    max-width: 100%;
+    max-height: calc(100% - 50px);
+    margin: auto 0 0;
+  }
+
+  .find-song-dialog {
+    height: 100%;
+    max-height: 100%;
+    padding: 40px 24px 24px;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .find-song-body {
+    flex-direction: column;
+    gap: 12px;
+    padding: 0;
+  }
+
+  .find-song-left {
+    width: 100%;
+    max-width: calc(100% - 40px);
+    flex-shrink: 0;
+    flex: 0 0 auto;
+    max-height: 50%;
+    gap: 12px;
+  }
+
+  .find-song-right {
+    flex: 1;
+    width: 100%;
+  }
+
+  /* Swap separators: hide vertical, show horizontal */
+  .find-song-separator-vertical {
+    display: none;
+  }
+
+  .find-song-separator-horizontal {
+    display: flex;
+  }
+
+  .find-song-preview {
+    padding: 0;
+  }
+
+  .find-song-preview-doc {
+    width: 100%;
+  }
+
+  .find-song-footer {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .find-song-footer button {
+    width: 100%;
+  }
+}
