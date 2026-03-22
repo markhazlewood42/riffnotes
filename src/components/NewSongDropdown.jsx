@@ -12,7 +12,7 @@ function NewSongDropdown({ onNewBlank, onFindSong }) {
           <ChevronDown size={14} />
         </Button>
       </Dropdown.Trigger>
-      <Dropdown.Popover>
+      <Dropdown.Popover placement="bottom end">
         <Dropdown.Menu
           aria-label="New song options"
           className="new-song-dropdown-menu"
