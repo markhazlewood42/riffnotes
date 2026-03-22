@@ -241,7 +241,8 @@ function FindSongModal({ isOpen, onClose, onAddSong }) {
                   )}
                 </div>
               </div>
-              <Separator orientation="vertical" />
+              <Separator orientation="vertical" className="find-song-separator-vertical" />
+              <Separator className="find-song-separator-horizontal" />
               {/* Right pane */}
               <div className="find-song-right">
                 {!selectedSong && (
