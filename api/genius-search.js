@@ -37,5 +37,14 @@ export default async function handler(req, res) {
       albumArt: hit.result.song_art_image_thumbnail_url,
     }));
 
-  res.status(200).json({ hits });
+  // Sort: title matches first (alphabetically), then artist-only matches (alphabetically)
+  const queryLower = q.trim().toLowerCase();
+  const titleMatches = hits
+    .filter((h) => h.trackName?.toLowerCase().includes(queryLower))
+    .sort((a, b) => a.trackName.localeCompare(b.trackName));
+  const artistOnly = hits
+    .filter((h) => !h.trackName?.toLowerCase().includes(queryLower))
+    .sort((a, b) => a.trackName.localeCompare(b.trackName));
+
+  res.status(200).json({ hits: [...titleMatches, ...artistOnly] });
 }
