@@ -1,8 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { resolve } from 'path';
-import { pathToFileURL } from 'url';
+const VALID_FN_NAME = /^[a-z0-9-_]+$/i;
 
 // Dev middleware that loads Vercel serverless functions from api/ directory
 function vercelApiMiddleware() {
@@ -10,19 +9,20 @@ function vercelApiMiddleware() {
     name: 'vercel-api-dev',
     configureServer(server) {
       // Load all env vars (not just VITE_*) for serverless functions
-      const env = loadEnv('development', process.cwd(), '');
+      const env = loadEnv(server.config.mode, process.cwd(), '');
       Object.assign(process.env, env);
       server.middlewares.use(async (req, res, next) => {
         if (!req.url.startsWith('/api/')) return next();
 
         const fnName = req.url.split('?')[0].replace('/api/', '');
-        const fnPath = resolve(`api/${fnName}.js`);
-
+        if (!VALID_FN_NAME.test(fnName)) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Not found' }));
+          return;
+        }
         try {
-          // Dynamic import with cache-busting for dev
-          const mod = await import(
-            `${pathToFileURL(fnPath).href}?t=${Date.now()}`
-          );
+          // Use Vite's SSR module loader for proper HMR and no module cache leak
+          const mod = await server.ssrLoadModule(`/api/${fnName}.js`);
           const handler = mod.default;
 
           // Parse query params

@@ -94,14 +94,22 @@ function FindSongModal({ isOpen, onClose, onAddSong }) {
   const handleAddSong = async () => {
     if (!selectedSong || !lyrics || adding) return;
     setAdding(true);
-    await onAddSong({ ...selectedSong, plainLyrics: lyrics });
-    setAdding(false);
-    handleClose();
+    setError(null);
+    try {
+      await onAddSong({ ...selectedSong, plainLyrics: lyrics });
+      handleClose();
+    } catch (err) {
+      console.error("Add song failed:", err);
+      setError("Failed to add song. Please try again.");
+    } finally {
+      setAdding(false);
+    }
   };
 
   // Fetch lyrics when a song is selected
   useEffect(() => {
     if (!selectedSong) {
+      if (lyricsAbortRef.current) lyricsAbortRef.current.abort();
       setLyrics(null);
       setLyricsNotFound(false);
       return;

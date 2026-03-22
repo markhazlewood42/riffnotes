@@ -1,9 +1,9 @@
 const LRCLIB_BASE = 'https://lrclib.net/api';
 
 /**
- * Search for songs via Genius API (proxied through Vercel serverless function).
+ * Search for songs via Genius API (proxied through our serverless function).
  * Returns array of { id, trackName, artistName, albumArt }.
- * Does NOT include lyrics — use getLyrics() to fetch those separately.
+ * Lyrics are fetched separately via getLyrics() which uses LRCLIB.
  */
 export async function searchSongs(query, { signal } = {}) {
   if (!query || query.trim().length < 2) return [];
@@ -24,6 +24,7 @@ export async function searchSongs(query, { signal } = {}) {
  * Returns { plainLyrics } or null if not found.
  */
 export async function getLyrics(trackName, artistName, { signal } = {}) {
+  if (!trackName || !artistName) return null;
   const params = new URLSearchParams({
     track_name: trackName,
     artist_name: artistName,
