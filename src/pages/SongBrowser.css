@@ -37,6 +37,14 @@
   color: var(--color-text-secondary);
   font-family: var(--font-ui);
   font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.song-browser-empty-icon {
+  opacity: 0.4;
 }
 
 .song-grid {

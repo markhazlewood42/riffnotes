@@ -1,9 +1,12 @@
-import { Button, Card, Spinner } from "@heroui/react";
-import { LockIcon, Trash2 } from "lucide-react";
+import { Card, Spinner } from "@heroui/react";
+import { LockIcon, Music, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import FindSongModal from "../components/FindSongModal";
 import GlobalToolbar from "../components/GlobalToolbar";
+import NewSongDropdown from "../components/NewSongDropdown";
 import { useAuth } from "../context/AuthContext";
+import { buildDocumentFromLyrics } from "../services/songDocument";
 import { supabase } from "../supabase";
 import "./SongBrowser.css";
 
@@ -12,6 +15,7 @@ function SongBrowser() {
   const { user } = useAuth();
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [findModalOpen, setFindModalOpen] = useState(false);
 
   useEffect(() => {
     supabase
@@ -59,9 +63,10 @@ function SongBrowser() {
       <main className="song-browser-content">
         <div className="song-browser-header">
           <h2 className="song-browser-title">Your Songs</h2>
-          <Button color="accent" onPress={createSong}>
-            + New Song
-          </Button>
+          <NewSongDropdown
+            onNewBlank={createSong}
+            onFindSong={() => setFindModalOpen(true)}
+          />
         </div>
 
         {loading ? (
@@ -70,10 +75,8 @@ function SongBrowser() {
           </div>
         ) : songs.length === 0 ? (
           <div className="song-browser-empty">
+            <Music size={32} className="song-browser-empty-icon" />
             <p>No songs yet.</p>
-            <Button color="accent" onPress={createSong} className="mt-4">
-              Create your first song
-            </Button>
           </div>
         ) : (
           <div className="song-grid">
@@ -112,6 +115,33 @@ function SongBrowser() {
           </div>
         )}
       </main>
+
+      <FindSongModal
+        isOpen={findModalOpen}
+        onClose={() => setFindModalOpen(false)}
+        onAddSong={async (song) => {
+          const title = `${song.artistName} - ${song.trackName}`;
+          const document = buildDocumentFromLyrics(title, song.plainLyrics);
+
+          const { data, error } = await supabase
+            .from("songs")
+            .insert({
+              user_id: user.id,
+              title,
+              document,
+              annotations: {},
+            })
+            .select("id")
+            .single();
+
+          if (error) {
+            console.error("Failed to create song:", error);
+            return;
+          }
+
+          navigate(`/songs/${data.id}`);
+        }}
+      />
     </div>
   );
 }
