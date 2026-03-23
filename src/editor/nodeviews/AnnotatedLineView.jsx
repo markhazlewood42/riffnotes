@@ -3,8 +3,88 @@ import { NodeViewWrapper, NodeViewContent } from '@tiptap/react';
 import { Trash2, Check } from 'lucide-react';
 import { useLyricSheet } from '../../context/LyricSheetContext';
 import { supabase } from '../../supabase';
-import { getRightNoteForLine, getChordsForLine, getImageForLine } from '../../context/annotationReducer';
+import { getRightAnnotationsForLine, getChordsForLine } from '../../context/annotationReducer';
 import { BEND_INSET, LEADER_OVERSHOOT } from '../../hooks/useAnnotationLayout';
+
+const VERTICAL_TICK_HEIGHT = 14; // px — height of the vertical tick at the start of the leader line
+
+/**
+ * Individual right-column annotation (text note or image).
+ * Encapsulates its own hover/confirm delete state.
+ */
+function RightAnnotationItem({ annotation, topOffset, isLocked, onDelete }) {
+  const [hoverState, setHoverState] = useState('idle');
+  const wrapperRef = useRef(null);
+
+  // Dismiss confirm state on outside click
+  useEffect(() => {
+    if (hoverState !== 'confirm') return;
+    const handler = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setHoverState('idle');
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [hoverState]);
+
+  const handleMouseEnter = () => {
+    if (!isLocked && hoverState === 'idle') setHoverState('hover');
+  };
+  const handleMouseLeave = () => {
+    if (hoverState === 'hover') setHoverState('idle');
+  };
+
+  const actions = !isLocked && (
+    <div className="annotation-actions">
+      <button
+        className={`annotation-action-btn${hoverState === 'idle' ? ' annotation-action-btn--hidden' : ''}${hoverState === 'confirm' ? ' annotation-action-btn--disabled' : ''}`}
+        disabled={hoverState === 'confirm'}
+        onMouseDown={hoverState === 'hover' ? (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setHoverState('confirm');
+        } : undefined}
+      >
+        <Trash2 size={12} />
+      </button>
+      <button
+        className={`annotation-action-btn annotation-action-btn--confirm${hoverState !== 'confirm' ? ' annotation-action-btn--hidden' : ''}`}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onDelete(annotation.id);
+        }}
+      >
+        <Check size={12} />
+      </button>
+    </div>
+  );
+
+  const isImage = annotation.type === 'image';
+
+  return (
+    <div
+      ref={wrapperRef}
+      data-annotation-id={annotation.id}
+      className={`right-annotation-actions-wrapper${isImage ? ' right-annotation-actions-wrapper--image' : ''}`}
+      style={topOffset != null ? { top: `${topOffset}px` } : undefined}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {isImage ? (
+        <div className="right-annotation-image-container">
+          <img className="right-annotation-image" src={annotation.url} alt="Annotation" />
+        </div>
+      ) : (
+        <span className={`right-annotation-text style-${annotation.style || 'default'}${hoverState !== 'idle' ? ' is-active' : ''}`}>
+          {annotation.value}
+        </span>
+      )}
+      {actions}
+    </div>
+  );
+}
 
 function AnnotatedLineView(props) {
   const { node } = props;
@@ -14,13 +94,9 @@ function AnnotatedLineView(props) {
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  const rightNote = useMemo(
-    () => getRightNoteForLine(state, lineId),
-    [state, lineId]
-  );
-
-  const imageAnnotation = useMemo(
-    () => getImageForLine(state, lineId),
+  // All right-column annotations (text + image) for this line, sorted by charOffset
+  const rightAnnotations = useMemo(
+    () => getRightAnnotationsForLine(state, lineId),
     [state, lineId]
   );
 
@@ -29,77 +105,40 @@ function AnnotatedLineView(props) {
     [state, lineId]
   );
 
-  // Sort chords by charOffset for rendering
   const sortedChords = useMemo(
     () => [...chords].sort((a, b) => a.charOffset - b.charOffset),
     [chords]
   );
 
-  // Two-step delete: 'idle' | 'hover' | 'confirm'
-  const [rightAnnotationState, setRightAnnotationState] = useState('idle');
-  const rightAnnotationRef = useRef(null);
-
-  // Dismiss confirm state on outside click
-  useEffect(() => {
-    if (rightAnnotationState !== 'confirm') return;
-    const handler = (e) => {
-      if (rightAnnotationRef.current && !rightAnnotationRef.current.contains(e.target)) {
-        setRightAnnotationState('idle');
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [rightAnnotationState]);
-
-  const handleDeleteRightNote = (e) => {
-    e?.stopPropagation();
-    if (isLocked) return;
-    if (rightNote) {
-      dispatch({ type: 'DELETE_ANNOTATION', payload: { id: rightNote.id } });
-      setRightAnnotationState('idle');
-    }
-  };
-
-  const handleDeleteImage = (e) => {
-    e?.stopPropagation();
-    if (isLocked) return;
-    if (imageAnnotation) {
-      dispatch({ type: 'DELETE_ANNOTATION', payload: { id: imageAnnotation.id } });
-      setRightAnnotationState('idle');
-    }
-  };
-
-  const handleDeleteChord = (chordId, e) => {
-    e.stopPropagation();
-    if (isLocked) return;
-    dispatch({ type: 'DELETE_ANNOTATION', payload: { id: chordId } });
-  };
-
-  const styleClass = rightNote
-    ? `style-${rightNote.style || 'default'}`
-    : '';
-
   const isEditingNote = editingNote?.lineId === lineId;
-  const hasAnnotation = !!rightNote || !!imageAnnotation;
-  const showRightColumn = hasAnnotation || isEditingNote;
+  const showRightColumn = rightAnnotations.length > 0 || isEditingNote;
 
-  // charOffset for leader line: use editing position when creating, existing note's position otherwise
-  const charOffsetForLeader = isEditingNote
-    ? editingNote.charOffset
-    : (rightNote?.charOffset ?? imageAnnotation?.charOffset ?? null);
+  // When editing, hide any existing annotation at the same charOffset (it will be replaced on submit)
+  const displayAnnotations = useMemo(() => {
+    if (!isEditingNote) return rightAnnotations;
+    return rightAnnotations.filter(a => a.charOffset !== editingNote.charOffset);
+  }, [rightAnnotations, isEditingNote, editingNote]);
 
-  // Layout coordinator: compute relative top offset for this line's annotation.
-  // layout.top is absolute (relative to .document-body), layout.lineTop is the line's
-  // position in the same coordinate space. The difference gives us the CSS `top` value
-  // to apply to the annotation wrapper (which is position: absolute within the line).
-  const layout = layoutMap?.[lineId];
-  const annotationTopOffset = layout ? layout.top - layout.lineTop : null;
-  const displacement = layout?.displacement ?? 0;
+  // Items that need leader lines: displayed annotations + editing input
+  const leaderItems = useMemo(() => {
+    const items = displayAnnotations.map(ann => ({
+      id: ann.id,
+      charOffset: ann.charOffset,
+    }));
+    if (isEditingNote) {
+      items.push({
+        id: `editing-${lineId}`,
+        charOffset: editingNote.charOffset,
+      });
+    }
+    items.sort((a, b) => a.charOffset - b.charOffset);
+    return items;
+  }, [displayAnnotations, isEditingNote, editingNote, lineId]);
 
   const wrapperRef = useRef(null);
   const noteInputRef = useRef(null);
   const leaderRef = useRef(null);
-  const [pullbackPx, setPullbackPx] = useState(0);
+  const [pullbackMap, setPullbackMap] = useState({});
   const [leaderWidth, setLeaderWidth] = useState(0);
   const [chordLeftPositions, setChordLeftPositions] = useState({});
 
@@ -110,38 +149,46 @@ function AnnotatedLineView(props) {
     }
   }, [isEditingNote]);
 
-  const measurePullback = useCallback(() => {
-    if (!showRightColumn || charOffsetForLeader == null || !wrapperRef.current) return;
+  // Measure pullback for each leader item's charOffset
+  const measureAllPullbacks = useCallback(() => {
+    if (!showRightColumn || !wrapperRef.current) {
+      setPullbackMap({});
+      return;
+    }
     const contentEl = wrapperRef.current.querySelector('.lyric-content');
     if (!contentEl) return;
 
-    const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT);
-    let textNode = null;
-    let accumulated = 0;
-    while (walker.nextNode()) {
-      const n = walker.currentNode;
-      if (accumulated + n.length >= charOffsetForLeader) {
-        textNode = n;
-        break;
-      }
-      accumulated += n.length;
-    }
-    if (!textNode) return;
-
-    const localOffset = charOffsetForLeader - accumulated;
-    const range = document.createRange();
-    range.setStart(textNode, localOffset);
-    range.setEnd(textNode, textNode.length);
-
-    const rangeRect = range.getBoundingClientRect();
     const wrapperRect = wrapperRef.current.getBoundingClientRect();
-    // getBoundingClientRect returns zoomed (screen) pixels; marginLeft is CSS pixels.
-    // Divide by zoom so the margin value matches the visual offset correctly.
     const zoomEl = wrapperRef.current.closest('.document-container');
     const zoom = zoomEl ? (parseFloat(getComputedStyle(zoomEl).zoom) || 1) : 1;
-    const px = (wrapperRect.right - rangeRect.left) / zoom;
-    setPullbackPx(px);
-  }, [showRightColumn, charOffsetForLeader]);
+
+    const newMap = {};
+    for (const item of leaderItems) {
+      if (item.charOffset == null) continue;
+
+      const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT);
+      let textNode = null;
+      let accumulated = 0;
+      while (walker.nextNode()) {
+        const n = walker.currentNode;
+        if (accumulated + n.length >= item.charOffset) {
+          textNode = n;
+          break;
+        }
+        accumulated += n.length;
+      }
+      if (!textNode) continue;
+
+      const localOffset = item.charOffset - accumulated;
+      const range = document.createRange();
+      range.setStart(textNode, localOffset);
+      range.setEnd(textNode, textNode.length);
+
+      const rangeRect = range.getBoundingClientRect();
+      newMap[item.id] = (wrapperRect.right - rangeRect.left) / zoom;
+    }
+    setPullbackMap(newMap);
+  }, [showRightColumn, leaderItems]);
 
   // Measure actual pixel left positions for chord labels using collapsed DOM Ranges.
   // Chords are centered over their selection: measure start and end pixel positions,
@@ -272,9 +319,20 @@ function AnnotatedLineView(props) {
     }
   }, [dispatch, lineId, editingNote, stopEditingNote, editorRef]);
 
+  const handleDeleteAnnotation = useCallback((annotationId) => {
+    if (isLocked) return;
+    dispatch({ type: 'DELETE_ANNOTATION', payload: { id: annotationId } });
+  }, [dispatch, isLocked]);
+
+  const handleDeleteChord = (chordId, e) => {
+    e.stopPropagation();
+    if (isLocked) return;
+    dispatch({ type: 'DELETE_ANNOTATION', payload: { id: chordId } });
+  };
+
   useEffect(() => {
-    measurePullback();
-  }, [measurePullback]);
+    measureAllPullbacks();
+  }, [measureAllPullbacks]);
 
   useEffect(() => {
     measureChordPositions();
@@ -291,7 +349,7 @@ function AnnotatedLineView(props) {
 
   useEffect(() => {
     measureLeader();
-  }, [measureLeader, pullbackPx]);
+  }, [measureLeader, showRightColumn]);
 
   // Build chord overlay — pixel positions from DOM measurement, ch fallback on first render
   const chordOverlay = sortedChords.length > 0 ? (
@@ -315,42 +373,6 @@ function AnnotatedLineView(props) {
     </div>
   ) : null;
 
-  // Shared mouse handlers for right annotation hover/confirm states
-  const rightAnnotationMouseEnter = () => {
-    if (!isLocked && rightAnnotationState === 'idle') setRightAnnotationState('hover');
-  };
-  const rightAnnotationMouseLeave = () => {
-    if (rightAnnotationState === 'hover') setRightAnnotationState('idle');
-  };
-
-  // Action buttons — always rendered (when not locked) so the hover area and layout
-  // stay constant regardless of state. Visibility is toggled via CSS classes only.
-  const annotationActions = !isLocked && (
-    <div className="annotation-actions">
-      <button
-        className={`annotation-action-btn${rightAnnotationState === 'idle' ? ' annotation-action-btn--hidden' : ''}${rightAnnotationState === 'confirm' ? ' annotation-action-btn--disabled' : ''}`}
-        disabled={rightAnnotationState === 'confirm'}
-        onMouseDown={rightAnnotationState === 'hover' ? (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setRightAnnotationState('confirm');
-        } : undefined}
-      >
-        <Trash2 size={12} />
-      </button>
-      <button
-        className={`annotation-action-btn annotation-action-btn--confirm${rightAnnotationState !== 'confirm' ? ' annotation-action-btn--hidden' : ''}`}
-        onMouseDown={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          imageAnnotation ? handleDeleteImage(e) : handleDeleteRightNote(e);
-        }}
-      >
-        <Check size={12} />
-      </button>
-    </div>
-  );
-
   return (
     <NodeViewWrapper
       className={`annotated-line ${showRightColumn ? 'has-right-annotation' : ''}`}
@@ -365,98 +387,101 @@ function AnnotatedLineView(props) {
           ref={leaderRef}
           className="leader-line-container"
           contentEditable={false}
-          style={{
-            marginLeft: pullbackPx > 0 ? `-${pullbackPx}px` : undefined,
-          }}
         >
-          <svg
-            className="leader-line-svg"
-            style={{
-              width: `calc(100% + ${LEADER_OVERSHOOT}px)`,
-              ...(displacement > 0 ? { height: `${displacement + 2}px` } : {}),
-            }}
-            viewBox={`0 0 ${(leaderWidth || 1) + LEADER_OVERSHOOT} ${displacement > 0 ? displacement + 2 : 1}`}
-            preserveAspectRatio="none"
-          >
-            {displacement > 0 && leaderWidth > 0 ? (
-              <>
+          {leaderItems.map(item => {
+            const pullback = pullbackMap[item.id] || 0;
+            const layout = layoutMap?.[item.id];
+            const displacement = layout?.displacement ?? 0;
+            const svgW = (leaderWidth || 1) + pullback + 2 + LEADER_OVERSHOOT;
+            const svgH = VERTICAL_TICK_HEIGHT + (displacement > 0 ? displacement + 2 : 2);
+
+            return (
+              <svg
+                key={item.id}
+                className="leader-line-svg"
+                style={{
+                  left: `-${pullback + 2}px`,
+                  width: `${svgW}px`,
+                  height: `${svgH}px`,
+                  top: `-${VERTICAL_TICK_HEIGHT - 4}px`,
+                }}
+                viewBox={`0 0 ${svgW} ${svgH}`}
+                preserveAspectRatio="none"
+              >
+                {/* Vertical tick at leader start */}
                 <line
-                  x1="0" y1="2"
-                  x2={Math.max(0, leaderWidth - BEND_INSET)} y2="2"
+                  x1="0" y1="0"
+                  x2="0" y2={VERTICAL_TICK_HEIGHT}
                   className="leader-line"
                   vectorEffect="non-scaling-stroke"
                 />
-                <line
-                  x1={Math.max(0, leaderWidth - BEND_INSET)} y1="2"
-                  x2={leaderWidth + LEADER_OVERSHOOT} y2={displacement + 2}
-                  className="leader-line"
-                  vectorEffect="non-scaling-stroke"
-                />
-              </>
-            ) : (
-              <line
-                x1="0" y1="2"
-                x2={leaderWidth + LEADER_OVERSHOOT} y2="2"
-                className="leader-line"
-                vectorEffect="non-scaling-stroke"
-              />
-            )}
-          </svg>
+                {displacement > 0 && leaderWidth > 0 ? (
+                  <>
+                    <line
+                      x1="0" y1={VERTICAL_TICK_HEIGHT}
+                      x2={Math.max(0, svgW - LEADER_OVERSHOOT - BEND_INSET)} y2={VERTICAL_TICK_HEIGHT}
+                      className="leader-line"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                    <line
+                      x1={Math.max(0, svgW - LEADER_OVERSHOOT - BEND_INSET)} y1={VERTICAL_TICK_HEIGHT}
+                      x2={svgW} y2={VERTICAL_TICK_HEIGHT + displacement}
+                      className="leader-line"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  </>
+                ) : (
+                  <line
+                    x1="0" y1={VERTICAL_TICK_HEIGHT}
+                    x2={svgW} y2={VERTICAL_TICK_HEIGHT}
+                    className="leader-line"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                )}
+              </svg>
+            );
+          })}
         </div>
       )}
       <div className="right-annotation-column" contentEditable={false}>
-        {showRightColumn && (
-          isEditingNote ? (
-            <div
-              className="right-annotation-actions-wrapper"
-              style={annotationTopOffset != null ? { top: `${annotationTopOffset}px` } : undefined}
-            >
-              <input
-                ref={noteInputRef}
-                className="note-inline-input"
-                type="text"
-                placeholder="type note or paste image"
-                onPaste={handleNotePaste}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') { e.preventDefault(); handleNoteSubmit(e.target.value); }
-                  else if (e.key === 'Escape') { handleNoteCancel(); }
-                }}
-                onBlur={(e) => {
-                  handleNoteCancel();
-                }}
-              />
-            </div>
-          ) : imageAnnotation ? (
-            <div
-              ref={rightAnnotationRef}
-              className="right-annotation-actions-wrapper right-annotation-actions-wrapper--image"
-              style={annotationTopOffset != null ? { top: `${annotationTopOffset}px` } : undefined}
-              onMouseEnter={rightAnnotationMouseEnter}
-              onMouseLeave={rightAnnotationMouseLeave}
-            >
-              <div className="right-annotation-image-container">
-                <img
-                  className="right-annotation-image"
-                  src={imageAnnotation.url}
-                  alt="Annotation"
-                />
-              </div>
-              {annotationActions}
-            </div>
-          ) : (
-            <div
-              ref={rightAnnotationRef}
-              className="right-annotation-actions-wrapper"
-              style={annotationTopOffset != null ? { top: `${annotationTopOffset}px` } : undefined}
-              onMouseEnter={rightAnnotationMouseEnter}
-              onMouseLeave={rightAnnotationMouseLeave}
-            >
-              <span className={`right-annotation-text ${styleClass}${rightAnnotationState !== 'idle' ? ' is-active' : ''}`}>
-                {rightNote.value}
-              </span>
-              {annotationActions}
-            </div>
-          )
+        {displayAnnotations.map(annotation => {
+          const layout = layoutMap?.[annotation.id];
+          const topOffset = layout ? layout.top - layout.lineTop : null;
+          return (
+            <RightAnnotationItem
+              key={annotation.id}
+              annotation={annotation}
+              topOffset={topOffset}
+              isLocked={isLocked}
+              onDelete={handleDeleteAnnotation}
+            />
+          );
+        })}
+        {isEditingNote && (
+          <div
+            data-annotation-id={`editing-${lineId}`}
+            className="right-annotation-actions-wrapper"
+            style={(() => {
+              const layout = layoutMap?.[`editing-${lineId}`];
+              const topOffset = layout ? layout.top - layout.lineTop : null;
+              return topOffset != null ? { top: `${topOffset}px` } : undefined;
+            })()}
+          >
+            <input
+              ref={noteInputRef}
+              className="note-inline-input"
+              type="text"
+              placeholder="type note or paste image"
+              onPaste={handleNotePaste}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') { e.preventDefault(); handleNoteSubmit(e.target.value); }
+                else if (e.key === 'Escape') { handleNoteCancel(); }
+              }}
+              onBlur={(e) => {
+                handleNoteCancel();
+              }}
+            />
+          </div>
         )}
       </div>
     </NodeViewWrapper>
