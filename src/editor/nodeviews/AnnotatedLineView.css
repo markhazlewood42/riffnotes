@@ -76,6 +76,10 @@
   fill: none;
 }
 
+.leader-line-tick {
+  stroke-dasharray: none;
+}
+
 /*
  * Right annotation column — zero height so it never expands the lyric row.
  * The annotation text overflows visually below, independent of lyric spacing.
