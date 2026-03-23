@@ -448,7 +448,7 @@ function AnnotatedLineView(props) {
                   left: `-${pullback + 1}px`,
                   width: `${svgW}px`,
                   height: `${svgH}px`,
-                  top: `-${VERTICAL_TICK_HEIGHT - 4}px`,
+                  top: `-${VERTICAL_TICK_HEIGHT - 3}px`,
                 }}
                 viewBox={`0 0 ${svgW} ${svgH}`}
                 preserveAspectRatio="none"
