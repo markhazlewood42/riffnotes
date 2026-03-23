@@ -109,6 +109,8 @@
   justify-content: center;
   min-height: 0;
   overflow: hidden;
+  background: var(--find-song-preview-bg, #f8f8f9);
+  border-radius: 12px;
 }
 
 .find-song-preview-empty {
@@ -135,7 +137,8 @@
   align-items: center;
   justify-content: center;
   padding: 12px;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .find-song-preview-doc {
@@ -171,6 +174,9 @@
 }
 
 /* Preview doc always renders as a white page, even in dark mode */
+.dark .find-song-right {
+  --find-song-preview-bg: #1e1e22;
+}
 
 /* ── Responsive: medium breakpoint (900px) ── */
 @media (max-width: 900px) {
@@ -207,21 +213,21 @@
   .find-song-body {
     flex-direction: column;
     gap: 12px;
-    padding: 0;
+    padding: 4px;
+    overflow-y: auto;
   }
 
   .find-song-left {
     width: 100%;
-    max-width: calc(100% - 40px);
     flex-shrink: 0;
     flex: 0 0 auto;
-    max-height: 50%;
     gap: 12px;
   }
 
   .find-song-right {
-    flex: 1;
+    flex: 0 0 auto;
     width: 100%;
+    min-height: 200px;
   }
 
   /* Swap separators: hide vertical, show horizontal */
@@ -234,7 +240,7 @@
   }
 
   .find-song-preview {
-    padding: 0;
+    padding: 12px;
   }
 
   .find-song-preview-doc {
