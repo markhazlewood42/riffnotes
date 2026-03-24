@@ -1,5 +1,5 @@
 import { Button, Dropdown } from "@heroui/react";
-import { ChevronDown, Music, Search } from "lucide-react";
+import { ChevronDown, File, Music } from "lucide-react";
 import "./NewSongDropdown.css";
 
 function NewSongDropdown({ onNewBlank, onFindSong }) {
@@ -12,7 +12,10 @@ function NewSongDropdown({ onNewBlank, onFindSong }) {
           <ChevronDown size={14} />
         </Button>
       </Dropdown.Trigger>
-      <Dropdown.Popover placement="bottom end" className="new-song-dropdown-popover">
+      <Dropdown.Popover
+        placement="bottom end"
+        className="new-song-dropdown-popover"
+      >
         <Dropdown.Menu
           aria-label="New song options"
           className="new-song-dropdown-menu"
@@ -21,22 +24,34 @@ function NewSongDropdown({ onNewBlank, onFindSong }) {
             if (key === "find") onFindSong();
           }}
         >
-          <Dropdown.Item key="blank" id="blank" className="new-song-dropdown-item">
+          <Dropdown.Item
+            key="find"
+            id="find"
+            className="new-song-dropdown-item"
+          >
             <div className="new-song-dropdown-icon">
               <Music size={18} />
             </div>
             <div className="new-song-dropdown-text">
-              <span className="new-song-dropdown-title">New blank song</span>
-              <span className="new-song-dropdown-description">Start with an empty document</span>
+              <span className="new-song-dropdown-title">Find a song</span>
+              <span className="new-song-dropdown-description">
+                Search and import lyrics
+              </span>
             </div>
           </Dropdown.Item>
-          <Dropdown.Item key="find" id="find" className="new-song-dropdown-item">
+          <Dropdown.Item
+            key="blank"
+            id="blank"
+            className="new-song-dropdown-item"
+          >
             <div className="new-song-dropdown-icon">
-              <Search size={18} />
+              <File size={18} />
             </div>
             <div className="new-song-dropdown-text">
-              <span className="new-song-dropdown-title">Find a song</span>
-              <span className="new-song-dropdown-description">Search and import lyrics</span>
+              <span className="new-song-dropdown-title">New blank song</span>
+              <span className="new-song-dropdown-description">
+                Start with an empty document
+              </span>
             </div>
           </Dropdown.Item>
         </Dropdown.Menu>
