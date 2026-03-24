@@ -52,10 +52,12 @@ function RightAnnotationItem({ annotation, topOffset, isLocked, onDelete }) {
               }
             : undefined
         }
+        aria-label="Delete annotation"
       >
         <Trash2 size={12} />
       </button>
       <button
+        aria-label="Confirm delete"
         className={`annotation-action-btn annotation-action-btn--confirm${hoverState !== "confirm" ? " annotation-action-btn--hidden" : ""}`}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -331,6 +333,16 @@ function AnnotatedLineView(props) {
 
           if (error) {
             console.error("Image upload failed:", error);
+            const failedAnn = Object.values(
+              stateRef.current.annotations,
+            ).find((a) => a.type === "image" && a.url === blobUrl);
+            if (failedAnn) {
+              dispatch({
+                type: "DELETE_ANNOTATION",
+                payload: { id: failedAnn.id },
+              });
+            }
+            URL.revokeObjectURL(blobUrl);
             return;
           }
 
