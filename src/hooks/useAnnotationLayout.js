@@ -9,17 +9,17 @@ const IMAGE_OFFSET = 0; // px — CSS top offset for image annotations
 const INPUT_OFFSET = 8; // px — CSS top offset for inline editing input
 
 /**
- * Pure stacking algorithm. Takes an array of { lineId, naturalTop, height, lineTop }
- * sorted top-to-bottom, returns a layoutMap.
+ * Pure stacking algorithm. Takes an array of { id, naturalTop, height, lineTop }
+ * sorted top-to-bottom, returns a layoutMap keyed by id.
  */
 export function computeStackedLayout(entries) {
   const layoutMap = {};
   let prevBottom = -Infinity;
 
-  for (const { lineId, naturalTop, height, lineTop } of entries) {
+  for (const { id, naturalTop, height, lineTop } of entries) {
     const placedTop = Math.max(naturalTop, prevBottom + ANNOTATION_GAP);
     const displacement = placedTop - naturalTop;
-    layoutMap[lineId] = { top: placedTop, height, displacement, lineTop };
+    layoutMap[id] = { top: placedTop, height, displacement, lineTop };
     prevBottom = placedTop + height;
   }
 
@@ -27,31 +27,17 @@ export function computeStackedLayout(entries) {
 }
 
 /**
- * Determines the annotation type for a line element by checking which
- * annotation content is rendered, and returns the per-type CSS offset.
+ * Determines the per-type CSS offset for an individual annotation element.
  */
-function getAnnotationOffset(lineEl) {
-  if (lineEl.querySelector(".note-inline-input")) return INPUT_OFFSET;
-  if (lineEl.querySelector(".right-annotation-actions-wrapper--image"))
+function getAnnotationOffsetForElement(el) {
+  if (el.querySelector(".note-inline-input")) return INPUT_OFFSET;
+  if (el.classList.contains("right-annotation-actions-wrapper--image"))
     return IMAGE_OFFSET;
-  if (lineEl.querySelector(".right-annotation-actions-wrapper"))
-    return TEXT_NOTE_OFFSET;
-  return null; // no annotation
+  return TEXT_NOTE_OFFSET;
 }
 
 /**
- * Measures the rendered height of an annotation element.
- */
-function getAnnotationHeight(lineEl, zoom) {
-  const el = lineEl.querySelector(
-    ".right-annotation-actions-wrapper, .note-inline-input",
-  );
-  if (!el) return 0;
-  return el.getBoundingClientRect().height / zoom;
-}
-
-/**
- * Hook that measures line positions in the DOM, computes stacked layout,
+ * Hook that measures annotation positions in the DOM, computes stacked layout,
  * and writes the result directly to context via setLayoutMap.
  *
  * @param {React.RefObject} bodyRef — ref to .document-body element
@@ -87,17 +73,18 @@ export function useAnnotationLayout(
     const entries = [];
 
     for (const lineEl of lineEls) {
-      const lineId = lineEl.getAttribute("data-line-id");
-      const offset = getAnnotationOffset(lineEl);
-      if (offset === null) continue; // no annotation on this line
-
-      // Natural top = line's position + per-type CSS offset
       const lineRect = lineEl.getBoundingClientRect();
       const lineTop = lineRect.top / zoom - bodyTop;
-      const naturalTop = lineTop + offset;
-      const height = getAnnotationHeight(lineEl, zoom);
 
-      entries.push({ lineId, naturalTop, height, lineTop });
+      // Find all annotation elements in this line (each has data-annotation-id)
+      const annotationEls = lineEl.querySelectorAll("[data-annotation-id]");
+      for (const annEl of annotationEls) {
+        const id = annEl.dataset.annotationId;
+        const offset = getAnnotationOffsetForElement(annEl);
+        const height = annEl.getBoundingClientRect().height / zoom;
+        const naturalTop = lineTop + offset;
+        entries.push({ id, naturalTop, height, lineTop });
+      }
     }
 
     const newLayout = computeStackedLayout(entries);

@@ -9,10 +9,11 @@ const initialState = {
   songId: null,
 };
 
-function removeRightAnnotationsForLine(annotations, lineId) {
+function removeAnnotationAtOffset(annotations, lineId, charOffset) {
   const cleaned = {};
   for (const [id, ann] of Object.entries(annotations)) {
-    if (ann.lineId === lineId && (ann.type === 'right-side' || ann.type === 'image')) {
+    if ((ann.type === 'right-side' || ann.type === 'image') &&
+        ann.lineId === lineId && ann.charOffset === charOffset) {
       continue;
     }
     cleaned[id] = ann;
@@ -34,7 +35,7 @@ function annotationReducer(state, action) {
     }
     case 'ADD_RIGHT_NOTE': {
       const id = generateId();
-      const cleaned = removeRightAnnotationsForLine(state.annotations, action.payload.lineId);
+      const cleaned = removeAnnotationAtOffset(state.annotations, action.payload.lineId, action.payload.charOffset);
       return {
         ...state,
         annotations: {
@@ -45,7 +46,7 @@ function annotationReducer(state, action) {
     }
     case 'ADD_IMAGE': {
       const id = generateId();
-      const cleaned = removeRightAnnotationsForLine(state.annotations, action.payload.lineId);
+      const cleaned = removeAnnotationAtOffset(state.annotations, action.payload.lineId, action.payload.charOffset);
       return {
         ...state,
         annotations: {
@@ -124,6 +125,12 @@ function getImageForLine(state, lineId) {
   );
 }
 
+function getRightAnnotationsForLine(state, lineId) {
+  return Object.values(state.annotations)
+    .filter((a) => (a.type === 'right-side' || a.type === 'image') && a.lineId === lineId)
+    .sort((a, b) => a.charOffset - b.charOffset);
+}
+
 export {
   annotationReducer,
   initialState,
@@ -131,4 +138,5 @@ export {
   getChordsForLine,
   getRightNoteForLine,
   getImageForLine,
+  getRightAnnotationsForLine,
 };
