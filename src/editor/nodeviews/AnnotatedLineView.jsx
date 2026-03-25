@@ -98,15 +98,18 @@ function RightAnnotationItem({ annotation, lineId, topOffset, isLocked, onDelete
   const handleEditInput = useCallback((e) => {
     const el = e.currentTarget;
     const sel = window.getSelection();
-    const anchorOffset = sel?.anchorOffset ?? 0;
-    const text = el.textContent;
+    if (!sel || !sel.anchorNode || !el.contains(sel.anchorNode)) return;
+    const anchorOffset = sel.anchorOffset;
+    const text = el.textContent || "";
     const replaced = text.replace(/-->/g, "→").replace(/->/g, "→");
     if (replaced !== text) {
-      const diff = text.length - replaced.length;
+      // Compute caret adjustment from text before the caret only
+      const beforeText = text.slice(0, anchorOffset);
+      const beforeReplaced = beforeText.replace(/-->/g, "→").replace(/->/g, "→");
       el.textContent = replaced;
       if (el.firstChild) {
+        const newPos = Math.max(0, Math.min(beforeReplaced.length, replaced.length));
         const range = document.createRange();
-        const newPos = Math.max(0, Math.min(anchorOffset - diff, replaced.length));
         range.setStart(el.firstChild, newPos);
         range.collapse(true);
         sel.removeAllRanges();
@@ -190,10 +193,27 @@ function RightAnnotationItem({ annotation, lineId, topOffset, isLocked, onDelete
           ref={editableRef}
           contentEditable
           suppressContentEditableWarning
+          role="textbox"
+          aria-label="Edit annotation"
+          aria-multiline={false}
           className={`right-annotation-text style-${annotation.style || "default"} is-editing`}
           onKeyDown={handleEditKeyDown}
           onInput={handleEditInput}
           onBlur={cancelEdit}
+          onPaste={(event) => {
+            event.preventDefault();
+            const text = event.clipboardData
+              .getData("text/plain")
+              .replace(/\r?\n/g, " ");
+            const selection = window.getSelection();
+            if (!selection || !selection.rangeCount) return;
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode(document.createTextNode(text));
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }}
         />
       ) : (
         <span
@@ -245,7 +265,7 @@ function AnnotatedLineView(props) {
 
   const isEditingNote = editingNote?.lineId === lineId;
   // Creating a new annotation (via BubbleMenu) — no existing annotation at this charOffset
-  const isCreatingNew = isEditingNote && !editingNote?.initialValue;
+  const isCreatingNew = isEditingNote && editingNote?.initialValue == null;
   const showRightColumn = rightAnnotations.length > 0 || isEditingNote;
 
   // Always show all annotations — existing annotations handle their own editing state
@@ -407,12 +427,17 @@ function AnnotatedLineView(props) {
   }, [stopEditingNote, editorRef]);
 
   const handleNoteChange = useCallback((e) => {
-    const raw = e.target.value;
+    const target = e.target;
+    const raw = target.value;
     const replaced = raw.replace(/-->/g, "→").replace(/->/g, "→");
     if (replaced !== raw) {
-      const pos = e.target.selectionStart - (raw.length - replaced.length);
-      e.target.value = replaced;
-      e.target.setSelectionRange(pos, pos);
+      const caret = typeof target.selectionStart === "number" ? target.selectionStart : raw.length;
+      // Compute adjustment from text before the caret only
+      const beforeRaw = raw.slice(0, caret);
+      const beforeReplaced = beforeRaw.replace(/-->/g, "→").replace(/->/g, "→");
+      const pos = Math.max(0, Math.min(caret - (beforeRaw.length - beforeReplaced.length), replaced.length));
+      target.value = replaced;
+      target.setSelectionRange(pos, pos);
     }
   }, []);
 
