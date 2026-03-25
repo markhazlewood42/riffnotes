@@ -146,6 +146,13 @@
   text-decoration: underline;
 }
 
+.right-annotation-text.is-editing {
+  outline: none;
+  cursor: text;
+  border-bottom: 1px solid currentColor;
+  opacity: 0.9;
+}
+
 /* Delete / confirm action buttons */
 .annotation-actions {
   display: flex;
