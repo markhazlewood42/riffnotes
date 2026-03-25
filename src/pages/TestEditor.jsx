@@ -380,6 +380,7 @@ function TestEditor() {
       songId="test-song"
       initialDocument={TEST_DOCUMENT}
       initialAnnotations={TEST_ANNOTATIONS}
+      initialInstruments={['Drums', 'Vocals']}
     >
       <TestEditorInner />
     </LyricSheetProvider>

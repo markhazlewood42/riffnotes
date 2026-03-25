@@ -20,6 +20,10 @@
   --color-text-secondary: var(--muted);
   --color-text-placeholder: var(--muted);
 
+  /* Badge / instrument tags */
+  --color-badge-bg: #ebebec;
+  --color-badge-text: #18181b;
+
   /* Editor-specific */
   --color-editor-text: #000;
   --color-editor-title: #3f3f46;
@@ -66,6 +70,10 @@
   --color-sticking: #aaaaaa;
   --color-counting: #999999;
   --color-repeat-ref: #999999;
+
+  /* Badge / instrument tags */
+  --color-badge-bg: #3f3f46;
+  --color-badge-text: #e0e0e0;
 
   /* Editor-specific */
   --color-editor-text: var(--foreground);

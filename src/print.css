@@ -117,6 +117,24 @@
     break-after: avoid;
   }
 
+  /* Instrument tags — render as static read-only badges in print */
+  .instrument-tag-caret,
+  .instrument-tags-add {
+    display: none !important;
+  }
+
+  .instrument-tag {
+    cursor: default !important;
+    pointer-events: none;
+  }
+
+  :root,
+  .dark,
+  [data-theme="dark"] {
+    --color-badge-bg: #ebebec !important;
+    --color-badge-text: #18181b !important;
+  }
+
   /* Disable interactive hover effects */
   .right-annotation-text:hover {
     text-decoration: none;

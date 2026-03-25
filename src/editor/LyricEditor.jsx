@@ -47,8 +47,10 @@ function LyricEditor() {
     content: initialDocument || DEFAULT_CONTENT,
     editable: !isLocked,
     autofocus: isLocked ? false : 'start',
-    onUpdate: () => {
-      requestSave();
+    onUpdate: ({ transaction }) => {
+      if (transaction.docChanged) {
+        requestSave();
+      }
     },
     editorProps: {
       handlePaste: (view, event) => {

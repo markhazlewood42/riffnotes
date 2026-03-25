@@ -11,12 +11,13 @@ export function extractTitleFromDoc(doc) {
   return titleNode.content.map(n => n.text || '').join('');
 }
 
-function LyricSheetProvider({ songId, initialDocument, initialAnnotations, isLocked, children }) {
+function LyricSheetProvider({ songId, initialDocument, initialAnnotations, initialInstruments, isLocked, children }) {
   const [state, dispatch] = useReducer(annotationReducer, {
     annotations: initialAnnotations || {},
     songId,
   });
 
+  const [instruments, setInstrumentsState] = useState(initialInstruments ?? ['Guitar']);
   const [editingNote, setEditingNote] = useState(null);
   const [saveStatus, setSaveStatus] = useState('saved');
   const [layoutMap, setLayoutMap] = useState({});
@@ -56,8 +57,10 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, isLoc
   const saveTimerRef = useRef(null);
   const stateRef = useRef(state);
   const songIdRef = useRef(songId);
+  const instrumentsRef = useRef(instruments);
   stateRef.current = state;
   songIdRef.current = songId;
+  instrumentsRef.current = instruments;
 
   const requestSave = useCallback(() => {
     if (isLocked) return;
@@ -80,7 +83,7 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, isLoc
         const { data: { user } } = await supabase.auth.getUser();
         const { data, error } = await supabase
           .from('songs')
-          .insert({ user_id: user.id, title, document: doc, annotations: stateRef.current.annotations })
+          .insert({ user_id: user.id, title, document: doc, annotations: stateRef.current.annotations, instruments: instrumentsRef.current })
           .select('id')
           .single();
         if (!error) {
@@ -98,7 +101,7 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, isLoc
       setSaveStatus('saving');
       const { error } = await supabase
         .from('songs')
-        .update({ title, document: doc, annotations: stateRef.current.annotations })
+        .update({ title, document: doc, annotations: stateRef.current.annotations, instruments: instrumentsRef.current })
         .eq('id', sid);
       setSaveStatus(error ? 'unsaved' : 'saved');
     }, 1000);
@@ -120,6 +123,12 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, isLoc
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
   }, []);
+
+  const setInstruments = useCallback((newInstruments) => {
+    setInstrumentsState(newInstruments);
+    instrumentsRef.current = newInstruments;
+    requestSave();
+  }, [requestSave]);
 
   const setEditor = useCallback((editor) => {
     editorRef.current = editor;
@@ -145,6 +154,8 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, isLoc
     saveStatus,
     initialDocument,
     isLocked,
+    instruments,
+    setInstruments,
     layoutMap,
     setLayoutMap: setLayoutMapOnce,
     layoutReady,
