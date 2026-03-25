@@ -19,6 +19,8 @@ function SongEditorInner() {
     if (!body) return;
 
     const snapToPages = () => {
+      // Skip during print — print.css overrides min-height anyway
+      if (window.matchMedia("print").matches) return;
       const tiptap = body.querySelector(".tiptap");
       if (!tiptap) return;
       // scrollHeight includes spacer heights. Subtract spacer total to get
@@ -66,7 +68,7 @@ function SongEditor() {
 
   useEffect(() => {
     if (id === "new") {
-      setSongData({ document: null, annotations: {}, is_locked: false });
+      setSongData({ document: null, annotations: {}, instruments: ['Guitar'], is_locked: false });
       setLoading(false);
       return;
     }
@@ -114,6 +116,7 @@ function SongEditor() {
       songId={id === "new" ? null : id}
       initialDocument={songData.document}
       initialAnnotations={songData.annotations}
+      initialInstruments={songData.instruments}
       isLocked={songData.is_locked}
     >
       <SongEditorInner />

@@ -5,6 +5,8 @@ import { MARGIN, PAGE_GAP, PAGE_HEIGHT } from "../pageLayout";
 
 export const pageBreakKey = new PluginKey("pageBreaks");
 
+const MAX_PAGES = 50;
+
 const PageBreaks = Extension.create({
   name: "pageBreaks",
 
@@ -58,10 +60,15 @@ const PageBreaks = Extension.create({
         },
 
         view(editorView) {
+          const printMQ = window.matchMedia("print");
+
           const calculate = () => {
             scheduled = false;
             const view = editorView;
             if (!view.dom || !view.dom.isConnected) return;
+
+            // Don't recalculate during print — keep screen-computed spacers
+            if (printMQ.matches) return;
 
             const { doc } = view.state;
             const container = view.dom.closest(".document-container");
@@ -104,6 +111,8 @@ const PageBreaks = Extension.create({
             };
 
             doc.forEach((node, offset) => {
+              if (currentPage >= MAX_PAGES) return;
+
               const dom = view.nodeDOM(offset);
               if (!dom || !(dom instanceof HTMLElement)) return;
 

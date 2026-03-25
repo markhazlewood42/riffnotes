@@ -1,5 +1,7 @@
 import { Node, mergeAttributes } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
 import { generateLineId } from './LyricLine';
+import SongTitleView from '../nodeviews/SongTitleView.jsx';
 
 const SongTitle = Node.create({
   name: 'songTitle',
@@ -39,6 +41,10 @@ const SongTitle = Node.create({
         return commands.toggleNode(this.name, 'paragraph');
       },
     };
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(SongTitleView);
   },
 
   addKeyboardShortcuts() {

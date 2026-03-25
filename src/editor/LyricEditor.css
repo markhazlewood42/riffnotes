@@ -24,7 +24,7 @@
 .lyric-editor .tiptap::after {
   content: "";
   position: absolute;
-  top: 45px;
+  top: 80px;
   bottom: 0;
   right: 25%;
   width: 1px;
@@ -47,7 +47,7 @@
   font-feature-settings:
     "liga" off,
     "clig" off;
-  margin: 0 0 16px;
+  margin: 0;
 }
 
 .lyric-editor .tiptap h2 {
@@ -73,8 +73,10 @@
   height: 0;
 }
 
-/* Lyrics placeholder — only on the first lyric line */
-.lyric-editor .tiptap h1 + .react-renderer.is-empty .annotated-line::before,
+/* Lyrics placeholder — only on the first lyric line.
+   SongTitle renders in its own .react-renderer wrapper, so the first lyric
+   line is the second .react-renderer child. */
+.lyric-editor .tiptap .react-renderer:first-child + .react-renderer.is-empty .annotated-line::before,
 .lyric-editor
   .tiptap
   .react-renderer.is-empty:first-child
