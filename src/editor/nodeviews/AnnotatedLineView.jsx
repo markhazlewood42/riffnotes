@@ -15,7 +15,8 @@ const VERTICAL_TICK_HEIGHT = 14; // px — height of the vertical tick at the st
  * Individual right-column annotation (text note or image).
  * Encapsulates its own hover/confirm delete state.
  */
-function RightAnnotationItem({ annotation, topOffset, isLocked, onDelete }) {
+function RightAnnotationItem({ annotation, lineId, topOffset, isLocked, onDelete }) {
+  const { startEditingNote } = useLyricSheet();
   const [hoverState, setHoverState] = useState("idle");
   const wrapperRef = useRef(null);
 
@@ -92,6 +93,7 @@ function RightAnnotationItem({ annotation, topOffset, isLocked, onDelete }) {
       ) : (
         <span
           className={`right-annotation-text style-${annotation.style || "default"}${hoverState !== "idle" ? " is-active" : ""}`}
+          onClick={() => !isLocked && startEditingNote(lineId, annotation.charOffset ?? 0, annotation.value)}
         >
           {annotation.value}
         </span>
@@ -298,6 +300,16 @@ function AnnotatedLineView(props) {
     stopEditingNote();
     editorRef.current?.commands.focus();
   }, [stopEditingNote, editorRef]);
+
+  const handleNoteChange = useCallback((e) => {
+    const raw = e.target.value;
+    const replaced = raw.replace(/-->/g, "→").replace(/->/g, "→");
+    if (replaced !== raw) {
+      const pos = e.target.selectionStart - (raw.length - replaced.length);
+      e.target.value = replaced;
+      e.target.setSelectionRange(pos, pos);
+    }
+  }, []);
 
   const handleNotePaste = useCallback(
     async (e) => {
@@ -516,6 +528,7 @@ function AnnotatedLineView(props) {
             <RightAnnotationItem
               key={annotation.id}
               annotation={annotation}
+              lineId={lineId}
               topOffset={topOffset}
               isLocked={isLocked}
               onDelete={handleDeleteAnnotation}
@@ -537,7 +550,9 @@ function AnnotatedLineView(props) {
               className="note-inline-input"
               type="text"
               placeholder="type note or paste image"
+              defaultValue={editingNote?.initialValue ?? ""}
               onPaste={handleNotePaste}
+              onChange={handleNoteChange}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();

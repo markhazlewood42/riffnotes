@@ -134,8 +134,8 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, initi
     editorRef.current = editor;
   }, []);
 
-  const startEditingNote = useCallback((lineId, charOffset) => {
-    setEditingNote({ lineId, charOffset });
+  const startEditingNote = useCallback((lineId, charOffset, initialValue) => {
+    setEditingNote({ lineId, charOffset, initialValue });
   }, []);
 
   const stopEditingNote = useCallback(() => {
