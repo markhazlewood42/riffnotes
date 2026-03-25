@@ -24,7 +24,26 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, isLoc
   const layoutReadyRef = useRef(false);
 
   const setLayoutMapOnce = useCallback((map) => {
-    setLayoutMap(map);
+    setLayoutMap((prev) => {
+      // Skip update if layout values are identical — avoids unnecessary
+      // re-renders when annotation positions haven't actually changed.
+      const prevKeys = Object.keys(prev);
+      const mapKeys = Object.keys(map);
+      if (
+        prevKeys.length === mapKeys.length &&
+        prevKeys.every(
+          (k) =>
+            map[k] &&
+            prev[k].top === map[k].top &&
+            prev[k].height === map[k].height &&
+            prev[k].displacement === map[k].displacement &&
+            prev[k].lineTop === map[k].lineTop,
+        )
+      ) {
+        return prev; // same reference → no re-render
+      }
+      return map;
+    });
     if (!layoutReadyRef.current) {
       layoutReadyRef.current = true;
       // Defer enabling transitions to the next frame so the initial layout
