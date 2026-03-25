@@ -117,7 +117,7 @@
     break-after: avoid;
   }
 
-  /* Instrument tags — show as static badges, hide interactive chrome */
+  /* Instrument tags — render as static read-only badges in print */
   .instrument-tag-caret,
   .instrument-tags-add {
     display: none !important;
@@ -125,6 +125,7 @@
 
   .instrument-tag {
     cursor: default !important;
+    pointer-events: none;
   }
 
   :root,

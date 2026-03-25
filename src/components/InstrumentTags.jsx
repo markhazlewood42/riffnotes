@@ -5,7 +5,7 @@ import './InstrumentTags.css';
 
 const PRESET_INSTRUMENTS = ['Bass', 'Drums', 'Guitar', 'Keys', 'Vocals'];
 
-function InstrumentTag({ instrument, index, instruments, setInstruments }) {
+function InstrumentTag({ instrument, index, instruments, setInstruments, readOnly }) {
   const handleAction = (key) => {
     if (key === 'remove') {
       if (instruments.length > 1) {
@@ -18,14 +18,23 @@ function InstrumentTag({ instrument, index, instruments, setInstruments }) {
     setInstruments(updated);
   };
 
+  const badge = (
+    <button
+      type="button"
+      className="instrument-tag"
+      data-instrument={instrument}
+      aria-label={`Change instrument: ${instrument}`}
+    >
+      <span className="instrument-tag-label">{instrument}</span>
+      {!readOnly && <ChevronDown size={10} className="instrument-tag-caret" />}
+    </button>
+  );
+
+  if (readOnly) return badge;
+
   return (
     <Dropdown>
-      <Dropdown.Trigger>
-        <div className="instrument-tag" data-instrument={instrument} aria-label={`Change instrument: ${instrument}`}>
-          <span className="instrument-tag-label">{instrument}</span>
-          <ChevronDown size={10} className="instrument-tag-caret" />
-        </div>
-      </Dropdown.Trigger>
+      <Dropdown.Trigger>{badge}</Dropdown.Trigger>
       <Dropdown.Popover placement="bottom start" className="instrument-tag-popover">
         <Dropdown.Menu
           aria-label="Select instrument"
@@ -47,7 +56,7 @@ function InstrumentTag({ instrument, index, instruments, setInstruments }) {
   );
 }
 
-function InstrumentTags() {
+function InstrumentTags({ readOnly = false }) {
   const { instruments, setInstruments } = useLyricSheet();
 
   const handleAdd = () => {
@@ -65,16 +74,19 @@ function InstrumentTags() {
           index={index}
           instruments={instruments}
           setInstruments={setInstruments}
+          readOnly={readOnly}
         />
       ))}
-      <button
-        type="button"
-        className="instrument-tags-add"
-        onClick={handleAdd}
-        aria-label="Add instrument"
-      >
-        <Plus size={8} />
-      </button>
+      {!readOnly && (
+        <button
+          type="button"
+          className="instrument-tags-add"
+          onClick={handleAdd}
+          aria-label="Add instrument"
+        >
+          <Plus size={8} />
+        </button>
+      )}
     </div>
   );
 }
