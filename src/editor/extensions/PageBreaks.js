@@ -88,11 +88,17 @@ const PageBreaks = Extension.create({
             let pageEnd = PAGE_HEIGHT;
             let prevNodeBottom = MARGIN; // start after top padding
 
-            // Subtract spacer heights that are above a given position
+            // Subtract spacer heights that are above a given position.
+            // The 1px buffer prevents a floating-point divergence: the spacer
+            // sits right at the boundary node's position, so s.top ≈ rawY.
+            // Without the buffer, sub-pixel rounding can make the spacer
+            // appear "above" its own boundary node, subtracting its height
+            // from nodeBottom → negative prevNodeBottom → taller spacer →
+            // even more negative on the next frame → runaway growth.
             const contentY = (rawY) => {
               let spacerAbove = 0;
               for (const s of existingSpacerHeights) {
-                if (s.top < rawY) spacerAbove += s.height;
+                if (s.top + 1 < rawY) spacerAbove += s.height;
               }
               return rawY - spacerAbove;
             };
