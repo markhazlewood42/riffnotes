@@ -11,8 +11,19 @@ import { supabase } from "../supabase";
 
 function SongEditorInner() {
   const bodyRef = useRef(null);
-  const { state, editingNote, setLayoutMap, layoutReady } = useLyricSheet();
+  const { state, editingNote, setLayoutMap, layoutReady, requestSave, isLocked } = useLyricSheet();
   useAnnotationLayout(bodyRef, state.annotations, editingNote, setLayoutMap);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        if (!isLocked) requestSave();
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [requestSave, isLocked]);
 
   useEffect(() => {
     const body = bodyRef.current;

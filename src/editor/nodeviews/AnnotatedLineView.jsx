@@ -1,6 +1,6 @@
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react";
 import { Check, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   getChordsForLine,
   getRightAnnotationsForLine,
@@ -13,11 +13,110 @@ const VERTICAL_TICK_HEIGHT = 14; // px — height of the vertical tick at the st
 
 /**
  * Individual right-column annotation (text note or image).
- * Encapsulates its own hover/confirm delete state.
+ * Encapsulates its own hover/confirm delete state, and in-place contentEditable editing.
  */
-function RightAnnotationItem({ annotation, topOffset, isLocked, onDelete }) {
+function RightAnnotationItem({ annotation, lineId, topOffset, isLocked, onDelete }) {
+  const { startEditingNote, stopEditingNote, editingNote, dispatch, editorRef } =
+    useLyricSheet();
   const [hoverState, setHoverState] = useState("idle");
   const wrapperRef = useRef(null);
+  const editableRef = useRef(null);
+  // Prevents the Enter keydown handler and the subsequent onBlur from both firing
+  const isSubmittingRef = useRef(false);
+
+  const isEditing =
+    !isLocked &&
+    editingNote?.lineId === lineId &&
+    editingNote?.charOffset === annotation.charOffset &&
+    editingNote?.initialValue != null; // only true when editing an existing annotation
+
+  // Set text content synchronously (before paint + before layout RAF) so the
+  // span has its correct height from the very first frame.
+  useLayoutEffect(() => {
+    if (isEditing && editableRef.current) {
+      editableRef.current.textContent = annotation.value;
+    }
+  }, [isEditing]); // intentionally omit annotation.value — only run on isEditing toggle
+
+  // Focus and place cursor at end after paint
+  useEffect(() => {
+    if (!isEditing || !editableRef.current) return;
+    const el = editableRef.current;
+    el.focus();
+    const range = document.createRange();
+    const sel = window.getSelection();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }, [isEditing]);
+
+  const submitEdit = useCallback(() => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    const value = editableRef.current?.textContent?.trim() ?? "";
+    if (value) {
+      dispatch({
+        type: "ADD_RIGHT_NOTE",
+        payload: {
+          lineId,
+          charOffset: annotation.charOffset,
+          value,
+          style: annotation.style || "default",
+        },
+      });
+    }
+    stopEditingNote();
+    editorRef.current?.commands.focus();
+    setTimeout(() => {
+      isSubmittingRef.current = false;
+    }, 0);
+  }, [dispatch, lineId, annotation, stopEditingNote, editorRef]);
+
+  const cancelEdit = useCallback(() => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    stopEditingNote();
+    editorRef.current?.commands.focus();
+    setTimeout(() => {
+      isSubmittingRef.current = false;
+    }, 0);
+  }, [stopEditingNote, editorRef]);
+
+  const handleEditKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        submitEdit();
+      } else if (e.key === "Escape") {
+        cancelEdit();
+      }
+    },
+    [submitEdit, cancelEdit],
+  );
+
+  const handleEditInput = useCallback((e) => {
+    const el = e.currentTarget;
+    const sel = window.getSelection();
+    if (!sel || !sel.anchorNode || !el.contains(sel.anchorNode)) return;
+    const anchorOffset = sel.anchorOffset;
+    const text = el.textContent || "";
+    const replaced = text.replace(/-->/g, "→").replace(/->/g, "→");
+    if (replaced !== text) {
+      // Compute caret adjustment from text before the caret only
+      const beforeText = text.slice(0, anchorOffset);
+      const beforeReplaced = beforeText.replace(/-->/g, "→").replace(/->/g, "→");
+      el.textContent = replaced;
+      if (el.firstChild) {
+        const newPos = Math.max(0, Math.min(beforeReplaced.length, replaced.length));
+        const range = document.createRange();
+        range.setStart(el.firstChild, newPos);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }
+  }, []);
 
   // Dismiss confirm state on outside click
   useEffect(() => {
@@ -32,7 +131,7 @@ function RightAnnotationItem({ annotation, topOffset, isLocked, onDelete }) {
   }, [hoverState]);
 
   const handleMouseEnter = () => {
-    if (!isLocked && hoverState === "idle") setHoverState("hover");
+    if (!isLocked && !isEditing && hoverState === "idle") setHoverState("hover");
   };
   const handleMouseLeave = () => {
     if (hoverState === "hover") setHoverState("idle");
@@ -89,9 +188,40 @@ function RightAnnotationItem({ annotation, topOffset, isLocked, onDelete }) {
             alt="Annotation"
           />
         </div>
+      ) : isEditing ? (
+        <span
+          ref={editableRef}
+          contentEditable
+          suppressContentEditableWarning
+          role="textbox"
+          aria-label="Edit annotation"
+          aria-multiline={false}
+          className={`right-annotation-text style-${annotation.style || "default"} is-editing`}
+          onKeyDown={handleEditKeyDown}
+          onInput={handleEditInput}
+          onBlur={cancelEdit}
+          onPaste={(event) => {
+            event.preventDefault();
+            const text = event.clipboardData
+              .getData("text/plain")
+              .replace(/\r?\n/g, " ");
+            const selection = window.getSelection();
+            if (!selection || !selection.rangeCount) return;
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode(document.createTextNode(text));
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }}
+        />
       ) : (
         <span
           className={`right-annotation-text style-${annotation.style || "default"}${hoverState !== "idle" ? " is-active" : ""}`}
+          onClick={() =>
+            !isLocked &&
+            startEditingNote(lineId, annotation.charOffset ?? 0, annotation.value)
+          }
         >
           {annotation.value}
         </span>
@@ -134,23 +264,20 @@ function AnnotatedLineView(props) {
   );
 
   const isEditingNote = editingNote?.lineId === lineId;
+  // Creating a new annotation (via BubbleMenu) — no existing annotation at this charOffset
+  const isCreatingNew = isEditingNote && editingNote?.initialValue == null;
   const showRightColumn = rightAnnotations.length > 0 || isEditingNote;
 
-  // When editing, hide any existing annotation at the same charOffset (it will be replaced on submit)
-  const displayAnnotations = useMemo(() => {
-    if (!isEditingNote) return rightAnnotations;
-    return rightAnnotations.filter(
-      (a) => a.charOffset !== editingNote.charOffset,
-    );
-  }, [rightAnnotations, isEditingNote, editingNote]);
+  // Always show all annotations — existing annotations handle their own editing state
+  const displayAnnotations = rightAnnotations;
 
-  // Items that need leader lines: displayed annotations + editing input
+  // Items that need leader lines: all annotations + the new-annotation input slot (if creating)
   const leaderItems = useMemo(() => {
     const items = displayAnnotations.map((ann) => ({
       id: ann.id,
       charOffset: ann.charOffset,
     }));
-    if (isEditingNote) {
+    if (isCreatingNew) {
       items.push({
         id: `editing-${lineId}`,
         charOffset: editingNote.charOffset,
@@ -158,7 +285,7 @@ function AnnotatedLineView(props) {
     }
     items.sort((a, b) => a.charOffset - b.charOffset);
     return items;
-  }, [displayAnnotations, isEditingNote, editingNote, lineId]);
+  }, [displayAnnotations, isCreatingNew, editingNote, lineId]);
 
   const wrapperRef = useRef(null);
   const noteInputRef = useRef(null);
@@ -298,6 +425,21 @@ function AnnotatedLineView(props) {
     stopEditingNote();
     editorRef.current?.commands.focus();
   }, [stopEditingNote, editorRef]);
+
+  const handleNoteChange = useCallback((e) => {
+    const target = e.target;
+    const raw = target.value;
+    const replaced = raw.replace(/-->/g, "→").replace(/->/g, "→");
+    if (replaced !== raw) {
+      const caret = typeof target.selectionStart === "number" ? target.selectionStart : raw.length;
+      // Compute adjustment from text before the caret only
+      const beforeRaw = raw.slice(0, caret);
+      const beforeReplaced = beforeRaw.replace(/-->/g, "→").replace(/->/g, "→");
+      const pos = Math.max(0, Math.min(caret - (beforeRaw.length - beforeReplaced.length), replaced.length));
+      target.value = replaced;
+      target.setSelectionRange(pos, pos);
+    }
+  }, []);
 
   const handleNotePaste = useCallback(
     async (e) => {
@@ -516,13 +658,14 @@ function AnnotatedLineView(props) {
             <RightAnnotationItem
               key={annotation.id}
               annotation={annotation}
+              lineId={lineId}
               topOffset={topOffset}
               isLocked={isLocked}
               onDelete={handleDeleteAnnotation}
             />
           );
         })}
-        {isEditingNote && (
+        {isCreatingNew && (
           <div
             data-annotation-id={`editing-${lineId}`}
             className="right-annotation-actions-wrapper"
@@ -537,7 +680,9 @@ function AnnotatedLineView(props) {
               className="note-inline-input"
               type="text"
               placeholder="type note or paste image"
+              defaultValue={editingNote?.initialValue ?? ""}
               onPaste={handleNotePaste}
+              onChange={handleNoteChange}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
