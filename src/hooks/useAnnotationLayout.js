@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
+import { getContainerScale } from "../utils/getContainerScale";
 
 // Named constants
 export const ANNOTATION_GAP = 10; // px — minimum gap between stacked annotations
@@ -62,9 +63,7 @@ export function useAnnotationLayout(
     if (!body) return;
 
     const container = body.closest(".document-container");
-    const zoom = container
-      ? parseFloat(getComputedStyle(container).zoom) || 1
-      : 1;
+    const zoom = getContainerScale(container);
     const bodyRect = body.getBoundingClientRect();
     const bodyTop = bodyRect.top / zoom;
 
@@ -103,4 +102,24 @@ export function useAnnotationLayout(
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [measure]);
+
+  // Re-measure when the DOM changes (e.g., TipTap renders NodeViews after initial mount).
+  // Without this, the initial measure can run before annotation elements exist, producing
+  // an empty layoutMap that causes annotations to overlap.
+  useEffect(() => {
+    const body = bodyRef.current;
+    if (!body) return;
+
+    let rafId;
+    const observer = new MutationObserver(() => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(measure);
+    });
+    observer.observe(body, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(rafId);
+    };
+  }, [bodyRef, measure]);
 }
