@@ -99,6 +99,34 @@ test.describe('Text editing', () => {
     await expect(page.locator('.tiptap .node-paragraph')).toHaveCount(2);
   });
 
+  test('ArrowDown moves cursor to next paragraph, not skipping lines', async ({ page }) => {
+    const doc = {
+      type: 'doc',
+      content: [
+        { type: 'songTitle' },
+        { type: 'paragraph', attrs: { lineId: 'line-a' }, content: [{ type: 'text', text: 'Line one' }] },
+        { type: 'paragraph', attrs: { lineId: 'line-b' }, content: [{ type: 'text', text: 'Line two' }] },
+        { type: 'paragraph', attrs: { lineId: 'line-c' }, content: [{ type: 'text', text: 'Line three' }] },
+      ],
+    };
+    await page.evaluate((d) => window.__TEST__.setDocument(d), doc);
+    await page.waitForFunction(() => document.querySelectorAll('.tiptap .node-paragraph').length === 3);
+
+    // Place cursor at the end of paragraph 1
+    const firstPara = page.locator('.tiptap .node-paragraph').nth(0);
+    await firstPara.click();
+    await page.keyboard.press('End');
+
+    // Press ArrowDown once — should land in paragraph 2, not paragraph 3
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.type('X');
+
+    const paras = page.locator('.tiptap .node-paragraph');
+    await expect(paras.nth(1)).toContainText('X');
+    await expect(paras.nth(0)).not.toContainText('X');
+    await expect(paras.nth(2)).not.toContainText('X');
+  });
+
   test('bold toggle via BubbleMenu', async ({ page }) => {
     // Set up a line with known text
     const lineId = 'test-bold-line';

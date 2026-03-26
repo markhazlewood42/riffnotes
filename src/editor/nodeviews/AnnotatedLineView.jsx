@@ -644,7 +644,7 @@ function AnnotatedLineView(props) {
           })}
         </div>
       )}
-      <div className="right-annotation-column" contentEditable={false}>
+      {showRightColumn && <div className="right-annotation-column" contentEditable={false}>
         {displayAnnotations.map((annotation) => {
           const layout = layoutMap?.[annotation.id];
           const topOffset = layout ? layout.top - layout.lineTop : null;
@@ -691,7 +691,7 @@ function AnnotatedLineView(props) {
             />
           </div>
         )}
-      </div>
+      </div>}
     </NodeViewWrapper>
   );
 }
