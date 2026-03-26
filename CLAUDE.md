@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev      # Dev server at http://localhost:3000 (Vite)
 npm run build    # Production build (outputs to dist/)
 npm run preview  # Preview production build locally
+npm run lint:css # Check CSS for cross-browser compatibility
 ```
 
 ## Architecture
@@ -124,7 +125,7 @@ All visual tokens live in `src/styles/variables.css`. Key values:
 
 Title is styled directly in `LyricEditor.css`: Blinker Bold 22px, color `#3F3F46`.
 
-`.document-container` uses `zoom: 1.5` for screen readability. This is reset to `zoom: 1` in `@media print` so print layout is unaffected.
+`.document-container` zoom is computed in JS via `useDocumentZoom` hook (`src/hooks/useDocumentZoom.js`) and applied as an inline `zoom` style with a plain number. **Firefox doesn't support `min()`/viewport units inside CSS `zoom`**, so dynamic zoom must always be computed in JS, not in a CSS custom property. The `stylelint` config warns on CSS `zoom` usage to catch this. Reset to `zoom: 1` in `@media print`.
 
 ### Environment
 

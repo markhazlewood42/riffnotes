@@ -47,11 +47,10 @@ async function getAllAnnotationRects(page) {
     const container =
       document.querySelector('.document-container') || document.body || document.documentElement
 
-    const zoomStyle = container ? window.getComputedStyle(container).zoom : null
+    // Compute scale factor browser-agnostically (works with both CSS zoom and transform: scale)
     const zoom = (() => {
-      if (!zoomStyle || zoomStyle === 'normal') return 1
-      const parsed = parseFloat(zoomStyle)
-      return Number.isFinite(parsed) && parsed > 0 ? parsed : 1
+      if (!container || container.offsetWidth === 0) return 1
+      return container.getBoundingClientRect().width / container.offsetWidth
     })()
 
     const wrappers = document.querySelectorAll('.right-annotation-actions-wrapper')

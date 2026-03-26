@@ -7,12 +7,16 @@ import { LyricSheetProvider, useLyricSheet } from "../context/LyricSheetContext"
 import LyricEditor from "../editor/LyricEditor";
 import { PAGE_GAP, PAGE_HEIGHT } from "../editor/pageLayout";
 import { useAnnotationLayout } from "../hooks/useAnnotationLayout";
+import { useDocumentZoom } from "../hooks/useDocumentZoom";
 import { supabase } from "../supabase";
 
 function SongEditorInner() {
   const bodyRef = useRef(null);
+  const containerRef = useRef(null);
+  const actionsRef = useRef(null);
   const { state, editingNote, setLayoutMap, layoutReady, requestSave, isLocked } = useLyricSheet();
   useAnnotationLayout(bodyRef, state.annotations, editingNote, setLayoutMap);
+  useDocumentZoom(containerRef, actionsRef);
 
   useEffect(() => {
     const handler = (e) => {
@@ -59,8 +63,8 @@ function SongEditorInner() {
     <>
       <GlobalToolbar />
       <div className="app-container">
-        <DocumentActions />
-        <div className="document-container">
+        <DocumentActions ref={actionsRef} />
+        <div className="document-container" ref={containerRef}>
           <div className={`document-body${layoutReady ? " layout-ready" : ""}`} ref={bodyRef}>
             <LyricEditor />
           </div>

@@ -1,0 +1,27 @@
+{
+  "plugins": [
+    "stylelint-no-unsupported-browser-features"
+  ],
+  "rules": {
+    "property-disallowed-list": [
+      ["zoom"],
+      {
+        "severity": "warning",
+        "message": "CSS 'zoom' must only use plain numbers — Firefox doesn't support min()/viewport units inside zoom. Prefer using useDocumentZoom hook for dynamic zoom."
+      }
+    ],
+    "plugin/no-unsupported-browser-features": [
+      true,
+      {
+        "severity": "error",
+        "ignore": [
+          "css-nesting",
+          "css-when-else",
+          "css-cascade-layers",
+          "css-clip-path",
+          "multicolumn"
+        ]
+      }
+    ]
+  }
+}

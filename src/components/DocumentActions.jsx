@@ -1,6 +1,6 @@
 import { Button, Spinner } from "@heroui/react";
 import { Copy, LockIcon, Printer } from "lucide-react";
-import { useState } from "react";
+import { forwardRef, useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -50,7 +50,7 @@ async function getNextCopyTitle(baseTitle, userId) {
   return `${baseTitle} (copy ${n})`;
 }
 
-function DocumentActions() {
+const DocumentActions = forwardRef(function DocumentActions(props, ref) {
   const { editorRef, state } = useLyricSheet();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -84,7 +84,7 @@ function DocumentActions() {
   };
 
   return (
-    <div className="document-actions">
+    <div className="document-actions" ref={ref}>
       <RouterLink to="/" className="link no-underline document-actions-back">
         ← All songs
       </RouterLink>
@@ -112,6 +112,6 @@ function DocumentActions() {
       </Button>
     </div>
   );
-}
+});
 
 export default DocumentActions;

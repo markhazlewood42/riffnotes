@@ -6,6 +6,7 @@ import GlobalToolbar from "../components/GlobalToolbar";
 import { LyricSheetProvider, useLyricSheet } from "../context/LyricSheetContext";
 import LyricEditor from "../editor/LyricEditor";
 import { useAnnotationLayout } from "../hooks/useAnnotationLayout";
+import { useDocumentZoom } from "../hooks/useDocumentZoom";
 import { PAGE_GAP, PAGE_HEIGHT } from "../editor/pageLayout";
 
 // Real image URLs from Supabase Storage (user's actual annotation images)
@@ -227,8 +228,10 @@ const TEST_ANNOTATIONS = {
 
 function TestEditorInner() {
   const bodyRef = useRef(null);
+  const containerRef = useRef(null);
   const { state, editingNote, setLayoutMap, layoutReady, dispatch, editorRef, startEditingNote } = useLyricSheet();
   useAnnotationLayout(bodyRef, state.annotations, editingNote, setLayoutMap);
+  useDocumentZoom(containerRef);
 
   // Refs so the __TEST__ API always reads current values without stale closures
   const stateRef = useRef(state);
@@ -364,7 +367,7 @@ function TestEditorInner() {
             Print
           </Button>
         </div>
-        <div className="document-container">
+        <div className="document-container" ref={containerRef}>
           <div className={`document-body${layoutReady ? " layout-ready" : ""}`} ref={bodyRef}>
             <LyricEditor />
           </div>

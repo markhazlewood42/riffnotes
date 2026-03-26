@@ -7,7 +7,6 @@ body {
 }
 
 .app-container {
-  --doc-zoom: min(1.5, calc((100vw - 40px) / var(--document-max-width)));
   min-height: calc(100vh - 50px);
   padding: 0 20px 40px;
   display: flex;
@@ -17,7 +16,7 @@ body {
 }
 
 .document-actions {
-  width: calc(var(--document-max-width) * var(--doc-zoom));
+  /* Width is synced to match the zoomed document via JS (--doc-zoom) */
   display: flex;
   align-items: center;
   gap: 10px;
@@ -49,7 +48,8 @@ body {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  zoom: var(--doc-zoom, 1.5);
+  /* zoom is set dynamically via JS — Firefox doesn't support min()/viewport
+     units inside zoom, so we compute the responsive value in JS instead. */
   position: relative;
   /* No background or shadow here — individual pages are rendered via the gradient */
   background-color: transparent;

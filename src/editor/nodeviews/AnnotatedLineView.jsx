@@ -1,4 +1,5 @@
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react";
+import { getContainerScale } from "../../utils/getContainerScale";
 import { Check, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
@@ -312,7 +313,7 @@ function AnnotatedLineView(props) {
 
     const wrapperRect = wrapperRef.current.getBoundingClientRect();
     const zoomEl = wrapperRef.current.closest(".document-container");
-    const zoom = zoomEl ? parseFloat(getComputedStyle(zoomEl).zoom) || 1 : 1;
+    const zoom = getContainerScale(zoomEl);
 
     const newMap = {};
     for (const item of leaderItems) {
@@ -355,7 +356,7 @@ function AnnotatedLineView(props) {
 
     const wrapperRect = wrapperRef.current.getBoundingClientRect();
     const zoomEl = wrapperRef.current.closest(".document-container");
-    const zoom = zoomEl ? parseFloat(getComputedStyle(zoomEl).zoom) || 1 : 1;
+    const zoom = getContainerScale(zoomEl);
 
     // Returns the pixel offset (from wrapper left) of a collapsed range at charOffset.
     const measurePixelOffset = (offset) => {
@@ -536,9 +537,7 @@ function AnnotatedLineView(props) {
   const measureLeader = useCallback(() => {
     if (!leaderRef.current) return;
     const container = leaderRef.current.closest(".document-container");
-    const zoom = container
-      ? parseFloat(getComputedStyle(container).zoom) || 1
-      : 1;
+    const zoom = getContainerScale(container);
     const rect = leaderRef.current.getBoundingClientRect();
     setLeaderWidth(rect.width / zoom);
   }, []);
@@ -605,7 +604,6 @@ function AnnotatedLineView(props) {
                   top: `-${VERTICAL_TICK_HEIGHT - 3}px`,
                 }}
                 viewBox={`0 0 ${svgW} ${svgH}`}
-                preserveAspectRatio="none"
               >
                 {/* Vertical tick at leader start */}
                 <line
@@ -614,7 +612,6 @@ function AnnotatedLineView(props) {
                   x2="0"
                   y2={VERTICAL_TICK_HEIGHT}
                   className="leader-line leader-line-tick"
-                  vectorEffect="non-scaling-stroke"
                 />
                 {displacement > 0 && leaderWidth > 0 ? (
                   <>
@@ -624,16 +621,14 @@ function AnnotatedLineView(props) {
                       x2={Math.max(0, svgW - LEADER_OVERSHOOT - BEND_INSET)}
                       y2={VERTICAL_TICK_HEIGHT}
                       className="leader-line"
-                      vectorEffect="non-scaling-stroke"
-                    />
+                        />
                     <line
                       x1={Math.max(0, svgW - LEADER_OVERSHOOT - BEND_INSET)}
                       y1={VERTICAL_TICK_HEIGHT}
                       x2={svgW}
                       y2={VERTICAL_TICK_HEIGHT + displacement}
                       className="leader-line"
-                      vectorEffect="non-scaling-stroke"
-                    />
+                        />
                   </>
                 ) : (
                   <line
@@ -642,8 +637,7 @@ function AnnotatedLineView(props) {
                     x2={svgW}
                     y2={VERTICAL_TICK_HEIGHT}
                     className="leader-line"
-                    vectorEffect="non-scaling-stroke"
-                  />
+                    />
                 )}
               </svg>
             );

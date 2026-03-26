@@ -1,10 +1,12 @@
-### Before alpha
+### Bug fixes + improvements
 
-_(nothing blocking)_
+- [broken] Combining lines or paragraphs when the lines contain right annotations
+- [bug] Print view doesn't quite match editor view. Print view is slightly longer.
+- [bug] Difficult to click on words with a leader line below them. Hit box is off.
+- [improvement] Double spaces have too much space. Not sure what to do about this.
 
-### Later
+### New features / housekeeping
 
-- ~~Add songs and lyrics from existing library/source~~ ✓ (Find a Song feature — Genius search + LRCLIB lyrics)
 - Integration test harness for Find a Song modal — mock Genius/LRCLIB API responses, test search flow, error states (network failure, no results, lyrics unavailable), keyboard navigation, and Add Song action
 - Extract hardcoded pixel values across the codebase into named constants or CSS custom properties
 - Admin panel: replace plain HTML table with a proper sortable table component (HeroUI Table was buggy)

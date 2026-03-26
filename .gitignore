@@ -28,3 +28,4 @@ yarn-error.log*
 .superpowers/
 implementation-notes.md
 .worktrees/
+test-results/

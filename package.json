@@ -30,13 +30,22 @@
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:server": "cross-env VITE_AUTH_BYPASS=true vite --port 3002"
+    "test:server": "cross-env VITE_AUTH_BYPASS=true vite --port 3002",
+    "lint:css": "stylelint \"src/**/*.css\""
   },
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions"
+  ],
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@vitejs/plugin-react": "^5.1.4",
     "cross-env": "^10.1.0",
     "jsdom": "^29.0.0",
+    "stylelint": "^17.5.0",
+    "stylelint-no-unsupported-browser-features": "^8.1.1",
     "vite": "^7.3.1",
     "vitest": "^4.1.0"
   }

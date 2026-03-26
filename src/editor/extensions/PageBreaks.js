@@ -2,6 +2,7 @@ import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { MARGIN, PAGE_GAP, PAGE_HEIGHT } from "../pageLayout";
+import { getContainerScale } from "../../utils/getContainerScale";
 
 export const pageBreakKey = new PluginKey("pageBreaks");
 
@@ -73,7 +74,7 @@ const PageBreaks = Extension.create({
             const { doc } = view.state;
             const container = view.dom.closest(".document-container");
             if (!container) return;
-            const zoom = parseFloat(getComputedStyle(container).zoom) || 1;
+            const zoom = getContainerScale(container);
 
             const editorRect = view.dom.getBoundingClientRect();
             const editorTop = editorRect.top / zoom;
