@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../supabase';
 import { annotationReducer } from './annotationReducer';
+import { sanitizeDocument } from '../services/songDocument';
 
 const LyricSheetContext = createContext(null);
 
@@ -73,7 +74,8 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, initi
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(async () => {
       const sid = songIdRef.current;
-      const doc = editorRef.current?.getJSON() || null;
+      const rawDoc = editorRef.current?.getJSON() || null;
+      const doc = rawDoc ? sanitizeDocument(rawDoc) : null;
       const title = extractTitleFromDoc(doc);
       if (!sid) {
         // First save for a new song — INSERT
@@ -107,13 +109,13 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, initi
     }, 1000);
   }, [isLocked]);
 
-  // Auto-save when annotations change (skip initial render)
-  const isFirstRender = useRef(true);
+  // Auto-save when annotations change (skip if annotations haven't actually changed).
+  // A ref tracks the previous value instead of a "first render" flag, which breaks
+  // under React StrictMode's double-fire of effects.
+  const prevAnnotationsRef = useRef(state.annotations);
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
+    if (prevAnnotationsRef.current === state.annotations) return;
+    prevAnnotationsRef.current = state.annotations;
     requestSave();
   }, [state.annotations, requestSave]);
 
