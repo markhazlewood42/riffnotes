@@ -256,6 +256,19 @@
   display: block;
 }
 
+/* Reserve right-column flex space when no annotation div is in the DOM.
+   Pseudo-elements cannot be contentEditable, so Firefox ignores them for
+   cursor navigation — this avoids the contenteditable=false skip bug.
+   Suppressed when .has-right-annotation is present (the real column renders). */
+.annotated-line::after {
+  content: '';
+  flex: 0 0 calc(25% - calc(var(--document-padding) / 2));
+  height: 0;
+}
+.annotated-line.has-right-annotation::after {
+  display: none;
+}
+
 /* Word hover highlight — applied via ProseMirror Decoration */
 .word-hover-highlight {
   background-color: var(--color-word-hover);
