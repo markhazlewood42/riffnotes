@@ -30,7 +30,9 @@ const LyricLine = Paragraph.extend({
   },
 
   onCreate() {
-    // Assign IDs to any paragraph lines that don't have them yet
+    // Assign IDs to any paragraph lines that don't have them yet.
+    // Mark the transaction with metadata so onUpdate doesn't trigger a save —
+    // lineId assignment is an internal bookkeeping change, not a user edit.
     const { tr } = this.editor.state;
     let modified = false;
     this.editor.state.doc.descendants((node, pos) => {
@@ -43,6 +45,7 @@ const LyricLine = Paragraph.extend({
       }
     });
     if (modified) {
+      tr.setMeta('lineIdInit', true);
       this.editor.view.dispatch(tr);
     }
   },

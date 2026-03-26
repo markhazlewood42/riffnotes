@@ -4,6 +4,7 @@ import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import { Fragment, Slice } from '@tiptap/pm/model';
 import { normalizePasteLines } from './pasteUtils.js';
+import { sanitizeDocument } from '../services/songDocument.js';
 import Placeholder from '@tiptap/extension-placeholder';
 import LyricLine from './extensions/LyricLine';
 import SongTitle from './extensions/SongTitle';
@@ -44,11 +45,12 @@ function LyricEditor() {
         showOnlyCurrent: false,
       }),
     ],
-    content: initialDocument || DEFAULT_CONTENT,
+    content: (initialDocument ? sanitizeDocument(initialDocument) : null) || DEFAULT_CONTENT,
     editable: !isLocked,
     autofocus: isLocked ? false : 'start',
     onUpdate: ({ transaction }) => {
-      if (transaction.docChanged) {
+      // Skip save for internal lineId assignment (not a user edit)
+      if (transaction.docChanged && !transaction.getMeta('lineIdInit')) {
         requestSave();
       }
     },
