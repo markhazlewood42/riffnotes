@@ -319,16 +319,25 @@ function AnnotatedLineView(props) {
     for (const item of leaderItems) {
       if (item.charOffset == null) continue;
 
-      const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT);
+      // Use SHOW_ALL so <br> (hardBreak) nodes are visited and counted as 1
+      // character each, matching ProseMirror's model offset for positions after a break.
+      const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_ALL);
       let textNode = null;
       let accumulated = 0;
       while (walker.nextNode()) {
         const n = walker.currentNode;
-        if (accumulated + n.length >= item.charOffset) {
-          textNode = n;
-          break;
+        if (n.nodeType === Node.ELEMENT_NODE) {
+          if (n.nodeName === 'BR') {
+            if (accumulated + 1 >= item.charOffset) break;
+            accumulated += 1;
+          }
+        } else if (n.nodeType === Node.TEXT_NODE) {
+          if (accumulated + n.length >= item.charOffset) {
+            textNode = n;
+            break;
+          }
+          accumulated += n.length;
         }
-        accumulated += n.length;
       }
       if (!textNode) continue;
 
@@ -360,16 +369,23 @@ function AnnotatedLineView(props) {
 
     // Returns the pixel offset (from wrapper left) of a collapsed range at charOffset.
     const measurePixelOffset = (offset) => {
-      const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT);
+      const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_ALL);
       let textNode = null;
       let accumulated = 0;
       while (walker.nextNode()) {
         const n = walker.currentNode;
-        if (accumulated + n.length >= offset) {
-          textNode = n;
-          break;
+        if (n.nodeType === Node.ELEMENT_NODE) {
+          if (n.nodeName === 'BR') {
+            if (accumulated + 1 >= offset) break;
+            accumulated += 1;
+          }
+        } else if (n.nodeType === Node.TEXT_NODE) {
+          if (accumulated + n.length >= offset) {
+            textNode = n;
+            break;
+          }
+          accumulated += n.length;
         }
-        accumulated += n.length;
       }
       if (!textNode) return null;
       const localOffset = offset - accumulated;
