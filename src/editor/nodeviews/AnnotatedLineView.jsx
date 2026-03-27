@@ -527,7 +527,7 @@ function AnnotatedLineView(props) {
 
   useEffect(() => {
     measureAllPullbacks();
-  }, [measureAllPullbacks]);
+  }, [measureAllPullbacks, node.textContent]);
 
   useEffect(() => {
     measureChordPositions();

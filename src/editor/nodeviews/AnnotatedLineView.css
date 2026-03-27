@@ -67,6 +67,7 @@
   width: 100%;
   overflow: visible;
   display: block;
+  pointer-events: none;
 }
 
 .leader-line {
