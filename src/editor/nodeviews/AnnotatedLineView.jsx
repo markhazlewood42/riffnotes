@@ -315,6 +315,22 @@ function AnnotatedLineView(props) {
     const zoomEl = wrapperRef.current.closest(".document-container");
     const zoom = getContainerScale(zoomEl);
 
+    // Measure the actual glyph top of the first character to use as a reference
+    // for the first-line guard. wrapperRect.top is the element-box top, which sits
+    // above the text glyphs by ~half the line-height gap (e.g. ~5px at 200% lh /
+    // 11px font). Comparing rangeRect.top against the glyph top avoids false positives.
+    let firstLineGlyphTop = wrapperRect.top;
+    {
+      const fw = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT);
+      const fn = fw.nextNode();
+      if (fn && fn.length > 0) {
+        const fr = document.createRange();
+        fr.setStart(fn, 0);
+        fr.setEnd(fn, Math.min(1, fn.length));
+        firstLineGlyphTop = fr.getBoundingClientRect().top;
+      }
+    }
+
     const newMap = {};
     for (const item of leaderItems) {
       if (item.charOffset == null) continue;
@@ -347,10 +363,10 @@ function AnnotatedLineView(props) {
       range.setEnd(textNode, textNode.length);
 
       const rangeRect = range.getBoundingClientRect();
-      // Guard: if charOffset landed on a later visual sub-line (e.g. the text after
-      // a hard break), rangeRect.top will be well below wrapperRect.top. Skip it so
-      // pullback defaults to 0 — the tick appears at the leader-container edge.
-      if (rangeRect.top > wrapperRect.top + 3 * zoom) continue;
+      // Guard: if charOffset landed on a later visual sub-line (e.g. after a hard
+      // break), rangeRect.top will be a full line-height below firstLineGlyphTop.
+      // Skip it so pullback defaults to 0 — tick at the leader-container edge.
+      if (rangeRect.top > firstLineGlyphTop + 3 * zoom) continue;
       newMap[item.id] = (wrapperRect.right - rangeRect.left) / zoom;
     }
     setPullbackMap(newMap);

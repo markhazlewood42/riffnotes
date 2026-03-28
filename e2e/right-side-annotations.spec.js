@@ -44,6 +44,32 @@ test.describe('Right-side annotations', () => {
     expect(notes[0].value).toBe('Stressed syllable here');
   });
 
+  test('leader line pullback is non-zero when annotation is mid-line', async ({ page }) => {
+    // Annotation anchored at charOffset 3 ("Do ") — well within the line, not at the end.
+    // The SVG should extend leftward into the lyric text (non-zero pullback), so its
+    // left edge must be noticeably to the left of the leader-container left edge.
+    await setAnnotations(page, {
+      'ann-mid': {
+        id: 'ann-mid',
+        type: 'right-side',
+        lineId: 'test-line-1',
+        charOffset: 3,
+        value: 'mid-line anchor',
+        style: 'default',
+      },
+    });
+
+    await expect(page.locator('.leader-line-svg').first()).toBeVisible();
+
+    const svgRect = await page.locator('.leader-line-svg').first().boundingBox();
+    const leaderRect = await page.locator('.leader-line-container').first().boundingBox();
+
+    // With a mid-line anchor, the SVG extends to the left of the leader container.
+    // A zero-pullback SVG would sit flush at the container left; a non-zero pullback
+    // positions the SVG noticeably to the left (>10px into the lyric area).
+    expect(svgRect.x).toBeLessThan(leaderRect.x - 10);
+  });
+
   test('leader line stays on first visual line after Shift+Enter', async ({ page }) => {
     // Seed a note anchored near the end of the line
     const lineText = 'Do you know what worth fighting for';
