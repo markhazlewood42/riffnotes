@@ -12,7 +12,9 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      // clipboard-read/write permissions are required for navigator.clipboard API in Chromium.
+      // Firefox handles clipboard in automation mode without these (and doesn't accept them).
+      use: { ...devices['Desktop Chrome'], permissions: ['clipboard-read', 'clipboard-write'] },
     },
     {
       name: 'firefox',

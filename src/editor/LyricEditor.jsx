@@ -61,6 +61,15 @@ function LyricEditor() {
         const text = event.clipboardData?.getData('text/plain');
         if (!text) return false;
 
+        // In the song title, paste only the first line as inline text.
+        // Inserting paragraph nodes while inside songTitle corrupts the schema.
+        if (view.state.selection.$from.parent.type.name === 'songTitle') {
+          const firstLine = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')[0].trim();
+          if (!firstLine) return true;
+          view.dispatch(view.state.tr.insertText(firstLine));
+          return true;
+        }
+
         // Collapse runs of 3+ blank lines to 2 (one empty paragraph), but
         // preserve single blank lines as empty paragraphs (verse separators).
         const lines = normalizePasteLines(text);

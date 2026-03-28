@@ -51,23 +51,56 @@ const LyricLine = Paragraph.extend({
   },
 
   addKeyboardShortcuts() {
+    // Helper: find the position just inside the first lyric paragraph (content start).
+    const firstLyricStart = (doc) => {
+      let pos = null;
+      doc.forEach((node, p) => {
+        if (node.type.name === 'paragraph' && pos === null) pos = p + 1;
+      });
+      return pos;
+    };
+
+    // Helper: find the position at the end of the songTitle content.
+    const titleEnd = (doc) => {
+      let pos = null;
+      doc.forEach((node, p) => {
+        if (node.type.name === 'songTitle') pos = p + node.nodeSize - 1;
+      });
+      return pos;
+    };
+
     return {
       ...this.parent?.(),
+
       Enter: ({ editor }) => {
         return editor.chain().splitBlock().updateAttributes('paragraph', {
           lineId: generateLineId(),
         }).run();
       },
+
+      // Prevent backspace from merging the first lyric paragraph into the title.
+      Backspace: ({ editor }) => {
+        const { $from, empty } = editor.state.selection;
+        if (!empty) return false;
+        return $from.pos === firstLyricStart(editor.state.doc);
+      },
+
+      // Ensure ArrowUp from the very first position of the first lyric always
+      // lands in the title. Without this, Firefox skips the title entirely
+      // because the InstrumentTags contentEditable={false} div looks like an
+      // atomic cursor object to Firefox's native navigation.
+      ArrowUp: ({ editor }) => {
+        const { $from, empty } = editor.state.selection;
+        if (!empty) return false;
+        if ($from.pos !== firstLyricStart(editor.state.doc)) return false;
+        const end = titleEnd(editor.state.doc);
+        return end !== null && editor.chain().setTextSelection(end).run();
+      },
+
       'Shift-Tab': ({ editor }) => {
-        const doc = editor.state.doc;
-        let titleEndPos = null;
-        doc.forEach((node, pos) => {
-          if (node.type.name === 'songTitle') {
-            titleEndPos = pos + node.nodeSize - 1;
-          }
-        });
-        if (titleEndPos !== null) {
-          return editor.chain().setTextSelection(titleEndPos).run();
+        const end = titleEnd(editor.state.doc);
+        if (end !== null) {
+          return editor.chain().setTextSelection(end).run();
         }
         return false;
       },

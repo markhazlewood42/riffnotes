@@ -296,6 +296,7 @@ function TestEditorInner() {
 
     window.__TEST__ = {
       ready: readyPromise,
+      get editor() { return editorRef.current; },
 
       resetEditor: () => readyPromise.then(() => {
         dispatch({ type: 'LOAD', payload: { annotations: {}, songId: 'test-song' } });

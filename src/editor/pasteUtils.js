@@ -9,5 +9,5 @@
  */
 export function normalizePasteLines(text) {
   if (!text) return [];
-  return text.replace(/\n{3,}/g, '\n\n').split('\n');
+  return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n{3,}/g, '\n\n').split('\n');
 }

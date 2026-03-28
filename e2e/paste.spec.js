@@ -39,14 +39,18 @@ test.describe('Paste behavior', () => {
   });
 
   test('pasting rich HTML strips all formatting', async ({ page }) => {
-    await page.evaluate(() => {
-      const editor = document.querySelector('.tiptap');
-      editor.focus();
-      const dt = new DataTransfer();
-      dt.setData('text/plain', 'Plain content');
-      dt.setData('text/html', '<p style="font-size:24px;color:red;font-family:Arial"><strong>Plain content</strong></p>');
-      editor.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true }));
+    await page.evaluate(async () => {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html': new Blob(
+            ['<p style="font-size:24px;color:red;font-family:Arial"><strong>Plain content</strong></p>'],
+            { type: 'text/html' }
+          ),
+          'text/plain': new Blob(['Plain content'], { type: 'text/plain' }),
+        }),
+      ]);
     });
+    await page.keyboard.press('ControlOrMeta+v');
     await expect(page.locator('.tiptap .node-paragraph').first()).toContainText('Plain content');
     // No bold markup from the rich HTML
     const boldCount = await page.locator('.tiptap .node-paragraph strong').count();
@@ -60,5 +64,83 @@ test.describe('Paste behavior', () => {
     const text = await page.locator('.tiptap').innerText();
     expect(text).toContain('Before');
     expect(text).toContain('Pasted');
+  });
+
+  test('pasting a single word creates one paragraph', async ({ page }) => {
+    await pasteText(page, 'Hello');
+    const paras = page.locator('.tiptap .node-paragraph');
+    await expect(paras).toHaveCount(1);
+    await expect(paras.first()).toContainText('Hello');
+  });
+
+  test('pasting whitespace-only produces one blank paragraph', async ({ page }) => {
+    await pasteText(page, '   ');
+    // Whitespace trims to empty — one blank paragraph, no crash
+    const paras = page.locator('.tiptap .node-paragraph');
+    await expect(paras).toHaveCount(1);
+    const text = await paras.first().textContent();
+    expect(text.trim()).toBe('');
+  });
+
+  test('pasting multiline text into the song title does not corrupt the document', async ({ page }) => {
+    // Focus the title instead of the lyric area
+    await page.locator('.tiptap .song-title').click();
+    await pasteText(page, 'My Song\nExtra line');
+    // Document must still be structurally valid: title node + at least one paragraph
+    const titleCount = await page.evaluate(() => {
+      let n = 0;
+      window.__TEST__.editor.state.doc.forEach((node) => {
+        if (node.type.name === 'songTitle') n++;
+      });
+      return n;
+    });
+    const paraCount = await page.evaluate(() => {
+      let n = 0;
+      window.__TEST__.editor.state.doc.forEach((node) => {
+        if (node.type.name === 'paragraph') n++;
+      });
+      return n;
+    });
+    expect(titleCount).toBe(1);
+    expect(paraCount).toBeGreaterThanOrEqual(1);
+    // Some part of the pasted text must appear in the document
+    const fullText = await page.locator('.tiptap').innerText();
+    expect(fullText).toContain('My Song');
+  });
+
+  test('pasting Google Docs-style HTML uses plain text and strips markup', async ({ page }) => {
+    // Google Docs copies with heavy inline styling; we assert our handler ignores all of it
+    const googleDocsHtml = [
+      '<meta charset="utf-8">',
+      '<b style="font-weight:normal;" id="docs-internal-guid-abc123">',
+      '<p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;">',
+      '<span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;">',
+      'Verse one',
+      '</span></p>',
+      '<p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;">',
+      '<span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;">',
+      'Verse two',
+      '</span></p></b>',
+    ].join('');
+
+    await page.evaluate(async (html) => {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html': new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob(['Verse one\nVerse two'], { type: 'text/plain' }),
+        }),
+      ]);
+    }, googleDocsHtml);
+    await page.keyboard.press('ControlOrMeta+v');
+    await page.waitForTimeout(100);
+
+    // Should produce two clean paragraphs — no span/style markup
+    const paras = page.locator('.tiptap .node-paragraph');
+    await expect(paras).toHaveCount(2);
+    await expect(paras.nth(0)).toContainText('Verse one');
+    await expect(paras.nth(1)).toContainText('Verse two');
+    // No inline style elements should have leaked in
+    const styledSpans = await page.locator('.tiptap .node-paragraph span').count();
+    expect(styledSpans).toBe(0);
   });
 });

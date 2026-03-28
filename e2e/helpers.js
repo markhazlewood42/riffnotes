@@ -77,15 +77,13 @@ export async function getAnnotations(page) {
 
 /**
  * Simulate a plain-text paste into the focused editor element.
+ * Uses the native clipboard API + keyboard shortcut so Firefox handles it correctly.
  */
 export async function pasteText(page, text) {
-  await page.evaluate((t) => {
-    const editor = document.querySelector('.tiptap');
-    editor.focus();
-    const dt = new DataTransfer();
-    dt.setData('text/plain', t);
-    editor.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true }));
-  }, text);
+  await page.evaluate((t) => navigator.clipboard.writeText(t), text);
+  await page.keyboard.press('ControlOrMeta+v');
+  // Allow the editor's paste handler to finish processing before assertions.
+  await page.waitForTimeout(100);
 }
 
 /**
