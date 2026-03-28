@@ -344,8 +344,9 @@ function AnnotatedLineView(props) {
         const n = walker.currentNode;
         if (n.nodeType === Node.ELEMENT_NODE) {
           if (n.nodeName === 'BR') {
-            if (accumulated + 1 >= item.charOffset) break;
+            if (accumulated + 1 > item.charOffset) break;
             accumulated += 1;
+            if (accumulated === item.charOffset) continue;
           }
         } else if (n.nodeType === Node.TEXT_NODE) {
           if (accumulated + n.length >= item.charOffset) {
@@ -396,8 +397,9 @@ function AnnotatedLineView(props) {
         const n = walker.currentNode;
         if (n.nodeType === Node.ELEMENT_NODE) {
           if (n.nodeName === 'BR') {
-            if (accumulated + 1 >= offset) break;
+            if (accumulated + 1 > offset) break;
             accumulated += 1;
+            if (accumulated === offset) continue;
           }
         } else if (n.nodeType === Node.TEXT_NODE) {
           if (accumulated + n.length >= offset) {
@@ -567,7 +569,7 @@ function AnnotatedLineView(props) {
 
   useEffect(() => {
     measureChordPositions();
-  }, [measureChordPositions, node.textContent]);
+  }, [measureChordPositions, node.nodeSize]);
 
   // Measure leader container width for SVG viewBox
   const measureLeader = useCallback(() => {

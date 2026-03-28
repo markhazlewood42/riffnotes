@@ -26,21 +26,42 @@ async function measureTickVsChar(page, lineId, charOffset) {
     const svgEl = lineEl.querySelector('.leader-line-svg');
     if (!contentEl || !svgEl) return null;
 
-    // Walk text nodes to find the node containing charOffset
-    const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT);
-    let textNode = null, accumulated = 0;
+    // Walk all nodes to find the DOM position corresponding to charOffset.
+    // Count text characters normally and <br> elements as 1 character each,
+    // matching ProseMirror's hardBreak character counting.
+    const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_ALL);
+    let accumulated = 0;
+    let target = null;
     while (walker.nextNode()) {
       const n = walker.currentNode;
-      if (accumulated + n.length >= charOffset) { textNode = n; break; }
-      accumulated += n.length;
+      if (n.nodeType === Node.TEXT_NODE) {
+        if (accumulated + n.length >= charOffset) {
+          target = { type: 'text', node: n, offset: charOffset - accumulated };
+          break;
+        }
+        accumulated += n.length;
+      } else if (n.nodeType === Node.ELEMENT_NODE && n.nodeName === 'BR') {
+        if (accumulated + 1 > charOffset) break;
+        accumulated += 1;
+        if (accumulated === charOffset) {
+          const parent = n.parentNode;
+          const index = Array.prototype.indexOf.call(parent.childNodes, n);
+          target = { type: 'br', parent, offset: index + 1 };
+          break;
+        }
+      }
     }
-    if (!textNode) return null;
+    if (!target) return null;
 
     // Collapsed range at charOffset = the character's left edge
     const range = document.createRange();
-    const localOffset = charOffset - accumulated;
-    range.setStart(textNode, localOffset);
-    range.setEnd(textNode, localOffset);
+    if (target.type === 'text') {
+      range.setStart(target.node, target.offset);
+      range.setEnd(target.node, target.offset);
+    } else {
+      range.setStart(target.parent, target.offset);
+      range.setEnd(target.parent, target.offset);
+    }
     const charRect = range.getBoundingClientRect();
 
     // SVG left edge = where the tick is drawn (tick is at x=0 in the SVG)
