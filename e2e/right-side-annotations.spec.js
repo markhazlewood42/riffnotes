@@ -13,6 +13,43 @@ const DOC = {
   ],
 };
 
+/**
+ * Measure the screen X of the SVG tick mark and the screen X of the character
+ * at charOffset for the given lineId. Both are in viewport coordinates.
+ * Returns { tickX, charX } or null if elements aren't found.
+ */
+async function measureTickVsChar(page, lineId, charOffset) {
+  return page.evaluate(({ lineId, charOffset }) => {
+    const lineEl = document.querySelector(`[data-line-id="${lineId}"]`);
+    if (!lineEl) return null;
+    const contentEl = lineEl.querySelector('.lyric-content');
+    const svgEl = lineEl.querySelector('.leader-line-svg');
+    if (!contentEl || !svgEl) return null;
+
+    // Walk text nodes to find the node containing charOffset
+    const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT);
+    let textNode = null, accumulated = 0;
+    while (walker.nextNode()) {
+      const n = walker.currentNode;
+      if (accumulated + n.length >= charOffset) { textNode = n; break; }
+      accumulated += n.length;
+    }
+    if (!textNode) return null;
+
+    // Collapsed range at charOffset = the character's left edge
+    const range = document.createRange();
+    const localOffset = charOffset - accumulated;
+    range.setStart(textNode, localOffset);
+    range.setEnd(textNode, localOffset);
+    const charRect = range.getBoundingClientRect();
+
+    // SVG left edge = where the tick is drawn (tick is at x=0 in the SVG)
+    const svgRect = svgEl.getBoundingClientRect();
+
+    return { tickX: svgRect.left, charX: charRect.left };
+  }, { lineId, charOffset });
+}
+
 test.describe('Right-side annotations', () => {
   test.beforeEach(async ({ page }) => {
     await gotoTestEditor(page);
@@ -44,66 +81,120 @@ test.describe('Right-side annotations', () => {
     expect(notes[0].value).toBe('Stressed syllable here');
   });
 
-  test('leader line pullback is non-zero when annotation is mid-line', async ({ page }) => {
-    // Annotation anchored at charOffset 3 ("Do ") — well within the line, not at the end.
-    // The SVG should extend leftward into the lyric text (non-zero pullback), so its
-    // left edge must be noticeably to the left of the leader-container left edge.
+  test('leader line tick is pinned to its annotation character (mid-line)', async ({ page }) => {
+    // charOffset 3 = start of "you" — tick must appear at that exact character.
+    const CHAR_OFFSET = 3;
     await setAnnotations(page, {
-      'ann-mid': {
-        id: 'ann-mid',
+      'ann-pin': {
+        id: 'ann-pin',
         type: 'right-side',
         lineId: 'test-line-1',
-        charOffset: 3,
-        value: 'mid-line anchor',
+        charOffset: CHAR_OFFSET,
+        value: 'pin test',
         style: 'default',
       },
     });
-
     await expect(page.locator('.leader-line-svg').first()).toBeVisible();
+    await page.waitForTimeout(100);
 
-    const svgRect = await page.locator('.leader-line-svg').first().boundingBox();
-    const leaderRect = await page.locator('.leader-line-container').first().boundingBox();
-
-    // With a mid-line anchor, the SVG extends to the left of the leader container.
-    // A zero-pullback SVG would sit flush at the container left; a non-zero pullback
-    // positions the SVG noticeably to the left (>10px into the lyric area).
-    expect(svgRect.x).toBeLessThan(leaderRect.x - 10);
+    const pos = await measureTickVsChar(page, 'test-line-1', CHAR_OFFSET);
+    expect(pos).not.toBeNull();
+    expect(Math.abs(pos.tickX - pos.charX)).toBeLessThan(5);
   });
 
-  test('leader line stays on first visual line after Shift+Enter', async ({ page }) => {
-    // Seed a note anchored near the end of the line
+  test('leader line tick stays pinned to character after backspace merge', async ({ page }) => {
+    const CHAR_OFFSET = 3;
+    await setDocument(page, {
+      type: 'doc',
+      content: [
+        { type: 'songTitle' },
+        { type: 'paragraph', attrs: { lineId: 'merge-line-1' }, content: [{ type: 'text', text: 'Do you know what' }] },
+        { type: 'paragraph', attrs: { lineId: 'merge-line-2' }, content: [{ type: 'text', text: 'worth fighting for' }] },
+      ],
+    });
+    await setAnnotations(page, {
+      'ann-merge': {
+        id: 'ann-merge',
+        type: 'right-side',
+        lineId: 'merge-line-1',
+        charOffset: CHAR_OFFSET,
+        value: 'merge pin test',
+        style: 'default',
+      },
+    });
+    await expect(page.locator('.leader-line-svg').first()).toBeVisible();
+    await page.waitForTimeout(100);
+
+    // Verify pinned before the merge
+    const before = await measureTickVsChar(page, 'merge-line-1', CHAR_OFFSET);
+    expect(before).not.toBeNull();
+    expect(Math.abs(before.tickX - before.charX)).toBeLessThan(5);
+
+    // Merge line 2 into line 1
+    await page.locator('[data-line-id="merge-line-2"] .lyric-content').click();
+    await page.keyboard.press('Home');
+    await page.keyboard.press('Backspace');
+    await page.waitForTimeout(150);
+
+    // Tick must still be pinned to the same character after the merge
+    const after = await measureTickVsChar(page, 'merge-line-1', CHAR_OFFSET);
+    expect(after).not.toBeNull();
+    expect(Math.abs(after.tickX - after.charX)).toBeLessThan(5);
+  });
+
+  test('leader line tick stays pinned when Shift+Enter is inserted after the annotation character', async ({ page }) => {
+    // BR after the annotation — character stays on first visual sub-line, tick must remain pinned.
+    const CHAR_OFFSET = 3;
+    await setAnnotations(page, {
+      'ann-br-after': {
+        id: 'ann-br-after',
+        type: 'right-side',
+        lineId: 'test-line-1',
+        charOffset: CHAR_OFFSET,
+        value: 'br after pin test',
+        style: 'default',
+      },
+    });
+    await expect(page.locator('.leader-line-svg').first()).toBeVisible();
+    await page.waitForTimeout(100);
+
+    // Click past the annotation character and insert a BR after it
+    const lyricBox = await page.locator('.lyric-content').first().boundingBox();
+    await page.mouse.click(lyricBox.x + lyricBox.width * 0.7, lyricBox.y + lyricBox.height / 2);
+    await page.keyboard.press('Shift+Enter');
+    await page.waitForTimeout(150);
+
+    const pos = await measureTickVsChar(page, 'test-line-1', CHAR_OFFSET);
+    expect(pos).not.toBeNull();
+    expect(Math.abs(pos.tickX - pos.charX)).toBeLessThan(5);
+  });
+
+  test('leader line tick does not span document when Shift+Enter moves annotation character to sub-line', async ({ page }) => {
+    // BR before the annotation moves the character to the second visual sub-line.
+    // Current architecture falls back to placing the tick at the leader-container edge
+    // (end of first sub-line) rather than following the character to the second row.
+    // TODO: implement sub-line pinning so the tick follows the character exactly.
     const lineText = 'Do you know what worth fighting for';
     await setAnnotations(page, {
-      'ann-br': {
-        id: 'ann-br',
+      'ann-br-before': {
+        id: 'ann-br-before',
         type: 'right-side',
         lineId: 'test-line-1',
         charOffset: lineText.length,
-        value: 'end note',
+        value: 'br before test',
         style: 'default',
       },
     });
-
     await expect(page.locator('.leader-line-svg').first()).toBeVisible();
 
-    // Click roughly in the middle of the lyric text to place the cursor there,
-    // then press Shift+Enter to insert a hard break before the annotation anchor.
     const lyricBox = await page.locator('.lyric-content').first().boundingBox();
     await page.mouse.click(lyricBox.x + lyricBox.width * 0.4, lyricBox.y + lyricBox.height / 2);
     await page.keyboard.press('Shift+Enter');
-    // Give layout a frame to settle
     await page.waitForTimeout(150);
 
-    // The SVG tick should NOT be at the far left of the document.
-    // wrapperRect.left is the left of the lyric content. The SVG extends
-    // leftward via a negative `left` offset — if pullback is huge the SVG
-    // left would be near the document's left edge (≈ 0). A correct pullback
-    // keeps the SVG within or close to the lyric content area.
+    // Assert the tick has NOT jumped to the document's far left edge.
     const svgRect = await page.locator('.leader-line-svg').first().boundingBox();
     const wrapperRect = await page.locator('.lyric-content-wrapper').first().boundingBox();
-
-    // The SVG left must be at least within 10px of the lyric wrapper left —
-    // it should never be way off to the left at the document edge.
     expect(svgRect.x).toBeGreaterThan(wrapperRect.x - 10);
   });
 
