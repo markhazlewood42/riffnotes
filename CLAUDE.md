@@ -100,6 +100,12 @@ All annotations live in `state.annotations` (flat map). Selectors in `annotation
 
 Creating a new TipTap node named `paragraph` causes infinite recursion in ProseMirror's `createAndFill`. Always use `Paragraph.extend({...})`.
 
+### Key gotcha: contentEditable={false} in NodeViews breaks Firefox arrow-key navigation
+
+Firefox treats `contenteditable="false"` elements inside a `contenteditable="true"` region as atomic cursor objects (like embedded images). Any such element — even zero-height — causes ArrowUp/Down to skip over it, making cursor navigation jump unexpectedly.
+
+**Rule:** Never render an empty `contentEditable={false}` element unconditionally inside a NodeView. In `AnnotatedLineView`, both `right-annotation-column` and `leader-line-container` are guarded by `{showRightColumn && ...}` so they're absent when a line has no annotations. Use a CSS `::after` pseudo-element on the flex container to reserve layout space instead — pseudo-elements can't be `contentEditable` so Firefox ignores them for cursor navigation.
+
 ### Keyboard shortcuts
 
 | Key | Context | Action |

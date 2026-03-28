@@ -315,20 +315,46 @@ function AnnotatedLineView(props) {
     const zoomEl = wrapperRef.current.closest(".document-container");
     const zoom = getContainerScale(zoomEl);
 
+    // Measure the actual glyph top of the first character to use as a reference
+    // for the first-line guard. wrapperRect.top is the element-box top, which sits
+    // above the text glyphs by ~half the line-height gap (e.g. ~5px at 200% lh /
+    // 11px font). Comparing rangeRect.top against the glyph top avoids false positives.
+    let firstLineGlyphTop = wrapperRect.top;
+    {
+      const fw = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT);
+      const fn = fw.nextNode();
+      if (fn && fn.length > 0) {
+        const fr = document.createRange();
+        fr.setStart(fn, 0);
+        fr.setEnd(fn, Math.min(1, fn.length));
+        firstLineGlyphTop = fr.getBoundingClientRect().top;
+      }
+    }
+
     const newMap = {};
     for (const item of leaderItems) {
       if (item.charOffset == null) continue;
 
-      const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT);
+      // Use SHOW_ALL so <br> (hardBreak) nodes are visited and counted as 1
+      // character each, matching ProseMirror's model offset for positions after a break.
+      const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_ALL);
       let textNode = null;
       let accumulated = 0;
       while (walker.nextNode()) {
         const n = walker.currentNode;
-        if (accumulated + n.length >= item.charOffset) {
-          textNode = n;
-          break;
+        if (n.nodeType === Node.ELEMENT_NODE) {
+          if (n.nodeName === "BR") {
+            if (accumulated + 1 > item.charOffset) break;
+            accumulated += 1;
+            if (accumulated === item.charOffset) continue;
+          }
+        } else if (n.nodeType === Node.TEXT_NODE) {
+          if (accumulated + n.length >= item.charOffset) {
+            textNode = n;
+            break;
+          }
+          accumulated += n.length;
         }
-        accumulated += n.length;
       }
       if (!textNode) continue;
 
@@ -338,6 +364,10 @@ function AnnotatedLineView(props) {
       range.setEnd(textNode, textNode.length);
 
       const rangeRect = range.getBoundingClientRect();
+      // Guard: if charOffset landed on a later visual sub-line (e.g. after a hard
+      // break), rangeRect.top will be a full line-height below firstLineGlyphTop.
+      // Skip it so pullback defaults to 0 — tick at the leader-container edge.
+      if (rangeRect.top > firstLineGlyphTop + 3 * zoom) continue;
       newMap[item.id] = (wrapperRect.right - rangeRect.left) / zoom;
     }
     setPullbackMap(newMap);
@@ -360,16 +390,24 @@ function AnnotatedLineView(props) {
 
     // Returns the pixel offset (from wrapper left) of a collapsed range at charOffset.
     const measurePixelOffset = (offset) => {
-      const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT);
+      const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_ALL);
       let textNode = null;
       let accumulated = 0;
       while (walker.nextNode()) {
         const n = walker.currentNode;
-        if (accumulated + n.length >= offset) {
-          textNode = n;
-          break;
+        if (n.nodeType === Node.ELEMENT_NODE) {
+          if (n.nodeName === "BR") {
+            if (accumulated + 1 > offset) break;
+            accumulated += 1;
+            if (accumulated === offset) continue;
+          }
+        } else if (n.nodeType === Node.TEXT_NODE) {
+          if (accumulated + n.length >= offset) {
+            textNode = n;
+            break;
+          }
+          accumulated += n.length;
         }
-        accumulated += n.length;
       }
       if (!textNode) return null;
       const localOffset = offset - accumulated;
@@ -527,11 +565,11 @@ function AnnotatedLineView(props) {
 
   useEffect(() => {
     measureAllPullbacks();
-  }, [measureAllPullbacks]);
+  }, [measureAllPullbacks, node.nodeSize]);
 
   useEffect(() => {
     measureChordPositions();
-  }, [measureChordPositions, node.textContent]);
+  }, [measureChordPositions, node.nodeSize]);
 
   // Measure leader container width for SVG viewBox
   const measureLeader = useCallback(() => {
@@ -544,7 +582,7 @@ function AnnotatedLineView(props) {
 
   useEffect(() => {
     measureLeader();
-  }, [measureLeader, showRightColumn]);
+  }, [measureLeader, showRightColumn, node.nodeSize]);
 
   // Build chord overlay — pixel positions from DOM measurement, ch fallback on first render
   const chordOverlay =
