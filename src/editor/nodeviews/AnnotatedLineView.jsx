@@ -343,7 +343,7 @@ function AnnotatedLineView(props) {
       while (walker.nextNode()) {
         const n = walker.currentNode;
         if (n.nodeType === Node.ELEMENT_NODE) {
-          if (n.nodeName === 'BR') {
+          if (n.nodeName === "BR") {
             if (accumulated + 1 > item.charOffset) break;
             accumulated += 1;
             if (accumulated === item.charOffset) continue;
@@ -396,7 +396,7 @@ function AnnotatedLineView(props) {
       while (walker.nextNode()) {
         const n = walker.currentNode;
         if (n.nodeType === Node.ELEMENT_NODE) {
-          if (n.nodeName === 'BR') {
+          if (n.nodeName === "BR") {
             if (accumulated + 1 > offset) break;
             accumulated += 1;
             if (accumulated === offset) continue;
