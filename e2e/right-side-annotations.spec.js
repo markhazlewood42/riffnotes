@@ -44,6 +44,43 @@ test.describe('Right-side annotations', () => {
     expect(notes[0].value).toBe('Stressed syllable here');
   });
 
+  test('leader line stays on first visual line after Shift+Enter', async ({ page }) => {
+    // Seed a note anchored near the end of the line
+    const lineText = 'Do you know what worth fighting for';
+    await setAnnotations(page, {
+      'ann-br': {
+        id: 'ann-br',
+        type: 'right-side',
+        lineId: 'test-line-1',
+        charOffset: lineText.length,
+        value: 'end note',
+        style: 'default',
+      },
+    });
+
+    await expect(page.locator('.leader-line-svg').first()).toBeVisible();
+
+    // Click roughly in the middle of the lyric text to place the cursor there,
+    // then press Shift+Enter to insert a hard break before the annotation anchor.
+    const lyricBox = await page.locator('.lyric-content').first().boundingBox();
+    await page.mouse.click(lyricBox.x + lyricBox.width * 0.4, lyricBox.y + lyricBox.height / 2);
+    await page.keyboard.press('Shift+Enter');
+    // Give layout a frame to settle
+    await page.waitForTimeout(150);
+
+    // The SVG tick should NOT be at the far left of the document.
+    // wrapperRect.left is the left of the lyric content. The SVG extends
+    // leftward via a negative `left` offset — if pullback is huge the SVG
+    // left would be near the document's left edge (≈ 0). A correct pullback
+    // keeps the SVG within or close to the lyric content area.
+    const svgRect = await page.locator('.leader-line-svg').first().boundingBox();
+    const wrapperRect = await page.locator('.lyric-content-wrapper').first().boundingBox();
+
+    // The SVG left must be at least within 10px of the lyric wrapper left —
+    // it should never be way off to the left at the document edge.
+    expect(svgRect.x).toBeGreaterThan(wrapperRect.x - 10);
+  });
+
   test('leader line is rendered connecting the note to the lyric line', async ({ page }) => {
     await selectText(page, 'Do you');
 

@@ -347,6 +347,10 @@ function AnnotatedLineView(props) {
       range.setEnd(textNode, textNode.length);
 
       const rangeRect = range.getBoundingClientRect();
+      // Guard: if charOffset landed on a later visual sub-line (e.g. the text after
+      // a hard break), rangeRect.top will be well below wrapperRect.top. Skip it so
+      // pullback defaults to 0 — the tick appears at the leader-container edge.
+      if (rangeRect.top > wrapperRect.top + 3 * zoom) continue;
       newMap[item.id] = (wrapperRect.right - rangeRect.left) / zoom;
     }
     setPullbackMap(newMap);
@@ -543,7 +547,7 @@ function AnnotatedLineView(props) {
 
   useEffect(() => {
     measureAllPullbacks();
-  }, [measureAllPullbacks, node.textContent]);
+  }, [measureAllPullbacks, node.nodeSize]);
 
   useEffect(() => {
     measureChordPositions();
@@ -560,7 +564,7 @@ function AnnotatedLineView(props) {
 
   useEffect(() => {
     measureLeader();
-  }, [measureLeader, showRightColumn]);
+  }, [measureLeader, showRightColumn, node.nodeSize]);
 
   // Build chord overlay — pixel positions from DOM measurement, ch fallback on first render
   const chordOverlay =
