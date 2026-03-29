@@ -1,4 +1,5 @@
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react";
+import { deleteAnnotationImage } from "../../utils/deleteAnnotationImage";
 import { getContainerScale } from "../../utils/getContainerScale";
 import { Check, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -552,6 +553,8 @@ function AnnotatedLineView(props) {
   const handleDeleteAnnotation = useCallback(
     (annotationId) => {
       if (isLocked) return;
+      const annotation = stateRef.current.annotations[annotationId];
+      deleteAnnotationImage(annotation);
       dispatch({ type: "DELETE_ANNOTATION", payload: { id: annotationId } });
     },
     [dispatch, isLocked],
