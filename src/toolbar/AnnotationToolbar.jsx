@@ -94,21 +94,7 @@ function AnnotationToolbar({ editor }) {
         <span className="btn-icon">&rarr;</span>
         <span className="btn-label">Note</span>
       </button>
-      <div className="toolbar-divider" />
-      <button
-        className={`toolbar-btn ${editor.isActive('bold') ? 'is-active' : ''}`}
-        onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBold().run(); }}
-        title="Bold"
-      >
-        <span className="btn-icon"><strong>B</strong></span>
-      </button>
-      <button
-        className={`toolbar-btn ${editor.isActive('italic') ? 'is-active' : ''}`}
-        onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleItalic().run(); }}
-        title="Italic"
-      >
-        <span className="btn-icon"><em>I</em></span>
-      </button>
+
     </div>
   );
 }

@@ -127,29 +127,4 @@ test.describe('Text editing', () => {
     await expect(paras.nth(2)).not.toContainText('X');
   });
 
-  test('bold toggle via BubbleMenu', async ({ page }) => {
-    // Set up a line with known text
-    const lineId = 'test-bold-line';
-    await page.evaluate((doc) => window.__TEST__.setDocument(doc), oneLineDoc(lineId, 'Bold this text'));
-    await page.waitForTimeout(100);
-
-    // Select the text using __TEST__ helper
-    const found = await page.evaluate((t) => window.__TEST__.selectText(t), 'Bold this text');
-    expect(found).toBe(true);
-
-    // Wait for BubbleMenu toolbar to appear
-    await page.waitForSelector('.annotation-toolbar', { timeout: 3000 });
-
-    // Click the Bold button
-    const boldBtn = page.locator('.annotation-toolbar .toolbar-btn[title="Bold"]');
-    await boldBtn.click();
-
-    // Wait for a moment for the DOM to update
-    await page.waitForTimeout(100);
-
-    // Verify <strong> tag is present in the lyric paragraph
-    const strongEl = page.locator('.tiptap .node-paragraph strong');
-    await expect(strongEl).toBeVisible();
-    await expect(strongEl).toContainText('Bold this text');
-  });
 });

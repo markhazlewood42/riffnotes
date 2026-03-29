@@ -100,6 +100,21 @@ All annotations live in `state.annotations` (flat map). Selectors in `annotation
 
 Creating a new TipTap node named `paragraph` causes infinite recursion in ProseMirror's `createAndFill`. Always use `Paragraph.extend({...})`.
 
+### Key gotcha: paste into songTitle requires inline-text insertion
+
+Our custom paste handler in `LyricEditor.jsx` calls `replaceSelection` with paragraph nodes. If the cursor is inside the `songTitle` node, ProseMirror's schema fit will replace the title node itself (setting `titleCount` to 0 and breaking the document). Always detect `$from.parent.type.name === 'songTitle'` before pasting and insert only the first line as inline text via `tr.insertText()`.
+
+### Key gotcha: Backspace at first lyric / ArrowUp into title need explicit handlers
+
+- **Backspace at start of first lyric** — TipTap's default merges the paragraph into `songTitle`, corrupting the node. `LyricLine.js` blocks this with a `Backspace` handler that returns `true` when the cursor is at position 0 of the first lyric paragraph.
+- **ArrowUp from first lyric on Firefox** — The `SongTitleView` NodeView contains a `contentEditable={false}` element (`InstrumentTags`), which Firefox treats as an atomic cursor object, causing ArrowUp to skip the title entirely. `LyricLine.js` has an explicit `ArrowUp` handler that sets the cursor to the end of the title when at position 0 of the first lyric paragraph, making behavior consistent across browsers.
+
+### Key gotcha: Playwright clipboard testing
+
+- **Never use synthetic `ClipboardEvent` dispatch** — Firefox's `ClipboardEvent` constructor ignores `clipboardData`, so `clipboardData` comes back null and paste never fires. Always use `navigator.clipboard.writeText()` + `ControlOrMeta+v` (native clipboard path) via the `pasteText()` helper in `e2e/helpers.js`.
+- **`clipboard-read`/`clipboard-write` permissions are Chromium-only** — adding them to the global Playwright config crashes Firefox tests. Scope clipboard permissions to the Chromium project only in `playwright.config.js`.
+- **Windows clipboard line endings** — Chrome's native clipboard returns `\r\n`. Normalize to `\n` in `pasteUtils.js` before processing, otherwise regexes like `\n{3,}` won't match and blank-line collapsing breaks.
+
 ### Key gotcha: contentEditable={false} in NodeViews breaks Firefox arrow-key navigation
 
 Firefox treats `contenteditable="false"` elements inside a `contenteditable="true"` region as atomic cursor objects (like embedded images). Any such element — even zero-height — causes ArrowUp/Down to skip over it, making cursor navigation jump unexpectedly.
@@ -114,6 +129,8 @@ Firefox treats `contenteditable="false"` elements inside a `contenteditable="tru
 | `Shift-Tab` | Any lyric line | Jump back to end of song title |
 | `Enter` | Song title | Split and convert to lyric paragraph |
 | `Alt-Shift-t` | Anywhere | Toggle song title node (Mod-Shift-t conflicts with Chrome on Windows) |
+| `ArrowUp` | First lyric paragraph | Move cursor to end of song title (explicit handler for Firefox compat) |
+| `Backspace` | Start of first lyric paragraph | No-op — blocked to prevent merging into song title |
 
 ### Design system
 
