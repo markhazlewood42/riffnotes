@@ -155,3 +155,6 @@ Title is styled directly in `LyricEditor.css`: Blinker Bold 22px, color `#3F3F46
 - `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env` (Vite convention — `import.meta.env.VITE_*`)
 - Deployed to Vercel as static SPA with `vercel.json` rewrite for client-side routing
 - Build tool: Vite (migrated from CRA)
+- **Killing Windows processes**: `taskkill /PID ... /F` fails in MINGW64 bash (Git Bash intercepts `/PID` as a path). Use `cmd //c "taskkill /PID 1234 /F"` instead.
+- **Reading Copilot PR reviews**: `gh pr view <N> --comments` shows the summary; `gh api repos/OWNER/REPO/pulls/<N>/comments` shows inline suggestions with file/line context.
+- **Session handoff**: cross-session context is captured in `session-YYYY-MM-DD.md` at repo root. Read it at session start to pick up where the previous session left off.
