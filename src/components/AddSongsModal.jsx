@@ -5,7 +5,6 @@ import {
   Modal,
   SearchField,
   Separator,
-  Spinner,
   useOverlayState,
 } from "@heroui/react";
 import { Check, Music } from "lucide-react";
@@ -54,12 +53,17 @@ function AddSongsModal({
     onClose();
   };
 
+  // Normalize "all" to concrete set of IDs
+  const resolvedKeys = selectedKeys === "all"
+    ? new Set(allSongs.map((s) => s.id))
+    : selectedKeys;
+
   const handleSave = async () => {
     if (saving) return;
     setSaving(true);
     setError(null);
     try {
-      await onSave([...selectedKeys]);
+      await onSave([...resolvedKeys]);
       handleClose();
     } catch (err) {
       console.error("Add songs failed:", err);
@@ -68,11 +72,11 @@ function AddSongsModal({
     }
   };
 
-  const addedCount = [...selectedKeys].filter(
+  const addedCount = [...resolvedKeys].filter(
     (id) => !currentSongIds?.includes(id)
   ).length;
   const removedCount = (currentSongIds || []).filter(
-    (id) => !selectedKeys.has(id)
+    (id) => !resolvedKeys.has(id)
   ).length;
 
   return (
@@ -138,7 +142,7 @@ function AddSongsModal({
 
             <Modal.Footer className="add-songs-footer">
               <span className="add-songs-count">
-                {selectedKeys.size} selected
+                {resolvedKeys.size} selected
                 {addedCount > 0 && `, ${addedCount} to add`}
                 {removedCount > 0 && `, ${removedCount} to remove`}
               </span>

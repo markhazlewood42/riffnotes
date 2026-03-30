@@ -63,12 +63,18 @@ function SongBrowser() {
         .order("is_locked", { ascending: false })
         .order("updated_at", { ascending: false }),
       fetchSetlists(user.id),
-    ]).then(([songsResult, setlistsData]) => {
-      if (songsResult.error) console.error("Failed to load songs:", songsResult.error);
-      setSongs(songsResult.data || []);
-      setSetlists(setlistsData || []);
-      setLoading(false);
-    });
+    ])
+      .then(([songsResult, setlistsData]) => {
+        if (songsResult.error) console.error("Failed to load songs:", songsResult.error);
+        setSongs(songsResult.data || []);
+        setSetlists(setlistsData || []);
+      })
+      .catch((err) => {
+        console.error("Failed to load initial data:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   // Load setlist songs when active setlist changes
@@ -227,6 +233,7 @@ function SongBrowser() {
                     setSetlistModalMode("rename");
                     setSetlistModalOpen(true);
                   }}
+                  aria-label="Rename set list"
                   title="Rename set list"
                 >
                   <Pencil size={14} />
@@ -234,6 +241,7 @@ function SongBrowser() {
                 <button
                   className="setlist-header-btn setlist-header-btn--danger"
                   onClick={handleDeleteSetlist}
+                  aria-label="Delete set list"
                   title="Delete set list"
                 >
                   <Trash2 size={14} />
@@ -311,6 +319,7 @@ function SongBrowser() {
                 <button
                   className="setlist-item-remove"
                   onClick={(e) => handleRemoveFromSetlist(e, song.id)}
+                  aria-label={`Remove ${song.title || "Untitled"} from set list`}
                   title="Remove from set list"
                 >
                   <X size={14} />

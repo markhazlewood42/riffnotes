@@ -1,5 +1,5 @@
 import { Button, Modal, useOverlayState } from "@heroui/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import "./SetlistModal.css";
 
 function SetlistModal({ isOpen, onClose, onSave, initialName, mode }) {

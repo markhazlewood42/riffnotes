@@ -50,12 +50,14 @@ export async function fetchSetlistSongs(setlistId) {
 
 export async function addSongsToSetlist(setlistId, songIds) {
   // Get current max position
-  const { data: existing } = await supabase
+  const { data: existing, error: maxPosError } = await supabase
     .from("setlist_songs")
     .select("position")
     .eq("setlist_id", setlistId)
     .order("position", { ascending: false })
     .limit(1);
+
+  if (maxPosError) throw maxPosError;
 
   let nextPosition = (existing?.[0]?.position ?? -1) + 1;
 

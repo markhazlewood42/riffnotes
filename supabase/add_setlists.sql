@@ -16,7 +16,9 @@ CREATE POLICY "Users can view their own setlists"
 CREATE POLICY "Users can create their own setlists"
   ON setlists FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update their own setlists"
-  ON setlists FOR UPDATE USING (auth.uid() = user_id);
+  ON setlists FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can delete their own setlists"
   ON setlists FOR DELETE USING (auth.uid() = user_id);
 
@@ -47,10 +49,17 @@ CREATE POLICY "Users can view their own setlist_songs"
   USING (EXISTS (SELECT 1 FROM setlists WHERE id = setlist_id AND user_id = auth.uid()));
 CREATE POLICY "Users can insert their own setlist_songs"
   ON setlist_songs FOR INSERT
-  WITH CHECK (EXISTS (SELECT 1 FROM setlists WHERE id = setlist_id AND user_id = auth.uid()));
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM setlists WHERE id = setlist_id AND user_id = auth.uid())
+    AND EXISTS (SELECT 1 FROM songs WHERE id = song_id AND user_id = auth.uid())
+  );
 CREATE POLICY "Users can update their own setlist_songs"
   ON setlist_songs FOR UPDATE
-  USING (EXISTS (SELECT 1 FROM setlists WHERE id = setlist_id AND user_id = auth.uid()));
+  USING (EXISTS (SELECT 1 FROM setlists WHERE id = setlist_id AND user_id = auth.uid()))
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM setlists WHERE id = setlist_id AND user_id = auth.uid())
+    AND EXISTS (SELECT 1 FROM songs WHERE id = song_id AND user_id = auth.uid())
+  );
 CREATE POLICY "Users can delete their own setlist_songs"
   ON setlist_songs FOR DELETE
   USING (EXISTS (SELECT 1 FROM setlists WHERE id = setlist_id AND user_id = auth.uid()));
