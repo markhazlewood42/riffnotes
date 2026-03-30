@@ -2,6 +2,14 @@
   max-width: 400px;
 }
 
+.setlist-modal-title {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 12px;
+}
+
 .setlist-modal-body {
   padding: 16px 24px;
 }
@@ -11,6 +19,39 @@
   justify-content: flex-end;
   gap: 8px;
   padding: 12px 24px;
+}
+
+.setlist-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setlist-modal-label {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.setlist-modal-input {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--color-text-primary);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.setlist-modal-input:focus {
+  border-color: var(--color-chord);
+}
+
+.setlist-modal-input::placeholder {
+  color: var(--color-text-placeholder);
 }
 
 .setlist-modal-error {

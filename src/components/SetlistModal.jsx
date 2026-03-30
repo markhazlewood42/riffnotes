@@ -1,5 +1,5 @@
-import { Button, Modal, TextField, useOverlayState } from "@heroui/react";
-import { useEffect, useState } from "react";
+import { Button, Modal, useOverlayState } from "@heroui/react";
+import { useEffect, useRef, useState } from "react";
 import "./SetlistModal.css";
 
 function SetlistModal({ isOpen, onClose, onSave, initialName, mode }) {
@@ -48,20 +48,21 @@ function SetlistModal({ isOpen, onClose, onSave, initialName, mode }) {
       <Modal.Backdrop isDismissable>
         <Modal.Container size="sm" className="setlist-modal-container">
           <Modal.Dialog className="setlist-modal-dialog">
-            <Modal.Header>
-              <Modal.Title>{title}</Modal.Title>
-            </Modal.Header>
             <Modal.Body className="setlist-modal-body">
-              <TextField
-                value={name}
-                onChange={setName}
-                autoFocus
-                aria-label="Set list name"
-                onKeyDown={handleKeyDown}
-              >
-                <TextField.Label>Name</TextField.Label>
-                <TextField.Input placeholder="e.g. Friday Gig" />
-              </TextField>
+              <h3 className="setlist-modal-title">{title}</h3>
+              <div className="setlist-modal-field">
+                <label className="setlist-modal-label" htmlFor="setlist-name">Name</label>
+                <input
+                  id="setlist-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoFocus
+                  onKeyDown={handleKeyDown}
+                  placeholder="e.g. Friday Gig"
+                  className="setlist-modal-input"
+                />
+              </div>
               {error && <p className="setlist-modal-error">{error}</p>}
             </Modal.Body>
             <Modal.Footer className="setlist-modal-footer">

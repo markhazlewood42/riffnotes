@@ -82,11 +82,8 @@ function AddSongsModal({
           <Modal.Dialog className="add-songs-dialog">
             <Modal.CloseTrigger className="add-songs-close" />
 
-            <Modal.Header>
-              <Modal.Title>Add Songs to Set List</Modal.Title>
-            </Modal.Header>
-
             <Modal.Body className="add-songs-body">
+              <h3 className="add-songs-title">Add Songs to Set List</h3>
               <SearchField
                 value={query}
                 onChange={setQuery}
