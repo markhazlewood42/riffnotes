@@ -554,7 +554,7 @@ function AnnotatedLineView(props) {
     (annotationId) => {
       if (isLocked) return;
       const annotation = stateRef.current.annotations[annotationId];
-      deleteAnnotationImage(annotation);
+      deleteAnnotationImage(annotation).catch(console.error);
       dispatch({ type: "DELETE_ANNOTATION", payload: { id: annotationId } });
     },
     [dispatch, isLocked],

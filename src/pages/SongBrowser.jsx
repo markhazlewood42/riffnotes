@@ -41,12 +41,14 @@ function SongBrowser() {
     if (!window.confirm("Delete this song?")) return;
 
     // Clean up image annotations from storage before deleting the song row
-    const { data: song } = await supabase
+    const { data: song, error: fetchError } = await supabase
       .from("songs")
       .select("annotations")
       .eq("id", songId)
       .single();
-    if (song?.annotations) {
+    if (fetchError) {
+      console.error("Failed to fetch annotations for cleanup:", fetchError);
+    } else if (song?.annotations) {
       await deleteAnnotationImages(song.annotations);
     }
 

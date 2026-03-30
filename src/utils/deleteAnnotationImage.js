@@ -18,6 +18,7 @@ export async function deleteAnnotationImage(annotation) {
  * Accepts an object or array of annotations.
  */
 export async function deleteAnnotationImages(annotations) {
+  if (annotations == null) return;
   const list = Array.isArray(annotations) ? annotations : Object.values(annotations);
   const fileNames = [];
   for (const ann of list) {
