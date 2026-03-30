@@ -29,6 +29,30 @@
   width: 100%;
 }
 
+.add-songs-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.add-songs-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.add-songs-checkbox--checked {
+  background: var(--color-chord);
+  border-color: var(--color-chord);
+  color: white;
+}
+
 .add-songs-empty {
   text-align: center;
   padding: 40px 20px;

@@ -8,7 +8,7 @@ import {
   Spinner,
   useOverlayState,
 } from "@heroui/react";
-import { Music } from "lucide-react";
+import { Check, Music } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import "./AddSongsModal.css";
 
@@ -113,15 +113,22 @@ function AddSongsModal({
                     onSelectionChange={setSelectedKeys}
                     className="add-songs-listbox"
                   >
-                    {filteredSongs.map((song) => (
-                      <ListBox.Item
-                        key={song.id}
-                        id={song.id}
-                        textValue={song.title || "Untitled"}
-                      >
-                        <Label>{song.title || "Untitled"}</Label>
-                      </ListBox.Item>
-                    ))}
+                    {filteredSongs.map((song) => {
+                      const isSelected = selectedKeys === "all" || selectedKeys.has(song.id);
+                      return (
+                        <ListBox.Item
+                          key={song.id}
+                          id={song.id}
+                          textValue={song.title || "Untitled"}
+                          className="add-songs-item"
+                        >
+                          <span className={`add-songs-checkbox ${isSelected ? "add-songs-checkbox--checked" : ""}`}>
+                            {isSelected && <Check size={12} strokeWidth={3} />}
+                          </span>
+                          <Label>{song.title || "Untitled"}</Label>
+                        </ListBox.Item>
+                      );
+                    })}
                   </ListBox>
                 )}
               </div>
