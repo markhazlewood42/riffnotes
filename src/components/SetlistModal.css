@@ -1,0 +1,21 @@
+.setlist-modal-container {
+  max-width: 400px;
+}
+
+.setlist-modal-body {
+  padding: 16px 24px;
+}
+
+.setlist-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 24px;
+}
+
+.setlist-modal-error {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--danger);
+  margin-top: 8px;
+}

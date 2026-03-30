@@ -1,0 +1,65 @@
+.add-songs-container {
+  max-width: 480px;
+}
+
+.add-songs-body {
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.add-songs-search {
+  width: 100%;
+}
+
+.add-songs-list-area {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.add-songs-listbox {
+  width: 100%;
+}
+
+.add-songs-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.add-songs-empty svg {
+  opacity: 0.4;
+}
+
+.add-songs-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+}
+
+.add-songs-count {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-right: auto;
+}
+
+.add-songs-error {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--danger);
+}
+
+.add-songs-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
