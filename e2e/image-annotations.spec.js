@@ -151,4 +151,55 @@ test.describe('Image annotations', () => {
       expect(textNotes).toHaveLength(0);
     }
   });
+
+  test('deleting an image annotation removes it from the store', async ({ page }) => {
+    // Pre-seed an image annotation (using data URI to avoid needing real storage)
+    await setAnnotations(page, {
+      'ann-img-del': {
+        id: 'ann-img-del',
+        type: 'image',
+        lineId: 'test-line-1',
+        charOffset: 5,
+        url: TINY_PNG_DATA_URI,
+      },
+    });
+
+    // Verify the image annotation is visible
+    await expect(page.locator('.right-annotation-image').first()).toBeVisible();
+
+    // Hover over the annotation wrapper to reveal the delete button
+    await page.locator('.right-annotation-actions-wrapper').first().hover();
+
+    // Wait for the trash button to become visible
+    await page.waitForFunction(() => {
+      const btn = document.querySelector('.annotation-action-btn:not(.annotation-action-btn--confirm)');
+      return btn && !btn.classList.contains('annotation-action-btn--hidden');
+    }, { timeout: 3000 });
+
+    // Click the trash button (step 1: moves to confirm state)
+    await page.evaluate(() => {
+      const trashBtn = document.querySelector('.annotation-action-btn:not(.annotation-action-btn--confirm)');
+      if (trashBtn) trashBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    });
+
+    // Wait for confirm button to appear
+    await page.waitForFunction(() => {
+      const confirmBtn = document.querySelector('.annotation-action-btn--confirm');
+      return confirmBtn && !confirmBtn.classList.contains('annotation-action-btn--hidden');
+    }, { timeout: 3000 });
+
+    // Click the confirm (check) button (step 2: actually deletes)
+    await page.evaluate(() => {
+      const confirmBtn = document.querySelector('.annotation-action-btn--confirm');
+      if (confirmBtn) confirmBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    });
+
+    // Verify the image is gone from the DOM
+    await expect(page.locator('.right-annotation-image')).toHaveCount(0);
+
+    // Verify annotation store no longer contains the image annotation
+    const annotations = await getAnnotations(page);
+    const images = Object.values(annotations).filter((a) => a.type === 'image');
+    expect(images).toHaveLength(0);
+  });
 });

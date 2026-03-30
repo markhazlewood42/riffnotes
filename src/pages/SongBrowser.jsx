@@ -8,6 +8,7 @@ import NewSongDropdown from "../components/NewSongDropdown";
 import { useAuth } from "../context/AuthContext";
 import { buildDocumentFromLyrics } from "../services/songDocument";
 import { supabase } from "../supabase";
+import { deleteAnnotationImages } from "../utils/deleteAnnotationImage";
 import "./SongBrowser.css";
 
 function SongBrowser() {
@@ -38,6 +39,18 @@ function SongBrowser() {
   const deleteSong = async (e, songId) => {
     e.stopPropagation();
     if (!window.confirm("Delete this song?")) return;
+
+    // Clean up image annotations from storage before deleting the song row
+    const { data: song, error: fetchError } = await supabase
+      .from("songs")
+      .select("annotations")
+      .eq("id", songId)
+      .single();
+    if (fetchError) {
+      console.error("Failed to fetch annotations for cleanup:", fetchError);
+    } else if (song?.annotations) {
+      await deleteAnnotationImages(song.annotations);
+    }
 
     const { error } = await supabase.from("songs").delete().eq("id", songId);
 
