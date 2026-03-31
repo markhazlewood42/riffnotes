@@ -17,6 +17,7 @@ import GlobalToolbar from "../components/GlobalToolbar";
 import NewSongDropdown from "../components/NewSongDropdown";
 import SetlistModal from "../components/SetlistModal";
 import SetlistSelector from "../components/SetlistSelector";
+import WelcomeModal, { hasBeenWelcomed } from "../components/WelcomeModal";
 import { useAuth } from "../context/AuthContext";
 import {
   addSongsToSetlist,
@@ -48,6 +49,7 @@ function SongBrowser() {
   const [setlistModalOpen, setSetlistModalOpen] = useState(false);
   const [setlistModalMode, setSetlistModalMode] = useState("create");
   const [addSongsModalOpen, setAddSongsModalOpen] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
 
   // Drag state
   const dragItemRef = useRef(null);
@@ -58,16 +60,20 @@ function SongBrowser() {
     Promise.all([
       supabase
         .from("songs")
-        .select("id, title, updated_at, created_at, is_locked")
+        .select("id, title, updated_at, created_at, is_locked, is_example")
         .eq("user_id", user.id)
-        .order("is_locked", { ascending: false })
+        .order("is_example", { ascending: false })
         .order("updated_at", { ascending: false }),
       fetchSetlists(user.id),
     ])
       .then(([songsResult, setlistsData]) => {
         if (songsResult.error) console.error("Failed to load songs:", songsResult.error);
-        setSongs(songsResult.data || []);
+        const loadedSongs = songsResult.data || [];
+        setSongs(loadedSongs);
         setSetlists(setlistsData || []);
+        if (!hasBeenWelcomed() && loadedSongs.some((s) => s.is_example)) {
+          setWelcomeOpen(true);
+        }
       })
       .catch((err) => {
         console.error("Failed to load initial data:", err);
@@ -343,10 +349,10 @@ function SongBrowser() {
                   <p className="song-card-date">
                     {formatDate(song.updated_at || song.created_at)}
                   </p>
-                  {song.is_locked ? (
+                  {song.is_example ? (
                     <span
                       className="song-card-locked"
-                      title="This song is locked"
+                      title="Practice song — can't be deleted"
                     >
                       <LockIcon size={14} />
                     </span>
@@ -404,9 +410,15 @@ function SongBrowser() {
       <AddSongsModal
         isOpen={addSongsModalOpen}
         onClose={() => setAddSongsModalOpen(false)}
-        allSongs={songs.filter((s) => !s.is_locked)}
+        allSongs={songs.filter((s) => !s.is_example)}
         currentSongIds={setlistSongs.map((s) => s.id)}
         onSave={handleAddSongs}
+      />
+
+      <WelcomeModal
+        isOpen={welcomeOpen}
+        onClose={() => setWelcomeOpen(false)}
+        exampleSongId={songs.find((s) => s.is_example)?.id}
       />
     </div>
   );

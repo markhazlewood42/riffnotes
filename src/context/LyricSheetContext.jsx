@@ -12,7 +12,7 @@ export function extractTitleFromDoc(doc) {
   return titleNode.content.map(n => n.text || '').join('');
 }
 
-function LyricSheetProvider({ songId, initialDocument, initialAnnotations, initialInstruments, isLocked, children }) {
+function LyricSheetProvider({ songId, initialDocument, initialAnnotations, initialInstruments, isLocked, isExample, children }) {
   const [state, dispatch] = useReducer(annotationReducer, {
     annotations: initialAnnotations || {},
     songId,
@@ -156,6 +156,7 @@ function LyricSheetProvider({ songId, initialDocument, initialAnnotations, initi
     saveStatus,
     initialDocument,
     isLocked,
+    isExample,
     instruments,
     setInstruments,
     layoutMap,

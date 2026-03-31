@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DocumentActions from "../components/DocumentActions";
 import GlobalToolbar from "../components/GlobalToolbar";
+import OnboardingTour from "../components/OnboardingTour";
 import { LyricSheetProvider, useLyricSheet } from "../context/LyricSheetContext";
 import LyricEditor from "../editor/LyricEditor";
 import { PAGE_GAP, PAGE_HEIGHT } from "../editor/pageLayout";
@@ -14,7 +15,7 @@ function SongEditorInner() {
   const bodyRef = useRef(null);
   const containerRef = useRef(null);
   const actionsRef = useRef(null);
-  const { state, editingNote, setLayoutMap, layoutReady, requestSave, isLocked } = useLyricSheet();
+  const { state, editingNote, setLayoutMap, layoutReady, requestSave, isLocked, isExample } = useLyricSheet();
   useAnnotationLayout(bodyRef, state.annotations, editingNote, setLayoutMap);
   useDocumentZoom(containerRef, actionsRef);
 
@@ -70,6 +71,7 @@ function SongEditorInner() {
           </div>
         </div>
       </div>
+      {isExample && <OnboardingTour />}
     </>
   );
 }
@@ -133,6 +135,7 @@ function SongEditor() {
       initialAnnotations={songData.annotations}
       initialInstruments={songData.instruments}
       isLocked={songData.is_locked}
+      isExample={songData.is_example ?? false}
     >
       <SongEditorInner />
     </LyricSheetProvider>
