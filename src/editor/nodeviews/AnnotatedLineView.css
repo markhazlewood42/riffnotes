@@ -251,7 +251,7 @@
 
 .right-annotation-image {
   min-height: 32px;
-  max-height: 36px;
+  max-height: 40px;
   width: auto;
   max-width: 160px;
   display: block;
@@ -262,7 +262,7 @@
    cursor navigation — this avoids the contenteditable=false skip bug.
    Suppressed when .has-right-annotation is present (the real column renders). */
 .annotated-line::after {
-  content: '';
+  content: "";
   flex: 0 0 calc(25% - calc(var(--document-padding) / 2));
   height: 0;
 }
