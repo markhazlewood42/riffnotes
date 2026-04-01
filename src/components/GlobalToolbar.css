@@ -49,10 +49,27 @@
   gap: 10px;
 }
 
+.toolbar-user-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.toolbar-user-trigger:hover {
+  background: var(--color-bg-hover, rgba(0, 0, 0, 0.06));
+}
+
 .toolbar-avatar {
   width: 28px;
   height: 28px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .toolbar-user-name {
@@ -61,18 +78,26 @@
   color: var(--color-text-secondary);
 }
 
-.theme-toggle {
-  font-size: 16px;
+.toolbar-user-chevron {
+  color: var(--color-text-tertiary, var(--color-text-secondary));
+  flex-shrink: 0;
 }
 
-/* Sign out icon — hidden by default, shown at sm */
-.toolbar-signout-icon {
-  display: none;
+.toolbar-menu-icon {
+  flex-shrink: 0;
+}
+
+.theme-toggle {
+  font-size: 16px;
 }
 
 /* ── Medium breakpoint (≤ 900px): hide username, coffee label ─────── */
 @media (max-width: 900px) {
   .toolbar-user-name {
+    display: none;
+  }
+
+  .toolbar-user-chevron {
     display: none;
   }
 
@@ -108,11 +133,6 @@
   /* Hide button text labels */
   .toolbar-btn-label {
     display: none;
-  }
-
-  /* Show sign out icon */
-  .toolbar-signout-icon {
-    display: block;
   }
 }
 

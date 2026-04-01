@@ -3,7 +3,7 @@ import { Music } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "./WelcomeModal.css";
 
-const WELCOMED_KEY = "riffnotes_welcomed";
+export const WELCOMED_KEY = "riffnotes_welcomed";
 
 export function hasBeenWelcomed() {
   return localStorage.getItem(WELCOMED_KEY) === "true";

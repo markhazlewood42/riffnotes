@@ -52,6 +52,7 @@
   --page-break-color: #c0c0c8;
 
   /* Spacing */
+  --radius-dropdown: 12px;
   --line-height-lyrics: 200%;
   --document-max-width: 816px;
   --document-padding: 48px;

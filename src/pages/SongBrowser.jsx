@@ -71,7 +71,9 @@ function SongBrowser() {
         const loadedSongs = songsResult.data || [];
         setSongs(loadedSongs);
         setSetlists(setlistsData || []);
-        if (!hasBeenWelcomed() && loadedSongs.some((s) => s.is_example)) {
+        const exampleSong = loadedSongs.find((s) => s.is_example);
+        if (exampleSong) localStorage.setItem("riffnotes_example_song_id", exampleSong.id);
+        if (!hasBeenWelcomed() && exampleSong) {
           setWelcomeOpen(true);
         }
       })

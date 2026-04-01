@@ -86,7 +86,7 @@ const DocumentActions = forwardRef(function DocumentActions(props, ref) {
   return (
     <div className="document-actions" ref={ref}>
       <RouterLink to="/" className="link no-underline document-actions-back">
-        ← All songs
+        <span className="document-actions-back-label">← All songs</span>
       </RouterLink>
       <SaveIndicator />
       <Button

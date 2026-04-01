@@ -149,14 +149,8 @@ test.describe('OnboardingTour', () => {
     await page.waitForTimeout(900);
   }
 
-  test('beacon appears on example song when tour not done', async ({ page }) => {
+  test('step-1 tooltip appears immediately on example song when tour not done', async ({ page }) => {
     await gotoExampleSong(page);
-    await expect(page.locator('.react-joyride__beacon')).toBeVisible({ timeout: 3000 });
-  });
-
-  test('clicking beacon opens step-1 tooltip', async ({ page }) => {
-    await gotoExampleSong(page);
-    await page.locator('.react-joyride__beacon').click();
     await expect(page.getByText('Try annotating')).toBeVisible({ timeout: 3000 });
     await expect(page.getByText(/Select any word or line/)).toBeVisible();
   });
@@ -164,18 +158,17 @@ test.describe('OnboardingTour', () => {
   test('tour does not appear when already done', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('riffnotes_tour_done', 'true'));
     await gotoExampleSong(page);
-    await expect(page.locator('.react-joyride__beacon')).not.toBeVisible();
+    await expect(page.locator('.react-joyride__tooltip')).not.toBeVisible();
   });
 
   test('completing tour (all 3 steps) sets localStorage flag', async ({ page }) => {
     await gotoExampleSong(page);
 
-    // Step 1: click beacon → tooltip → Next
-    await page.locator('.react-joyride__beacon').click();
+    // Step 1: tooltip appears immediately — no beacon click needed
     await expect(page.getByText('Try annotating')).toBeVisible({ timeout: 3000 });
     await page.getByRole('button', { name: 'Next' }).click();
 
-    // Step 2: continuous mode shows tooltip directly (no beacon) — "Auto-save"
+    // Step 2: "Auto-save"
     await expect(page.getByText('Auto-save')).toBeVisible({ timeout: 3000 });
     await page.getByRole('button', { name: 'Next' }).click();
 
@@ -195,7 +188,7 @@ test.describe('OnboardingTour', () => {
     await page.goto(`/songs/${REGULAR_SONG.id}`);
     await page.waitForSelector('.tiptap', { timeout: 10000 });
     await page.waitForTimeout(900);
-    await expect(page.locator('.react-joyride__beacon')).not.toBeVisible();
+    await expect(page.locator('.react-joyride__tooltip')).not.toBeVisible();
   });
 });
 
