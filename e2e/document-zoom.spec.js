@@ -6,14 +6,16 @@ test.describe('Document zoom', () => {
     await gotoTestEditor(page);
   });
 
-  test('document container is scaled up from its base width', async ({ page }) => {
+  test('document container is scaled up from its base width', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Mobile viewports are narrower than the 816px base width — zoom direction differs');
     const container = page.locator('.document-container');
     const box = await container.boundingBox();
     // Base width is 816px, zoomed should be larger (up to 1224px at 1.5x)
     expect(box.width).toBeGreaterThan(816);
   });
 
-  test('zoom scale factor is applied correctly', async ({ page }) => {
+  test('zoom scale factor is applied correctly', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Mobile viewports produce scale <= 1 — zoom behavior tested on desktop only');
     const scale = await page.evaluate(() => {
       const container = document.querySelector('.document-container');
       return container.getBoundingClientRect().width / container.offsetWidth;

@@ -2,6 +2,11 @@ import { test, expect } from '@playwright/test';
 import { gotoTestEditor, resetEditor, pasteText } from './helpers.js';
 
 test.describe('Paste behavior', () => {
+  // Paste tests rely on navigator.clipboard.writeText() + keyboard shortcut.
+  // Clipboard permissions are scoped to Chromium desktop only — skip on WebKit and mobile.
+  test.skip(({ browserName, isMobile }) => isMobile || browserName === 'webkit',
+    'Clipboard API paste not available on WebKit or mobile device profiles');
+
   test.beforeEach(async ({ page }) => {
     await gotoTestEditor(page);
     await resetEditor(page);

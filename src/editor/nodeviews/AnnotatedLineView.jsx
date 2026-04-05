@@ -294,6 +294,7 @@ function AnnotatedLineView(props) {
   const leaderRef = useRef(null);
   const [pullbackMap, setPullbackMap] = useState({});
   const [leaderWidth, setLeaderWidth] = useState(0);
+  const containerScaleRef = useRef(1);
   const [chordLeftPositions, setChordLeftPositions] = useState({});
 
   // Auto-focus the inline input when editing starts
@@ -581,6 +582,7 @@ function AnnotatedLineView(props) {
     const zoom = getContainerScale(container);
     const rect = leaderRef.current.getBoundingClientRect();
     setLeaderWidth(rect.width / zoom);
+    containerScaleRef.current = zoom;
   }, []);
 
   useEffect(() => {
@@ -634,9 +636,12 @@ function AnnotatedLineView(props) {
             const svgH =
               VERTICAL_TICK_HEIGHT + (displacement > 0 ? displacement + 2 : 2);
 
+            const strokeWidth = Math.max(0.5, 1 / (containerScaleRef.current || 1));
             return (
               <svg
                 key={item.id}
+                width={svgW}
+                height={svgH}
                 className="leader-line-svg"
                 style={{
                   left: `-${pullback + 1}px`,
@@ -653,6 +658,7 @@ function AnnotatedLineView(props) {
                   x2="0"
                   y2={VERTICAL_TICK_HEIGHT}
                   className="leader-line leader-line-tick"
+                  strokeWidth={strokeWidth}
                 />
                 {displacement > 0 && leaderWidth > 0 ? (
                   <>
@@ -662,6 +668,7 @@ function AnnotatedLineView(props) {
                       x2={Math.max(0, svgW - LEADER_OVERSHOOT - BEND_INSET)}
                       y2={VERTICAL_TICK_HEIGHT}
                       className="leader-line"
+                      strokeWidth={strokeWidth}
                         />
                     <line
                       x1={Math.max(0, svgW - LEADER_OVERSHOOT - BEND_INSET)}
@@ -669,6 +676,7 @@ function AnnotatedLineView(props) {
                       x2={svgW}
                       y2={VERTICAL_TICK_HEIGHT + displacement}
                       className="leader-line"
+                      strokeWidth={strokeWidth}
                         />
                   </>
                 ) : (
@@ -678,6 +686,7 @@ function AnnotatedLineView(props) {
                     x2={svgW}
                     y2={VERTICAL_TICK_HEIGHT}
                     className="leader-line"
+                    strokeWidth={strokeWidth}
                     />
                 )}
               </svg>

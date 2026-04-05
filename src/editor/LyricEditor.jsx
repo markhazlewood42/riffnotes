@@ -47,7 +47,7 @@ function LyricEditor() {
     ],
     content: (initialDocument ? sanitizeDocument(initialDocument) : null) || DEFAULT_CONTENT,
     editable: !isLocked,
-    autofocus: isLocked ? false : 'start',
+    autofocus: isLocked ? false : (window.matchMedia('(pointer: coarse)').matches ? false : 'start'),
     onUpdate: ({ transaction }) => {
       // Skip save for internal lineId assignment (not a user edit)
       if (transaction.docChanged && !transaction.getMeta('lineIdInit')) {
