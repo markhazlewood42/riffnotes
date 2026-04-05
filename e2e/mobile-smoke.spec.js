@@ -98,8 +98,6 @@ test.describe('Mobile smoke', () => {
     await setDocument(page, DOC);
 
     // On touch devices the editor should NOT steal focus on load
-    const activeTag = await page.evaluate(() => document.activeElement?.tagName?.toLowerCase());
-    // The editor's contenteditable div should not be the active element
     const isEditorFocused = await page.evaluate(() => {
       const el = document.activeElement;
       return el?.getAttribute('contenteditable') === 'true';

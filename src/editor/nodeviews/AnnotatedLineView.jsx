@@ -658,7 +658,7 @@ function AnnotatedLineView(props) {
                   x2="0"
                   y2={VERTICAL_TICK_HEIGHT}
                   className="leader-line leader-line-tick"
-                  strokeWidth={strokeWidth}
+                  style={{ strokeWidth }}
                 />
                 {displacement > 0 && leaderWidth > 0 ? (
                   <>
@@ -668,7 +668,7 @@ function AnnotatedLineView(props) {
                       x2={Math.max(0, svgW - LEADER_OVERSHOOT - BEND_INSET)}
                       y2={VERTICAL_TICK_HEIGHT}
                       className="leader-line"
-                      strokeWidth={strokeWidth}
+                      style={{ strokeWidth }}
                         />
                     <line
                       x1={Math.max(0, svgW - LEADER_OVERSHOOT - BEND_INSET)}
@@ -676,7 +676,7 @@ function AnnotatedLineView(props) {
                       x2={svgW}
                       y2={VERTICAL_TICK_HEIGHT + displacement}
                       className="leader-line"
-                      strokeWidth={strokeWidth}
+                      style={{ strokeWidth }}
                         />
                   </>
                 ) : (
@@ -686,7 +686,7 @@ function AnnotatedLineView(props) {
                     x2={svgW}
                     y2={VERTICAL_TICK_HEIGHT}
                     className="leader-line"
-                    strokeWidth={strokeWidth}
+                    style={{ strokeWidth }}
                     />
                 )}
               </svg>

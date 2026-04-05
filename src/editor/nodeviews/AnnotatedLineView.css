@@ -71,14 +71,12 @@
 
 .leader-line {
   stroke: var(--color-leader-dots);
-  stroke-width: 1;
   stroke-dasharray: 4 4;
   fill: none;
 }
 
 .leader-line-tick {
   stroke-dasharray: none;
-  stroke-width: 1.5;
 }
 
 /*
