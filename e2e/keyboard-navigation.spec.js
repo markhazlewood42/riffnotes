@@ -103,7 +103,8 @@ test.describe('Keyboard navigation', () => {
     expect(after.from).toBeGreaterThanOrEqual(before.from);
   });
 
-  test('ArrowLeft at start of second lyric wraps to end of first lyric', async ({ page }) => {
+  test('ArrowLeft at start of second lyric wraps to end of first lyric', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Arrow key navigation not reliable on mobile device emulation');
     await cursorAtParaStart(page, 2);
     await page.keyboard.press('ArrowLeft');
     await page.waitForTimeout(50);

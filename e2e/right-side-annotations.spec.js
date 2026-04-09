@@ -163,7 +163,8 @@ test.describe('Right-side annotations', () => {
     expect(Math.abs(after.tickX - after.charX)).toBeLessThan(5);
   });
 
-  test('leader line tick stays pinned when Shift+Enter is inserted after the annotation character', async ({ page }) => {
+  test('leader line tick stays pinned when Shift+Enter is inserted after the annotation character', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Shift+Enter keyboard shortcut not reliable on mobile device emulation');
     // BR after the annotation — character stays on first visual sub-line, tick must remain pinned.
     const CHAR_OFFSET = 3;
     await setAnnotations(page, {

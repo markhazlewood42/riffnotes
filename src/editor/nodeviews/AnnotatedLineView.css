@@ -64,7 +64,6 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
   overflow: visible;
   display: block;
   pointer-events: none;
@@ -72,14 +71,12 @@
 
 .leader-line {
   stroke: var(--color-leader-dots);
-  stroke-width: 1;
   stroke-dasharray: 4 4;
   fill: none;
 }
 
 .leader-line-tick {
   stroke-dasharray: none;
-  stroke-width: 1.5;
 }
 
 /*

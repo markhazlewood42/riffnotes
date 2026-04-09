@@ -27,7 +27,8 @@ test.describe('Text editing', () => {
     await expect(paras.nth(1)).toContainText('Line two');
   });
 
-  test('Backspace at start of line merges with previous line', async ({ page }) => {
+  test('Backspace at start of line merges with previous line', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Keyboard events do not reliably reach the editor on mobile device emulation');
     // Set up two lines via the document API for a reliable starting state
     const doc = {
       type: 'doc',

@@ -51,7 +51,8 @@ test.describe('Image annotations', () => {
     await setDocument(page, DOC);
   });
 
-  test('pasting an image creates an image annotation', async ({ page }) => {
+  test('pasting an image creates an image annotation', async ({ page, browserName, isMobile }) => {
+    test.skip(isMobile || browserName === 'webkit', 'Clipboard image paste not available on WebKit or mobile');
     // Open the inline note input by starting editing on the line
     await page.evaluate(() => window.__TEST__.startEditingNote('test-line-1', 5));
     await page.waitForSelector('.note-inline-input', { timeout: 3000 });
@@ -90,7 +91,8 @@ test.describe('Image annotations', () => {
     }
   });
 
-  test('pasting an image replaces an existing right-side text note', async ({ page }) => {
+  test('pasting an image replaces an existing right-side text note', async ({ page, browserName, isMobile }) => {
+    test.skip(isMobile || browserName === 'webkit', 'Clipboard image paste not available on WebKit or mobile');
     // Pre-seed a text note on the line
     await setAnnotations(page, {
       'ann-text-1': {
