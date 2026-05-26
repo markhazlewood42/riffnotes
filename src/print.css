@@ -14,8 +14,11 @@
 
   /* Force light appearance everywhere — override dark mode at every level.
      HeroUI dark theme sets backgrounds via .dark class with high specificity. */
-  html, html.dark, html.light,
-  html[data-theme="dark"], html[data-theme="light"] {
+  html,
+  html.dark,
+  html.light,
+  html[data-theme="dark"],
+  html[data-theme="light"] {
     background: white !important;
     color: #1a1a1a !important;
     color-scheme: light !important;
@@ -56,7 +59,7 @@
   }
 
   /* Document at its native 816px width (= letter width at 96dpi).
-     Zoom reset from 1.5 → 1 but padding and layout stay identical to screen. */
+     Reset the responsive zoom that useDocumentZoom sets on screen. */
   .document-container {
     width: var(--document-max-width) !important;
     max-width: none !important;
@@ -86,7 +89,13 @@
   /* Keep spacers visible — they provide per-page bottom/top margins.
      The browser's page break falls within the spacer, splitting it into
      bottom margin (current page) and top margin (next page).
-     Strip shadows and ensure solid white. */
+     Strip shadows and ensure solid white.
+
+     Reset the negative margins from page.css. On screen those margins extend
+     the spacer beyond the document body to cover its side shadows. In print
+     there are no shadows, and the extended width (816 + 96 + 40 = 952px)
+     exceeds the 816px print viewport, triggering shrink-to-fit and scaling
+     ALL content down ~14%. */
   .page-break-spacer,
   .page-bottom,
   .page-gap,
@@ -94,6 +103,18 @@
     background: white !important;
     box-shadow: none !important;
     clip-path: none !important;
+  }
+
+  .page-break-spacer {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .page-gap {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 
   /* Hide all app chrome */

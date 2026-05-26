@@ -27,9 +27,10 @@ export function useDocumentZoom(containerRef, actionsRef) {
       // Don't apply zoom during print
       if (printMQRef.current?.matches) return;
 
-      const docWidth = parseFloat(
-        getComputedStyle(container).getPropertyValue("--document-max-width"),
-      ) || 816;
+      const docWidth =
+        parseFloat(
+          getComputedStyle(container).getPropertyValue("--document-max-width"),
+        ) || 816;
       const available = window.innerWidth - VIEWPORT_PADDING;
       const zoom = Math.min(MAX_ZOOM, available / docWidth);
 
