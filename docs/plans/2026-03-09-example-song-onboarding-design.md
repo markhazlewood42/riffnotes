@@ -1,3 +1,13 @@
+---
+type: project-doc
+title: RiffNotes — Example Song Onboarding Design
+project: riffnotes
+created: 2026-03-09
+updated: 2026-08-26
+tags: [design, onboarding]
+memory: [project-riffnotes-onboarding]
+---
+
 # Design: Example Song Onboarding
 
 **Date:** 2026-03-09

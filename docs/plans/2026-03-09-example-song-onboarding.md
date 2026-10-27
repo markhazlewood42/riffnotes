@@ -1,3 +1,13 @@
+---
+type: project-doc
+title: RiffNotes — Example Song Onboarding Implementation Plan
+project: riffnotes
+created: 2026-03-09
+updated: 2026-08-26
+tags: [plan, onboarding]
+memory: [project-riffnotes-onboarding]
+---
+
 # Example Song Onboarding Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.

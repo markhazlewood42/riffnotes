@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { EVENTS, Joyride, STATUS } from "react-joyride";
+import { useEffect } from "react";
+import { useJoyride, EVENTS, STATUS } from "react-joyride";
 
 export const TOUR_DONE_KEY = "riffnotes_tour_done";
 
@@ -9,87 +9,86 @@ export function hasTourBeenDone() {
 
 const STEPS = [
   {
-    target: ".tiptap",
+    target: "[data-line-id='line-seed-8'] .lyric-content-wrapper",
     title: "Try annotating",
     content:
       "Select any word or line to add a chord above or a note to the right.",
-    placement: "center",
-    disableBeacon: true,
+    placement: "bottom",
   },
   {
     target: ".save-indicator",
     title: "Auto-save",
     content: "Changes save automatically. No need to hit Save.",
     placement: "bottom",
-    disableBeacon: true,
   },
   {
     target: ".document-actions-back-label",
     title: "Your songs",
     content: "Head back here when you're ready to create your own song.",
     placement: "right",
-    disableBeacon: true,
   },
 ];
 
 function OnboardingTour() {
-  const [run, setRun] = useState(false);
+  const { controls, on, Tour } = useJoyride({
+    steps: STEPS,
+    run: false,
+    continuous: true,
+    disableScrolling: true,
+    scrollToFirstStep: false,
+    locale: { last: "Done" },
+    options: {
+      primaryColor: "#8217e7",
+      backgroundColor: "#ffffff",
+      textColor: "#18181b",
+      arrowColor: "#ffffff",
+      overlayColor: "rgba(0, 0, 0, 0.4)",
+      beaconSize: 32,
+      zIndex: 10000,
+    },
+  });
 
+  // Start the tour shortly after mount, giving TipTap time to render
   useEffect(() => {
-    if (!hasTourBeenDone()) {
-      const timer = setTimeout(() => {
-        window.scrollTo(0, 0);
-        setRun(true);
-      }, 600);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+    if (hasTourBeenDone()) return;
+    const timer = setTimeout(() => {
+      window.scrollTo(0, 0);
+      controls.start(0);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [controls]);
 
-  // Lock scroll position while the tour is active. Joyride v3 uses
-  // position:absolute for its overlay, so any scroll offsets the spotlight.
-  // CSS overflow:hidden doesn't block programmatic scrollTo calls, so we
-  // intercept the scroll event and snap back to 0.
+  // Skip the beacon — immediately open the tooltip for every step
   useEffect(() => {
-    if (!run) return;
+    return on(EVENTS.BEACON, (_data, c) => c.open());
+  }, [on]);
+
+  // Mark tour done on finish or skip
+  useEffect(() => {
+    return on(EVENTS.TOUR_END, ({ status }) => {
+      if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+        localStorage.setItem(TOUR_DONE_KEY, "true");
+      }
+    });
+  }, [on]);
+
+  // Lock scroll while tour overlay is active (Joyride v3 uses position:absolute)
+  useEffect(() => {
     const lockScroll = () => window.scrollTo({ top: 0, behavior: "instant" });
-    window.addEventListener("scroll", lockScroll);
-    return () => window.removeEventListener("scroll", lockScroll);
-  }, [run]);
+    const unsubStart = on(EVENTS.TOUR_START, () =>
+      window.addEventListener("scroll", lockScroll),
+    );
+    const unsubEnd = on(EVENTS.TOUR_END, () =>
+      window.removeEventListener("scroll", lockScroll),
+    );
+    return () => {
+      unsubStart();
+      unsubEnd();
+      window.removeEventListener("scroll", lockScroll);
+    };
+  }, [on]);
 
-  const handleEvent = useCallback((data) => {
-    const { type, status } = data;
-    if (
-      type === EVENTS.TOUR_END ||
-      status === STATUS.FINISHED ||
-      status === STATUS.SKIPPED
-    ) {
-      localStorage.setItem(TOUR_DONE_KEY, "true");
-      setRun(false);
-    }
-  }, []);
-
-  if (hasTourBeenDone()) return null;
-
-  return (
-    <Joyride
-      steps={STEPS}
-      run={run}
-      continuous
-      disableScrolling
-      scrollToFirstStep={false}
-      onEvent={handleEvent}
-      locale={{ last: "Done" }}
-      options={{
-        primaryColor: "#8217e7",
-        backgroundColor: "#ffffff",
-        textColor: "#18181b",
-        arrowColor: "#ffffff",
-        overlayColor: "rgba(0, 0, 0, 0.4)",
-        beaconSize: 32,
-        zIndex: 10000,
-      }}
-    />
-  );
+  return Tour;
 }
 
 export default OnboardingTour;

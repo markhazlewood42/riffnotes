@@ -1,3 +1,12 @@
+---
+type: project-doc
+title: RiffNotes — Print Layout Design
+project: riffnotes
+created: 2026-03-02
+updated: 2026-08-26
+tags: [design, print]
+---
+
 # Print Layout Design
 
 **Date:** 2026-03-02

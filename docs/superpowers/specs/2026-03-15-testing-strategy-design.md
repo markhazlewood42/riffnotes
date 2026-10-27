@@ -1,3 +1,12 @@
+---
+type: project-doc
+title: RiffNotes — Testing Strategy Design Spec
+project: riffnotes
+created: 2026-03-15
+updated: 2026-08-26
+tags: [design, testing]
+---
+
 # Testing Strategy Design
 
 **Date:** 2026-03-15

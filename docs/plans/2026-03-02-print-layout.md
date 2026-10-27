@@ -1,3 +1,12 @@
+---
+type: project-doc
+title: RiffNotes — Print Layout Implementation Plan
+project: riffnotes
+created: 2026-03-02
+updated: 2026-08-26
+tags: [plan, print]
+---
+
 # Print Layout Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.

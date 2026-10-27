@@ -1,3 +1,13 @@
+---
+type: project-doc
+title: RiffNotes — Onboarding Session Notes
+project: riffnotes
+created: 2026-03-29
+updated: 2026-08-26
+tags: [session-notes, onboarding]
+memory: [project-riffnotes-onboarding]
+---
+
 # Session Handoff: RiffNotes Onboarding Improvement
 
 **Date:** 2026-03-29

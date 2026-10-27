@@ -1,3 +1,13 @@
+---
+type: project-doc
+title: RiffNotes — Testing Strategy Plan
+project: riffnotes
+created: 2026-03-17
+updated: 2026-08-26
+tags: [plan, testing]
+memory: [feedback-test-ui-before-presenting]
+---
+
 # Testing Strategy Implementation Plan
 
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.

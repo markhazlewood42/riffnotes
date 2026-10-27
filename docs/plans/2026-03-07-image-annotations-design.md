@@ -1,3 +1,12 @@
+---
+type: project-doc
+title: RiffNotes — Image Annotations Design
+project: riffnotes
+created: 2026-03-07
+updated: 2026-08-26
+tags: [design, annotations]
+---
+
 # Image Annotations Design
 
 ## Summary

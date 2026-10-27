@@ -9,7 +9,13 @@ npm run dev      # Dev server at http://localhost:3000 (Vite)
 npm run build    # Production build (outputs to dist/)
 npm run preview  # Preview production build locally
 npm run lint:css # Check CSS for cross-browser compatibility
+npm run test:unit    # Vitest unit tests (tests/)
+npm run test:server  # Dev server on port 3002 with VITE_AUTH_BYPASS=true (what Playwright runs against)
+npm run test:e2e     # Playwright E2E tests (e2e/); starts the test server itself
+npm test             # Unit + E2E
 ```
+
+Source lives in `src/` with these folders: `components/`, `context/` (singular), `editor/`, `hooks/`, `pages/`, `services/`, `toolbar/`, `utils/`.
 
 ## Architecture
 
@@ -23,10 +29,11 @@ Both layers are stored in a single `songs` table in Supabase (PostgreSQL) with r
 ### Auth & routing
 
 - **Supabase Auth** with Google OAuth — `AuthContext.jsx` provides `user`, `loading`, `isAdmin`, `signInWithGoogle`, `signOut`
-- **React Router v6** — routes: `/login` (LoginPage), `/` (SongBrowser), `/songs/:id` (SongEditor), `/admin` (AdminPage, admin only)
+- **React Router v6** — routes: `/login` (LoginPage), `/` (SongBrowser), `/songs/:id` (SongEditor), `/admin` (AdminPage, admin only), `/test` (TestEditor, lazy-loaded harness used by the Playwright specs)
 - **ProtectedRoute** wraps authenticated routes and redirects to `/login`
 - **AdminRoute** wraps admin routes, redirects non-admins to `/`
-- **GlobalToolbar** is a sticky header with app name (links to `/`), alpha chip, admin link (shield icon, admin only), and user avatar/sign-out
+- **GlobalToolbar** is a sticky header with app name (links to `/`), alpha chip, light/dark theme toggle (`ThemeContext`, saved in `localStorage`), admin link (shield icon, admin only), and an avatar dropdown menu ("RiffNotes walkthrough", "Sign out")
+- `VITE_AUTH_BYPASS=true` skips Supabase auth for Playwright (used by `npm run test:server`)
 
 ### How layers connect
 
@@ -54,20 +61,48 @@ Right-column annotations are prevented from overlapping by a layout coordinator:
 - `SongEditor` uses `key={id}` on the provider to force full remount when switching songs
 - **Image annotations** are stored in Supabase Storage (`annotation-images` bucket, public). Pasted images are uploaded via `supabase.storage.from('annotation-images').upload()` and stored as public URLs in the annotation JSON.
 
-### Locked songs (example song)
+### Locked songs
 
 - `is_locked` boolean column on `songs` table — locked songs cannot be edited or deleted
-- New users receive a seeded example song via a Postgres trigger (`seed_example_song_trigger`)
-- Existing users can be backfilled via `supabase/backfill.sql`
 - When `isLocked` is true: editor is `editable: false`, BubbleMenu is hidden, annotation delete handlers are no-ops, saves are blocked, and "Example song" replaces the save indicator
 - In SongBrowser: locked songs sort first, show a lock icon instead of delete button
+- New users originally received a locked example song from the `seed_example_song_trigger` Postgres trigger; existing users were backfilled via `supabase/backfill.sql`. On `feature/onboarding` (unmerged) the trigger seeds an editable practice song instead — see Onboarding.
+
+### Onboarding (`feature/onboarding`, not yet merged to `main`)
+
+- `is_example` boolean column on `songs` (`supabase/add_is_example.sql`). The seeded practice song is `is_locked = false, is_example = true`, so users can edit it. The migration also unlocks and flags existing users' example songs. **It must be run in production before this branch is deployed.**
+- `WelcomeModal` opens on the first SongBrowser visit (`localStorage` flag `WELCOMED_KEY`) with an "Open practice song" button.
+- `OnboardingTour` (React Joyride v3, `useJoyride` hook) runs on the example song only (`isExample` from `useLyricSheet()`, rendered in `SongEditor`). It has 3 steps, no beacons, and scroll is locked while it runs. Completion is stored in `localStorage` (`TOUR_DONE_KEY`).
+- The "RiffNotes walkthrough" item in the GlobalToolbar avatar dropdown clears both flags and reopens the WelcomeModal.
+- SongBrowser sorts example songs first and excludes them from the Add Songs modal.
+- Joyride v3 removed `disableBeacon`. Skip the beacon with `on(EVENTS.BEACON, (_d, c) => c.open())`.
+
+### Set lists
+
+- Tables `setlists` and `setlist_songs` (`supabase/add_setlists.sql`, RLS hardened in `supabase/patch_setlists_rls.sql`). The service layer is `src/services/setlists.js`.
+- UI: `SetlistSelector` (dropdown filter on SongBrowser), `SetlistModal` (create/rename/delete), `AddSongsModal` (checkboxes). Songs in a set list can be drag-reordered.
+
+### Find a Song
+
+- `FindSongModal` searches by title or artist. `src/services/lrclib.js` calls `/api/genius-search` (the Vercel function `api/genius-search.js`, which proxies Genius and needs `GENIUS_ACCESS_TOKEN` in Vercel) for results, then fetches lyrics from the public LRCLIB API.
+
+### Instruments and theme
+
+- `songs.instruments` (jsonb, default `["Guitar"]`, `supabase/add_instruments.sql`) is edited through `InstrumentTags` in the song title; `useLyricSheet()` exposes `instruments` and `setInstruments`.
+- `ThemeContext` provides light/dark mode (initial value from `localStorage`, then `prefers-color-scheme`).
+
+### Page layout and print
+
+- The editor renders letter-size pages. `src/editor/pageLayout.js` holds `PAGE_HEIGHT` (1056), `PAGE_GAP` (24) and `MARGIN` (72) in px. **The CSS equivalents in `src/styles/variables.css` must stay in sync.**
+- `src/editor/extensions/PageBreaks.js` is a ProseMirror plugin that inserts page-break spacer decorations.
+- `src/print.css` styles `@media print`. Do not let any print element be wider than the page: negative margins on `.page-break-spacer` and `.page-gap` once triggered browser shrink-to-fit and scaled output about 14% too small (fixed in PR #39 by resetting them to 0 in print).
 
 ### Database schema
 
-Two tables with RLS:
+Four tables with RLS (`songs`, `profiles`, `setlists`, `setlist_songs`):
 
 **`songs`** — migration in `supabase/migration.sql`:
-- `id` (uuid), `user_id` (references auth.users), `title`, `document` (jsonb), `annotations` (jsonb), `is_locked` (boolean), `created_at`, `updated_at`
+- `id` (uuid), `user_id` (references auth.users), `title`, `document` (jsonb), `annotations` (jsonb), `is_locked` (boolean), `instruments` (jsonb), `is_example` (boolean, onboarding branch only), `created_at`, `updated_at`
 - Row-level security: users can CRUD their own songs; admins can SELECT all songs
 - `updated_at` auto-updates via trigger
 - Supabase Storage: `annotation-images` bucket (public) with INSERT/DELETE policies for authenticated users
@@ -150,9 +185,15 @@ Title is styled directly in `LyricEditor.css`: Blinker Bold 22px, color `#3F3F46
 
 `.document-container` zoom is computed in JS via `useDocumentZoom` hook (`src/hooks/useDocumentZoom.js`) and applied as an inline `zoom` style with a plain number. **Firefox doesn't support `min()`/viewport units inside CSS `zoom`**, so dynamic zoom must always be computed in JS, not in a CSS custom property. The `stylelint` config warns on CSS `zoom` usage to catch this. Reset to `zoom: 1` in `@media print`.
 
+### Testing
+
+- **Unit tests** (Vitest, `tests/`): reducer, stacked layout, paste utils, song document, container scale, image deletion.
+- **E2E tests** (Playwright, `e2e/`) run against `npm run test:server` on port 3002 and use the `/test` route plus helpers in `e2e/helpers.js`. On `main` the projects are chromium, firefox, webkit, mobile-chrome (Pixel 7) and mobile-safari (iPad Pro 11); `e2e/mobile-smoke.spec.js` runs on all of them. `feature/onboarding` still has the older two-browser config until it is merged with `main`.
+- `e2e/debug-*.spec.js` and `e2e/tour-screenshots.spec.js` are diagnostic aids that write screenshots, not regression tests.
+
 ### Environment
 
-- `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env` (Vite convention — `import.meta.env.VITE_*`)
+- `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env` (Vite convention — `import.meta.env.VITE_*`). The Vercel serverless function also needs `GENIUS_ACCESS_TOKEN`.
 - Deployed to Vercel as static SPA with `vercel.json` rewrite for client-side routing
 - Build tool: Vite (migrated from CRA)
 - **Killing Windows processes**: `taskkill /PID ... /F` fails in MINGW64 bash (Git Bash intercepts `/PID` as a path). Use `cmd //c "taskkill /PID 1234 /F"` instead.

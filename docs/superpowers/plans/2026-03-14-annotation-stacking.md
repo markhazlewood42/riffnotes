@@ -1,3 +1,12 @@
+---
+type: project-doc
+title: RiffNotes — Annotation Stacking Plan
+project: riffnotes
+created: 2026-03-14
+updated: 2026-08-26
+tags: [plan, annotations]
+---
+
 # Annotation Stacking & Elbow Leader Lines Implementation Plan
 
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.

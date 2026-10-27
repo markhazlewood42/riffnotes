@@ -1,3 +1,12 @@
+---
+type: project-doc
+title: RiffNotes — Admin Panel Design Spec
+project: riffnotes
+created: 2026-03-14
+updated: 2026-08-26
+tags: [design, admin]
+---
+
 # Admin Panel Design
 
 ## Overview

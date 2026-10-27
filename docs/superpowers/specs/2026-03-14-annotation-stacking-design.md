@@ -1,3 +1,12 @@
+---
+type: project-doc
+title: RiffNotes — Annotation Stacking Design Spec
+project: riffnotes
+created: 2026-03-14
+updated: 2026-08-26
+tags: [design, annotations]
+---
+
 # Right-Rail Annotation Stacking & Elbow Leader Lines
 
 ## Problem
